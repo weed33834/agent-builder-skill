@@ -28,12 +28,13 @@ def _score_answers(assessment_type: str, answers: SubmitAnswersIn) -> dict[str, 
             continue
         _accumulate(q, ans.answer, raw)
 
-    # 排序题:位置越靠前权重越大(第1位满权)
+    # 排序题:位置越靠前权重越大(第1位满权,递减)
+    # 权重系数 2.0 让排序题总影响力与量表相当(6 项排序约相当于 3 道量表)
     for ans in answers.answers:
         q = q_by_id.get(ans.question_id)
         if q and getattr(q, "items", None) and "order" in ans.answer:
             for idx, item_id in enumerate(ans.answer["order"]):
-                weight = 1.0 - idx * 0.15  # 第1位1.0,递减
+                weight = (1.0 - idx * 0.15) * 2.0
                 item = next((i for i in q.items if i.id == item_id), None)  # type: ignore[union-attr]
                 if item:
                     for dim, v in item.scores.items():

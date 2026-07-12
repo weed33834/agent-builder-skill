@@ -16,11 +16,19 @@ async function init() {
     api.post(`/api/sessions?assessment_type=${type}`),
   ]);
   document.getElementById('title').textContent = bank.title;
-  // 恢复草稿
+  // 恢复草稿(含行为数据,避免刷新后行为丢失)
   if (session.draft_answers) {
+    const beh = session.behavior_log || {};
     for (const q of bank.questions) {
       if (session.draft_answers[q.id]) {
-        answers.push({ question_id: q.id, answer: session.draft_answers[q.id] });
+        const b = beh[q.id] || {};
+        answers.push({
+          question_id: q.id,
+          answer: session.draft_answers[q.id],
+          duration_ms: b.duration_ms || 0,
+          change_count: b.change_count || 0,
+          trajectory: b.trajectory || null,
+        });
         currentIdx++;
       }
     }
@@ -59,7 +67,12 @@ function renderQuestion() {
 
 function setupTimer(q) {
   const el = document.getElementById('timer');
-  if (!q.time_limit_sec) { el.style.display = 'none'; clearInterval(timerInterval); return; }
+  // IAT 题自控节奏,不走单题倒计时(否则会中断逐词分类)
+  if (!q.time_limit_sec || q.type === 'iat') {
+    el.style.display = 'none';
+    clearInterval(timerInterval);
+    return;
+  }
   el.style.display = 'flex';
   let remaining = q.time_limit_sec;
   el.textContent = remaining;

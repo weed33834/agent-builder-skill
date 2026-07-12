@@ -1,0 +1,67 @@
+# 名人库 —— 名人镜匹配用
+# 维度:openness/conscientiousness/extraversion/agreeableness/neuroticism/risk_taking/idealism
+# 分值 0-100,基于历史人物典型行为特征评估(非精确,仅供测评娱乐)
+- id: lincoln
+  name: 林肯
+  blurb: 坚定原则,愿为理想承担代价,在分裂中维系信念
+  dims: {idealism: 90, risk_taking: 80, conscientiousness: 85, agreeableness: 60, openness: 60, extraversion: 50, neuroticism: 40}
+- id: curie
+  name: 居里夫人
+  blurb: 理想主义与执着并存,不谋私利,纯粹探索
+  dims: {idealism: 90, openness: 95, conscientiousness: 90, agreeableness: 55, extraversion: 30, risk_taking: 60, neuroticism: 50}
+- id: schindler
+  name: 辛德勒
+  blurb: 关键时刻选择救人,愿冒险担责,从利己转向利他
+  dims: {idealism: 85, risk_taking: 90, agreeableness: 75, conscientiousness: 60, openness: 60, extraversion: 70, neuroticism: 60}
+- id: confucius
+  name: 孔子
+  blurb: 重责任与秩序,坚守道德准则,知其不可而为之
+  dims: {idealism: 80, conscientiousness: 90, agreeableness: 70, openness: 60, extraversion: 60, risk_taking: 30, neuroticism: 40}
+- id: darwin
+  name: 达尔文
+  blurb: 开放探索,审慎求证,内向深思,颠覆而不张扬
+  dims: {openness: 95, conscientiousness: 85, idealism: 50, agreeableness: 60, extraversion: 25, risk_taking: 40, neuroticism: 65}
+- id: machiavelli
+  name: 马基雅维利
+  blurb: 务实冷峻,结果导向,不计理想,洞察人性
+  dims: {idealism: 20, risk_taking: 70, conscientiousness: 70, agreeableness: 25, openness: 75, extraversion: 55, neuroticism: 50}
+- id: gandhi
+  name: 甘地
+  blurb: 极致利他+非暴力,理想至上,以信念撼动帝国
+  dims: {idealism: 95, agreeableness: 90, conscientiousness: 85, openness: 65, extraversion: 65, risk_taking: 75, neuroticism: 45}
+- id: tesla
+  name: 特斯拉
+  blurb: 纯粹探索者,开放性极高,不善社交,为发明忘我
+  dims: {openness: 98, conscientiousness: 80, idealism: 75, agreeableness: 50, extraversion: 15, risk_taking: 55, neuroticism: 70}
+- id: churchill
+  name: 丘吉尔
+  blurb: 危机中的决断者,外向强势,风险偏好高,意志如铁
+  dims: {extraversion: 90, risk_taking: 85, conscientiousness: 65, openness: 70, agreeableness: 40, idealism: 70, neuroticism: 60}
+- id: einstein
+  name: 爱因斯坦
+  blurb: 开放叛逆,反权威,和平主义,以想象颠覆物理
+  dims: {openness: 92, idealism: 80, agreeableness: 65, conscientiousness: 70, extraversion: 45, risk_taking: 50, neuroticism: 55}
+- id: joan_of_arc
+  name: 圣女贞德
+  blurb: 信念驱动,无畏赴死,理想主义的极致化身
+  dims: {idealism: 98, risk_taking: 95, conscientiousness: 80, agreeableness: 60, openness: 50, extraversion: 65, neuroticism: 50}
+- id: sun_tzu
+  name: 孙武
+  blurb: 冷静谋略,以智取胜,不战而屈人之兵
+  dims: {conscientiousness: 85, openness: 80, risk_taking: 50, agreeableness: 35, idealism: 40, extraversion: 45, neuroticism: 30}
+- id: mother_teresa
+  name: 特蕾莎修女
+  blurb: 无私利他,侍奉最贫者,信仰坚定
+  dims: {altruism: 98, agreeableness: 95, conscientiousness: 88, idealism: 90, openness: 50, extraversion: 60, risk_taking: 60, neuroticism: 45}
+- id: napoleon
+  name: 拿破仑
+  blurb: 雄心勃勃,掌控欲强,风险偏好极高,重塑秩序
+  dims: {extraversion: 85, risk_taking: 90, conscientiousness: 80, openness: 75, agreeableness: 30, idealism: 50, neuroticism: 55}
+- id: socrates
+  name: 苏格拉底
+  blurb: 质疑一切,坚守真理,从容赴死,开放与责任并存
+  dims: {openness: 90, idealism: 88, conscientiousness: 75, agreeableness: 55, extraversion: 50, risk_taking: 60, neuroticism: 40}
+- id: marie_antoinette
+  name: 玛丽·安托瓦内特
+  blurb: 享乐主义,脱离现实,危机中显现韧性
+  dims: {extraversion: 80, openness: 55, conscientiousness: 30, agreeableness: 50, idealism: 25, risk_taking: 45, neuroticism: 70}

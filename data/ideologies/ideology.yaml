@@ -1,0 +1,67 @@
+# 意识形态库 —— 意识镜匹配用
+# 经济轴:0=极左(全面国有) - 100=极右(完全自由市场)
+# 社会轴:0=极自由 - 100=极权威
+- id: soc_dem
+  name: 社会民主主义
+  blurb: 市场经济+福利国家,渐进改良
+  coords: {econ: 30, social: 35}
+- id: lib_dem
+  name: 自由民主主义
+  blurb: 市场经济+个人自由,有限政府
+  coords: {econ: 65, social: 30}
+- id: conservatism
+  name: 保守主义
+  blurb: 传统价值+社会秩序,谨慎变革
+  coords: {econ: 60, social: 75}
+- id: libertarian
+  name: 自由意志主义
+  blurb: 最小政府,最大自由,市场至上
+  coords: {econ: 85, social: 15}
+- id: dem_socialism
+  name: 民主社会主义
+  blurb: 生产资料社会化+民主政治
+  coords: {econ: 15, social: 40}
+- id: author_cap
+  name: 权威资本主义
+  blurb: 自由市场+强国家管控
+  coords: {econ: 70, social: 85}
+- id: nat_conservatism
+  name: 民族保守主义
+  blurb: 民族优先+传统秩序+文化主权
+  coords: {econ: 55, social: 80}
+- id: progressivism
+  name: 进步主义
+  blurb: 平等+进步+全球合作,积极政府
+  coords: {econ: 35, social: 20}
+- id: classical_liberalism
+  name: 古典自由主义
+  blurb: 个人权利至上,自由贸易,宪政限权
+  coords: {econ: 72, social: 25}
+- id: eco_socialism
+  name: 生态社会主义
+  blurb: 反资本主义+环保+去中心化
+  coords: {econ: 18, social: 25}
+- id: theocratic_cons
+  name: 神权保守主义
+  blurb: 宗教权威+传统道德+律法秩序
+  coords: {econ: 45, social: 92}
+- id: anarcho_cap
+  name: 无政府资本主义
+  blurb: 废除国家,一切私有,完全自愿
+  coords: {econ: 95, social: 5}
+- id: maoism
+  name: 毛主义
+  blurb: 群众路线+持续革命+反官僚
+  coords: {econ: 8, social: 70}
+- id: social_liberal
+  name: 社会自由主义
+  blurb: 市场经济+积极自由+福利保障
+  coords: {econ: 40, social: 22}
+- id: falangism
+  name: 长枪党主义
+  blurb: 民族工团主义+权威+传统
+  coords: {econ: 35, social: 88}
+- id: technocracy
+  name: 技术官僚主义
+  blurb: 专家治理+数据驱动+效率优先
+  coords: {econ: 45, social: 60}

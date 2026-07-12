@@ -1,18 +1,18 @@
 # 名人镜 —— 你与历史上哪个名人最相近
-# 维度:基于大五人格 + 价值观倾向
-# 量表40% + 困境40%(历史名人真实困境) + 资源分配20%
+# 维度:大五人格 + 风险偏好 + 理想主义
+# 量表8 + 困境6(历史名人真实困境) + 资源分配2 = 16题
 assessment_type: celebrity
 title: 名人镜
 description: 通过回答与历史名人真实困境相似的选择,测出你与谁最相近。
-estimated_minutes: 8
+estimated_minutes: 10
 dimensions:
-  - openness          # 开放性
-  - conscientiousness # 尽责性
-  - extraversion      # 外向性
-  - agreeableness     # 宜人性
-  - neuroticism       # 神经质
-  - risk_taking       # 风险偏好
-  - idealism          # 理想主义
+  - openness
+  - conscientiousness
+  - extraversion
+  - agreeableness
+  - neuroticism
+  - risk_taking
+  - idealism
 questions:
   # ===== 量表题(人格基础) =====
   - id: c_s1
@@ -55,6 +55,46 @@ questions:
       - {id: "3", text: 视情况, scores: {agreeableness: 0}}
       - {id: "4", text: 倾向帮, scores: {agreeableness: 1}}
       - {id: "5", text: 毫不犹豫, scores: {agreeableness: 2}}
+  - id: c_s5
+    type: scale
+    prompt: 遇到突发坏消息,你的情绪反应?
+    dimensions: [neuroticism]
+    points:
+      - {id: "1", text: 平静应对, scores: {neuroticism: -2}}
+      - {id: "2", text: 略有波动, scores: {neuroticism: -1}}
+      - {id: "3", text: 正常反应, scores: {neuroticism: 0}}
+      - {id: "4", text: 明显焦虑, scores: {neuroticism: 1}}
+      - {id: "5", text: 难以平复, scores: {neuroticism: 2}}
+  - id: c_s6
+    type: scale
+    prompt: 面对高风险高回报的机会,你?
+    dimensions: [risk_taking]
+    points:
+      - {id: "1", text: 坚决回避, scores: {risk_taking: -2}}
+      - {id: "2", text: 谨慎考虑, scores: {risk_taking: -1}}
+      - {id: "3", text: 看概率, scores: {risk_taking: 0}}
+      - {id: "4", text: 愿意尝试, scores: {risk_taking: 1}}
+      - {id: "5", text: 主动追求, scores: {risk_taking: 2}}
+  - id: c_s7
+    type: scale
+    prompt: 当原则与现实利益冲突,你?
+    dimensions: [idealism]
+    points:
+      - {id: "1", text: 务实优先, scores: {idealism: -2}}
+      - {id: "2", text: 利益为主, scores: {idealism: -1}}
+      - {id: "3", text: 权衡, scores: {idealism: 0}}
+      - {id: "4", text: 倾向原则, scores: {idealism: 1}}
+      - {id: "5", text: 原则至上, scores: {idealism: 2}}
+  - id: c_s8
+    type: scale
+    prompt: 你对既有权威和传统的态度?
+    dimensions: [openness, idealism]
+    points:
+      - {id: "1", text: 尊重服从, scores: {openness: -1, idealism: -1}}
+      - {id: "2", text: 谨慎接受, scores: {openness: 0, idealism: 0}}
+      - {id: "3", text: 独立判断, scores: {openness: 1, idealism: 1}}
+      - {id: "4", text: 质疑挑战, scores: {openness: 2, idealism: 1}}
+      - {id: "5", text: 颠覆重构, scores: {openness: 2, idealism: 2}}
 
   # ===== 困境题(历史名人真实困境) =====
   - id: c_d1
@@ -64,17 +104,11 @@ questions:
     time_limit_sec: 15
     scenario: 你在财务岗,发现一笔异常转账指向上司。ta 三年前在你母亲重病时借款救急。举报意味着你失业,且对方可能反咬。
     options:
-      - id: a
-        text: 匿名举报,承担失业风险
-        scores: {idealism: 2, risk_taking: 2}
-      - id: b
-        text: 私下劝退,给对方退路
-        scores: {idealism: 1, risk_taking: 0}
-      - id: c
-        text: 装作没看见,保住工作
-        scores: {idealism: -2, risk_taking: -1}
+      - {id: a, text: 匿名举报,承担失业风险, scores: {idealism: 2, risk_taking: 2}}
+      - {id: b, text: 私下劝退,给对方退路, scores: {idealism: 1, risk_taking: 0}}
+      - {id: c, text: 装作没看见,保住工作, scores: {idealism: -2, risk_taking: -1}}
     historical_figure: 林肯
-    historical_choice: a  # 林顿·约翰逊举报同党腐败
+    historical_choice: a
   - id: c_d2
     type: dilemma
     prompt: 你有一项颠覆性发明,公开会推动人类进步但会让你的公司破产。
@@ -82,17 +116,11 @@ questions:
     time_limit_sec: 15
     scenario: 你的发明能解决能源危机,但公开后你公司核心业务将归零,数千员工失业。
     options:
-      - id: a
-        text: 公开发明,接受公司破产
-        scores: {idealism: 2, openness: 2}
-      - id: b
-        text: 内部转型,缓慢过渡
-        scores: {idealism: 0, openness: 1}
-      - id: c
-        text: 封存专利,保住公司
-        scores: {idealism: -2, openness: -1}
+      - {id: a, text: 公开发明,接受公司破产, scores: {idealism: 2, openness: 2}}
+      - {id: b, text: 内部转型,缓慢过渡, scores: {idealism: 0, openness: 1}}
+      - {id: c, text: 封存专利,保住公司, scores: {idealism: -2, openness: -1}}
     historical_figure: 居里夫人
-    historical_choice: a  # 居里夫人不申请镭专利
+    historical_choice: a
   - id: c_d3
     type: dilemma
     prompt: 战争中你掌握情报,救一群平民会让你的潜伏身份暴露,导致更多同胞牺牲。
@@ -100,16 +128,46 @@ questions:
     time_limit_sec: 15
     scenario: 你是卧底。一个村庄即将被屠,你出手能救 200 人,但身份暴露后 5000 人计划失败。
     options:
-      - id: a
-        text: 出手救眼前 200 人
-        scores: {idealism: 1, risk_taking: 2}
-      - id: b
-        text: 隐忍,保 5000 人计划
-        scores: {idealism: 0, risk_taking: -1}
-      - id: c
-        text: 试图两全,冒险传递情报
-        scores: {idealism: 2, risk_taking: 1}
+      - {id: a, text: 出手救眼前 200 人, scores: {idealism: 1, risk_taking: 2}}
+      - {id: b, text: 隐忍,保 5000 人计划, scores: {idealism: 0, risk_taking: -1}}
+      - {id: c, text: 试图两全,冒险传递情报, scores: {idealism: 2, risk_taking: 1}}
     historical_figure: 辛德勒
+    historical_choice: a
+  - id: c_d4
+    type: dilemma
+    prompt: 你的理论会被当时主流视为异端,发表可能身败名裂但真理在你这边。
+    dimensions: [openness, idealism, risk_taking]
+    time_limit_sec: 15
+    scenario: 你发现一个颠覆性事实,但公开会触怒权威机构,可能被审判、软禁。沉默则安稳一生。
+    options:
+      - {id: a, text: 公开发表,承担一切, scores: {openness: 2, idealism: 2, risk_taking: 2}}
+      - {id: b, text: 私下流通,等待时机, scores: {openness: 1, idealism: 1, risk_taking: 0}}
+      - {id: c, text: 永不发表,保全自身, scores: {openness: -1, idealism: -1, risk_taking: -2}}
+    historical_figure: 达尔文
+    historical_choice: a
+  - id: c_d5
+    type: dilemma
+    prompt: 你能通过权谋登上高位,代价是背叛信任你的盟友。
+    dimensions: [agreeableness, idealism, risk_taking]
+    time_limit_sec: 15
+    scenario: 机遇出现:算计盟友可独揽大权,实现你的宏大蓝图。但盟友曾为你两肋插刀。
+    options:
+      - {id: a, text: 算计盟友,实现蓝图, scores: {agreeableness: -2, idealism: 1, risk_taking: 2}}
+      - {id: b, text: 放弃机遇,守盟约, scores: {agreeableness: 2, idealism: 1, risk_taking: -1}}
+      - {id: c, text: 试图兼顾,风险最大, scores: {agreeableness: 1, idealism: 0, risk_taking: 1}}
+    historical_figure: 拿破仑
+    historical_choice: a
+  - id: c_d6
+    type: dilemma
+    prompt: 法庭判你死刑,给你逃跑机会,但你一直教导"遵守法律"。
+    dimensions: [idealism, conscientiousness, risk_taking]
+    time_limit_sec: 15
+    scenario: 朋友买通狱卒安排你出逃。逃则生,但你毕生宣讲"守法即美德",逃跑将让信念崩塌。
+    options:
+      - {id: a, text: 拒绝逃跑,从容赴死, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}}
+      - {id: b, text: 出逃后继续传播思想, scores: {idealism: 1, conscientiousness: -1, risk_taking: 2}}
+      - {id: c, text: 服从判决但留辩词, scores: {idealism: 1, conscientiousness: 1, risk_taking: 0}}
+    historical_figure: 苏格拉底
     historical_choice: a
 
   # ===== 资源分配题(量化价值优先级) =====
@@ -123,5 +181,13 @@ questions:
       - {id: donate, text: 捐赠弱势, scores: {idealism: 1, agreeableness: 1}}
       - {id: save, text: 储蓄, scores: {conscientiousness: 1}}
     total: 100
-
-# 名人库(匹配用)—— 单独文件,见 data/figures/celebrity.yaml
+  - id: c_a2
+    type: allocation
+    prompt: 你的一周时间(100 单位)如何分配?
+    dimensions: [extraversion, openness, conscientiousness, neuroticism]
+    targets:
+      - {id: social, text: 社交聚会, scores: {extraversion: 1}}
+      - {id: solo_explore, text: 独自探索新事物, scores: {openness: 1}}
+      - {id: work_plan, text: 按计划工作, scores: {conscientiousness: 1}}
+      - {id: rest, text: 休息放空, scores: {neuroticism: 1}}
+    total: 100

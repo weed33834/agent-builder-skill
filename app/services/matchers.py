@@ -1,58 +1,60 @@
 """匹配器 —— 把维度分数映射到名人/价值观等级/意识形态标签。
 
 三类测评各一个 matcher,统一返回 [{id,name,match_pct,blurb}]。
+名人库与意识形态库走 YAML 数据驱动(与题库一致)。
 """
 
 import math
+from functools import lru_cache
 from pathlib import Path
 
 import yaml
 
 DATA_DIR = Path(__file__).resolve().parent.parent.parent / "data"
 
-# 内置名人库(简版,可后续扩充)
-_CELEBRITIES = [
-    {"id": "lincoln", "name": "林肯", "blurb": "坚定原则,愿为理想承担代价", "dims": {"idealism": 90, "risk_taking": 80, "conscientiousness": 85, "agreeableness": 60, "openness": 60, "extraversion": 50, "neuroticism": 40}},
-    {"id": "curie", "name": "居里夫人", "blurb": "理想主义与执着并存,不谋私利", "dims": {"idealism": 90, "openness": 95, "conscientiousness": 90, "agreeableness": 55, "extraversion": 30, "risk_taking": 60, "neuroticism": 50}},
-    {"id": "schindler", "name": "辛德勒", "blurb": "关键时刻选择救人,愿冒险担责", "dims": {"idealism": 85, "risk_taking": 90, "agreeableness": 75, "conscientiousness": 60, "openness": 60, "extraversion": 70, "neuroticism": 60}},
-    {"id": "confucius", "name": "孔子", "blurb": "重责任与秩序,坚守道德准则", "dims": {"idealism": 80, "conscientiousness": 90, "agreeableness": 70, "openness": 60, "extraversion": 60, "risk_taking": 30, "neuroticism": 40}},
-    {"id": "darwin", "name": "达尔文", "blurb": "开放探索,审慎求证,内向深思", "dims": {"openness": 95, "conscientiousness": 85, "idealism": 50, "agreeableness": 60, "extraversion": 25, "risk_taking": 40, "neuroticism": 65}},
-    {"id": "machiavelli", "name": "马基雅维利", "blurb": "务实冷峻,结果导向,不计理想", "dims": {"idealism": 20, "risk_taking": 70, "conscientiousness": 70, "agreeableness": 25, "openness": 75, "extraversion": 55, "neuroticism": 50}},
-    {"id": "gandhi", "name": "甘地", "blurb": "极致利他+非暴力,理想至上", "dims": {"idealism": 95, "agreeableness": 90, "conscientiousness": 85, "openness": 65, "extraversion": 65, "risk_taking": 75, "neuroticism": 45}},
-    {"id": "tesla", "name": "特斯拉", "blurb": "纯粹探索者,开放性极高,不善社交", "dims": {"openness": 98, "conscientiousness": 80, "idealism": 75, "agreeableness": 50, "extraversion": 15, "risk_taking": 55, "neuroticism": 70}},
-]
 
-# 意识形态库(经济轴 0左-100右,社会轴 0自由-100权威)
-_IDEOLOGIES = [
-    {"id": "soc_dem", "name": "社会民主主义", "blurb": "市场+福利,渐进改良", "coords": {"econ": 30, "social": 35}},
-    {"id": "lib_dem", "name": "自由民主主义", "blurb": "市场经济+个人自由", "coords": {"econ": 65, "social": 30}},
-    {"id": "conservatism", "name": "保守主义", "blurb": "传统价值+秩序", "coords": {"econ": 60, "social": 75}},
-    {"id": "libertarian", "name": "自由意志主义", "blurb": "最小政府,最大自由", "coords": {"econ": 85, "social": 15}},
-    {"id": "dem_socialism", "name": "民主社会主义", "blurb": "生产资料社会化+民主", "coords": {"econ": 15, "social": 40}},
-    {"id": "author_cap", "name": "权威资本主义", "blurb": "自由市场+强国家", "coords": {"econ": 70, "social": 85}},
-    {"id": "nat_conservatism", "name": "民族保守主义", "blurb": "民族优先+传统秩序", "coords": {"econ": 55, "social": 80}},
-    {"id": "progressivism", "name": "进步主义", "blurb": "平等+进步+全球合作", "coords": {"econ": 35, "social": 20}},
-]
+@lru_cache
+def _load_celebrities() -> list[dict]:
+    """名人库 —— data/figures/celebrity.yaml"""
+    path = DATA_DIR / "figures" / "celebrity.yaml"
+    if not path.exists():
+        return []
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or []
 
 
-def _cosine(a: dict[str, float], b: dict[str, float]) -> float:
-    """余弦相似度 → 0-1。"""
-    keys = set(a) & set(b)
+@lru_cache
+def _load_ideologies() -> list[dict]:
+    """意识形态库 —— data/ideologies/ideology.yaml"""
+    path = DATA_DIR / "ideologies" / "ideology.yaml"
+    if not path.exists():
+        return []
+    return yaml.safe_load(path.read_text(encoding="utf-8")) or []
+
+
+def _match_pct_by_distance(user: dict[str, float], ref: dict[str, float], max_dist: float) -> float:
+    """归一化欧氏距离 → 匹配度%。
+
+    距离 0 = 100% 匹配;距离 ≥ max_dist = 0%。
+    比余弦相似度更敏感于绝对差异,避免"所有人都 90%+"。
+    """
+    keys = set(user) & set(ref)
     if not keys:
         return 0.0
-    dot = sum(a[k] * b[k] for k in keys)
-    na = math.sqrt(sum(a[k] ** 2 for k in keys))
-    nb = math.sqrt(sum(b[k] ** 2 for k in keys))
-    if na == 0 or nb == 0:
-        return 0.0
-    return dot / (na * nb)
+    dist = math.sqrt(sum((user[k] - ref[k]) ** 2 for k in keys))
+    # 理论最大距离:维度数 × 100(全 0 vs 全 100)
+    max_theory = math.sqrt(len(keys)) * 100.0
+    sim = max(0.0, 1 - dist / max_theory)
+    return round(sim * 100, 1)
 
 
 def match_celebrity(dimensions: dict, answers, behavior) -> list[dict]:
-    """与名人库算余弦距离 → Top3。"""
+    """与名人库算归一化距离 → Top3。"""
+    celebrities = _load_celebrities()
+    if not celebrities:
+        return []
     scored = [
-        {**c, "match_pct": round(_cosine(dimensions, c["dims"]) * 100, 1)}
-        for c in _CELEBRITIES
+        {**c, "match_pct": _match_pct_by_distance(dimensions, c["dims"], 100.0)}
+        for c in celebrities
     ]
     scored.sort(key=lambda x: x["match_pct"], reverse=True)
     return [{"id": c["id"], "name": c["name"], "match_pct": c["match_pct"], "blurb": c["blurb"]} for c in scored[:3]]
@@ -97,8 +99,12 @@ def match_ideology(dimensions: dict, answers, behavior) -> list[dict]:
     # 修正:globalist/nationalist 也算社会轴
     social = (social + 50 + (dimensions.get("nationalist", 50) - dimensions.get("globalist", 50)) / 2) / 2
 
+    ideologies = _load_ideologies()
+    if not ideologies:
+        return []
+
     scored = []
-    for ideo in _IDEOLOGIES:
+    for ideo in ideologies:
         dx = econ - ideo["coords"]["econ"]
         dy = social - ideo["coords"]["social"]
         dist = math.sqrt(dx * dx + dy * dy)

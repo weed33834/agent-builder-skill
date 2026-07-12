@@ -19,8 +19,9 @@ async def start_session(
     assessment_type: str,
     user: CurrentUser,
     db: DbSession,
+    restart: bool = False,
 ) -> SessionOut:
-    """开始一次测评。若有未完成草稿,返回草稿。"""
+    """开始一次测评。若有未完成草稿默认恢复;restart=true 放弃草稿重开。"""
     try:
         load_bank(assessment_type)
     except FileNotFoundError:
@@ -34,8 +35,13 @@ async def start_session(
             AssessmentSession.status == SessionStatus.in_progress,
         )
     )
-    if session := existing.scalar_one_or_none():
-        return SessionOut.model_validate(session, from_attributes=True)
+    if (session := existing.scalar_one_or_none()):
+        if restart:
+            # 放弃旧草稿,标记 abandoned
+            session.status = SessionStatus.abandoned
+            await db.commit()
+        else:
+            return SessionOut.model_validate(session, from_attributes=True)
 
     session = AssessmentSession(
         user_id=user.id,

@@ -11,6 +11,7 @@ class SessionOut(BaseModel):
     status: str
     current_index: int
     draft_answers: dict | None = None
+    behavior_log: dict | None = None
     started_at: datetime | None = None
     finished_at: datetime | None = None
 

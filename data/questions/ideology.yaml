@@ -1,22 +1,22 @@
 # 意识镜 —— 你的意识形态定位
-# 量表50% + 排序30% + IAT 20%
-# 维度:经济轴(左←→右) + 社会轴(权威↑↓自由)
+# 量表10 + 排序3 + IAT 3 = 16题
+# 维度:经济轴(左←→右) + 社会轴(权威↑↓自由) + 传统vs进步 + 民族vs全球
 # 匹配意识形态标签:见 data/ideologies/ideology.yaml
 assessment_type: ideology
 title: 意识镜
 description: 测出你在政治光谱上的定位,与哪种意识形态最接近。
-estimated_minutes: 7
+estimated_minutes: 10
 dimensions:
-  - econ_left       # 经济左
-  - econ_right      # 经济右
-  - authority       # 权威主义
-  - liberty         # 自由主义
-  - tradition       # 传统
-  - progress        # 进步
-  - nationalist     # 民族主义
-  - globalist       # 全球主义
+  - econ_left
+  - econ_right
+  - authority
+  - liberty
+  - tradition
+  - progress
+  - nationalist
+  - globalist
 questions:
-  # ===== 量表题(经济轴+社会轴) =====
+  # ===== 量表题(经济轴+社会轴+传统进步轴+民族全球轴) =====
   - id: i_s1
     type: scale
     prompt: 政府是否应该对富人征高税以缩小贫富差距?
@@ -67,6 +67,56 @@ questions:
       - {id: "3", text: 中立, scores: {}}
       - {id: "4", text: 倾向合作, scores: {globalist: 1}}
       - {id: "5", text: 全球优先, scores: {globalist: 2}}
+  - id: i_s6
+    type: scale
+    prompt: 最低工资与劳动法是否应强化?
+    dimensions: [econ_left, econ_right]
+    points:
+      - {id: "1", text: 大幅强化, scores: {econ_left: 2}}
+      - {id: "2", text: 适度强化, scores: {econ_left: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 适度放松, scores: {econ_right: 1}}
+      - {id: "5", text: 大幅放松, scores: {econ_right: 2}}
+  - id: i_s7
+    type: scale
+    prompt: 言论自由是否应限制仇恨言论?
+    dimensions: [authority, liberty]
+    points:
+      - {id: "1", text: 应严格限制, scores: {authority: 2}}
+      - {id: "2", text: 倾向限制, scores: {authority: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向不限, scores: {liberty: 1}}
+      - {id: "5", text: 绝对自由, scores: {liberty: 2}}
+  - id: i_s8
+    type: scale
+    prompt: 移民政策应该更开放还是更严格?
+    dimensions: [globalist, nationalist, progress, tradition]
+    points:
+      - {id: "1", text: 大幅开放, scores: {globalist: 2, progress: 1}}
+      - {id: "2", text: 适度开放, scores: {globalist: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 适度收紧, scores: {nationalist: 1}}
+      - {id: "5", text: 严格收紧, scores: {nationalist: 2, tradition: 1}}
+  - id: i_s9
+    type: scale
+    prompt: 传统家庭结构(异性婚姻+生育)是否应被倡导?
+    dimensions: [tradition, progress]
+    points:
+      - {id: "1", text: 强力倡导, scores: {tradition: 2}}
+      - {id: "2", text: 倾向倡导, scores: {tradition: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向多元, scores: {progress: 1}}
+      - {id: "5", text: 完全多元, scores: {progress: 2}}
+  - id: i_s10
+    type: scale
+    prompt: 面对气候问题,本国是否应承担与他国同等减排义务?
+    dimensions: [globalist, nationalist]
+    points:
+      - {id: "1", text: 承担更多, scores: {globalist: 2}}
+      - {id: "2", text: 同等承担, scores: {globalist: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 发展优先, scores: {nationalist: 1}}
+      - {id: "5", text: 拒绝约束, scores: {nationalist: 2}}
 
   # ===== 排序题(议题优先级) =====
   - id: i_so1
@@ -80,6 +130,26 @@ questions:
       - {id: rights, text: 个人自由, scores: {liberty: 1}}
       - {id: family, text: 传统家庭价值, scores: {tradition: 1}}
       - {id: environment, text: 环境与未来, scores: {progress: 1}}
+  - id: i_so2
+    type: sort
+    prompt: 排序你最看重的政府职能(1=最重要)
+    dimensions: [econ_left, econ_right, authority, liberty, tradition, progress, nationalist, globalist]
+    items:
+      - {id: redistribute, text: 再分配财富, scores: {econ_left: 1}}
+      - {id: market, text: 维护市场秩序, scores: {econ_right: 1}}
+      - {id: order, text: 维护社会秩序, scores: {authority: 1}}
+      - {id: protect_rights, text: 保障个人权利, scores: {liberty: 1}}
+      - {id: morality, text: 倡导道德风尚, scores: {tradition: 1}}
+      - {id: innovate, text: 推动社会进步, scores: {progress: 1}}
+  - id: i_so3
+    type: sort
+    prompt: 排序你认为国家对外应优先的姿态(1=最优先)
+    dimensions: [nationalist, globalist, authority, liberty]
+    items:
+      - {id: sovereignty, text: 捍卫主权利益, scores: {nationalist: 1, authority: 1}}
+      - {id: cooperation, text: 推动全球合作, scores: {globalist: 1}}
+      - {id: strength, text: 展现实力威慑, scores: {nationalist: 1, authority: 1}}
+      - {id: noninterference, text: 互不干涉, scores: {liberty: 1, nationalist: 1}}
 
   # ===== IAT(内隐联想,简化版) =====
   - id: i_iat1
@@ -98,3 +168,35 @@ questions:
       - {word: 反叛, category: right}
       - {word: 敬老, category: left}
       - {word: 平等, category: right}
+  - id: i_iat2
+    type: iat
+    prompt: 快速分类:经济相关词语的直觉
+    dimensions: [econ_left, econ_right]
+    time_limit_sec: 60
+    left_label: 国家/集体
+    right_label: 市场/个人
+    words:
+      - {word: 国有, category: left}
+      - {word: 私有, category: right}
+      - {word: 福利, category: left}
+      - {word: 竞争, category: right}
+      - {word: 均贫富, category: left}
+      - {word: 自由市场, category: right}
+      - {word: 工会, category: left}
+      - {word: 企业家, category: right}
+  - id: i_iat3
+    type: iat
+    prompt: 快速分类:国家与世界的直觉联想
+    dimensions: [nationalist, globalist]
+    time_limit_sec: 60
+    left_label: 民族/本国
+    right_label: 世界/人类
+    words:
+      - {word: 国货, category: left}
+      - {word: 普世, category: right}
+      - {word: 边境, category: left}
+      - {word: 无国界, category: right}
+      - {word: 本族, category: left}
+      - {word: 移民, category: right}
+      - {word: 主权, category: left}
+      - {word: 联合国, category: right}
