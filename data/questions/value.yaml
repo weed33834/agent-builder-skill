@@ -1,0 +1,105 @@
+# 价值镜 —— 你的价值观与道德水平
+# 困境50% + 资源分配30% + 排序20%(科尔伯格式分级)
+# 维度:诚实/利他/公正/责任/共情/自律
+assessment_type: value
+title: 价值镜
+description: 通过两难困境与资源分配,测出你的真实价值观与道德水平。
+estimated_minutes: 10
+dimensions:
+  - honesty     # 诚实
+  - altruism    # 利他
+  - justice     # 公正
+  - duty        # 责任
+  - empathy     # 共情
+  - discipline  # 自律
+questions:
+  # ===== 困境题(科尔伯格式) =====
+  - id: v_d1
+    type: dilemma
+    prompt: 配偶患重病,药价十倍于成本,你偷不偷?
+    dimensions: [honesty, altruism, justice]
+    time_limit_sec: 15
+    scenario: 药商垄断抬价,你配偶将死。偷药能救 ta,但违法。
+    options:
+      - id: a
+        text: 偷药救人
+        scores: {altruism: 2, honesty: -2, justice: 1}
+      - id: b
+        text: 不偷,寻求合法途径
+        scores: {honesty: 2, duty: 2, altruism: -1}
+      - id: c
+        text: 偷药后自首
+        scores: {altruism: 2, honesty: 1, duty: 1, justice: 1}
+  - id: v_d2
+    type: dilemma
+    prompt: 你无意导致同事被开除,真相不说没人知道。
+    dimensions: [honesty, justice, duty]
+    time_limit_sec: 15
+    scenario: 你的失误被算到同事头上,ta 因此失业。澄清会让你被开除。
+    options:
+      - id: a
+        text: 主动澄清,承担后果
+        scores: {honesty: 2, justice: 2, duty: 2}
+      - id: b
+        text: 私下补偿同事
+        scores: {empathy: 2, honesty: -1}
+      - id: c
+        text: 保持沉默
+        scores: {honesty: -2, justice: -2, duty: -1}
+  - id: v_d3
+    type: dilemma
+    prompt: 你捡到钱包,内有失主救命钱。
+    dimensions: [honesty, altruism, empathy]
+    time_limit_sec: 15
+    scenario: 钱包里有 5 万现金和一张医院缴费单。失主显然急需。
+    options:
+      - id: a
+        text: 全额归还
+        scores: {honesty: 2, altruism: 1, justice: 1}
+      - id: b
+        text: 留下部分,归还剩余
+        scores: {honesty: -1, altruism: -1}
+      - id: c
+        text: 全部留下
+        scores: {honesty: -2, altruism: -2, empathy: -2}
+  - id: v_d4
+    type: dilemma
+    prompt: 你是主管,要裁掉一个人,A 有家庭 B 是新人。
+    dimensions: [justice, empathy, duty]
+    time_limit_sec: 15
+    scenario: 必须裁一人。A 业务能力强但有家庭压力;B 是新人潜力大但经验少。
+    options:
+      - id: a
+        text: 留 A(资历+家庭)
+        scores: {empathy: 2, justice: -1}
+      - id: b
+        text: 留 B(潜力+绩效)
+        scores: {justice: 2, empathy: -1}
+      - id: c
+        text: 公开评估标准,按客观数据
+        scores: {justice: 2, duty: 2}
+
+  # ===== 资源分配题 =====
+  - id: v_a1
+    type: allocation
+    prompt: 你的时间(每周 100 单位)如何分配?
+    dimensions: [duty, altruism, empathy, discipline]
+    targets:
+      - {id: work, text: 工作/事业, scores: {duty: 1, discipline: 1}}
+      - {id: family, text: 陪伴家人, scores: {empathy: 1}}
+      - {id: volunteer, text: 公益/助人, scores: {altruism: 1}}
+      - {id: self, text: 自我成长, scores: {discipline: 1}}
+    total: 100
+
+  # ===== 排序题(价值优先级) =====
+  - id: v_s1
+    type: sort
+    prompt: 按对你的重要程度排序(1=最重要)
+    dimensions: [honesty, altruism, justice, duty, empathy, discipline]
+    items:
+      - {id: honesty, text: 诚实, scores: {honesty: 1}}
+      - {id: altruism, text: 利他, scores: {altruism: 1}}
+      - {id: justice, text: 公正, scores: {justice: 1}}
+      - {id: duty, text: 责任, scores: {duty: 1}}
+      - {id: empathy, text: 共情, scores: {empathy: 1}}
+      - {id: discipline, text: 自律, scores: {discipline: 1}}

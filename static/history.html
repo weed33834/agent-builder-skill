@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的报告 — 心镜 MindMirror</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="container">
+  <div class="take-header">
+    <a href="/" class="back-link">← 返回</a>
+    <h2 style="font-weight:400">我的报告</h2>
+  </div>
+  <div id="list" class="history-list"></div>
+</div>
+
+<script src="/app.js"></script>
+<script>
+  async function render() {
+    const list = await api.get('/api/me/results');
+    const el = document.getElementById('list');
+    if (!list.length) {
+      el.innerHTML = `<p style="text-align:center;color:var(--fg-muted);padding:60px 0">还没有测评记录。<br><a href="/" style="color:var(--accent)">去做第一面镜子 →</a></p>`;
+      return;
+    }
+    el.innerHTML = list.map(r => `
+      <a href="/report.html?id=${r.id}" class="history-item">
+        <div>
+          <div class="history-summary">${r.summary}</div>
+          <div class="history-meta">${r.assessment_type} · ${new Date(r.created_at).toLocaleString('zh-CN')}</div>
+        </div>
+        <span style="color:var(--accent)">→</span>
+      </a>
+    `).join('');
+  }
+  render();
+</script>
+</body>
+</html>

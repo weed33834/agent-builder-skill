@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# DB
+*.db
+*.sqlite
+*.sqlite3
+data/db/
+
+# 工具缓存
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 备份
+*.bak

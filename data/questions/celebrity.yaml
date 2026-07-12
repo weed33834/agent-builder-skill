@@ -1,0 +1,127 @@
+# 名人镜 —— 你与历史上哪个名人最相近
+# 维度:基于大五人格 + 价值观倾向
+# 量表40% + 困境40%(历史名人真实困境) + 资源分配20%
+assessment_type: celebrity
+title: 名人镜
+description: 通过回答与历史名人真实困境相似的选择,测出你与谁最相近。
+estimated_minutes: 8
+dimensions:
+  - openness          # 开放性
+  - conscientiousness # 尽责性
+  - extraversion      # 外向性
+  - agreeableness     # 宜人性
+  - neuroticism       # 神经质
+  - risk_taking       # 风险偏好
+  - idealism          # 理想主义
+questions:
+  # ===== 量表题(人格基础) =====
+  - id: c_s1
+    type: scale
+    prompt: 面对未知的新事物,你通常的第一反应是?
+    dimensions: [openness]
+    points:
+      - {id: "1", text: 警惕回避, scores: {openness: -2}}
+      - {id: "2", text: 观望一下, scores: {openness: -1}}
+      - {id: "3", text: 看情况, scores: {openness: 0}}
+      - {id: "4", text: 想了解, scores: {openness: 1}}
+      - {id: "5", text: 主动探索, scores: {openness: 2}}
+  - id: c_s2
+    type: scale
+    prompt: 你做计划后,多大程度上会严格执行?
+    dimensions: [conscientiousness]
+    points:
+      - {id: "1", text: 几乎不, scores: {conscientiousness: -2}}
+      - {id: "2", text: 偶尔, scores: {conscientiousness: -1}}
+      - {id: "3", text: 一半一半, scores: {conscientiousness: 0}}
+      - {id: "4", text: 多数会, scores: {conscientiousness: 1}}
+      - {id: "5", text: 严格, scores: {conscientiousness: 2}}
+  - id: c_s3
+    type: scale
+    prompt: 在人群中,你更倾向于?
+    dimensions: [extraversion]
+    points:
+      - {id: "1", text: 沉默观察, scores: {extraversion: -2}}
+      - {id: "2", text: 偶尔发言, scores: {extraversion: -1}}
+      - {id: "3", text: 看氛围, scores: {extraversion: 0}}
+      - {id: "4", text: 主动参与, scores: {extraversion: 1}}
+      - {id: "5", text: 主导话题, scores: {extraversion: 2}}
+  - id: c_s4
+    type: scale
+    prompt: 别人求助时,你的第一反应?
+    dimensions: [agreeableness]
+    points:
+      - {id: "1", text: 先想成本, scores: {agreeableness: -2}}
+      - {id: "2", text: 看关系, scores: {agreeableness: -1}}
+      - {id: "3", text: 视情况, scores: {agreeableness: 0}}
+      - {id: "4", text: 倾向帮, scores: {agreeableness: 1}}
+      - {id: "5", text: 毫不犹豫, scores: {agreeableness: 2}}
+
+  # ===== 困境题(历史名人真实困境) =====
+  - id: c_d1
+    type: dilemma
+    prompt: 你发现上司在挪用公款,但 ta 是你恩人,且举报会让你失业。
+    dimensions: [idealism, risk_taking]
+    time_limit_sec: 15
+    scenario: 你在财务岗,发现一笔异常转账指向上司。ta 三年前在你母亲重病时借款救急。举报意味着你失业,且对方可能反咬。
+    options:
+      - id: a
+        text: 匿名举报,承担失业风险
+        scores: {idealism: 2, risk_taking: 2}
+      - id: b
+        text: 私下劝退,给对方退路
+        scores: {idealism: 1, risk_taking: 0}
+      - id: c
+        text: 装作没看见,保住工作
+        scores: {idealism: -2, risk_taking: -1}
+    historical_figure: 林肯
+    historical_choice: a  # 林顿·约翰逊举报同党腐败
+  - id: c_d2
+    type: dilemma
+    prompt: 你有一项颠覆性发明,公开会推动人类进步但会让你的公司破产。
+    dimensions: [idealism, openness]
+    time_limit_sec: 15
+    scenario: 你的发明能解决能源危机,但公开后你公司核心业务将归零,数千员工失业。
+    options:
+      - id: a
+        text: 公开发明,接受公司破产
+        scores: {idealism: 2, openness: 2}
+      - id: b
+        text: 内部转型,缓慢过渡
+        scores: {idealism: 0, openness: 1}
+      - id: c
+        text: 封存专利,保住公司
+        scores: {idealism: -2, openness: -1}
+    historical_figure: 居里夫人
+    historical_choice: a  # 居里夫人不申请镭专利
+  - id: c_d3
+    type: dilemma
+    prompt: 战争中你掌握情报,救一群平民会让你的潜伏身份暴露,导致更多同胞牺牲。
+    dimensions: [idealism, risk_taking]
+    time_limit_sec: 15
+    scenario: 你是卧底。一个村庄即将被屠,你出手能救 200 人,但身份暴露后 5000 人计划失败。
+    options:
+      - id: a
+        text: 出手救眼前 200 人
+        scores: {idealism: 1, risk_taking: 2}
+      - id: b
+        text: 隐忍,保 5000 人计划
+        scores: {idealism: 0, risk_taking: -1}
+      - id: c
+        text: 试图两全,冒险传递情报
+        scores: {idealism: 2, risk_taking: 1}
+    historical_figure: 辛德勒
+    historical_choice: a
+
+  # ===== 资源分配题(量化价值优先级) =====
+  - id: c_a1
+    type: allocation
+    prompt: 你有一笔奖金,如何分配?
+    dimensions: [agreeableness, conscientiousness, openness, idealism]
+    targets:
+      - {id: family, text: 家人, scores: {agreeableness: 1}}
+      - {id: self_learn, text: 自我提升(书/课), scores: {openness: 1, conscientiousness: 1}}
+      - {id: donate, text: 捐赠弱势, scores: {idealism: 1, agreeableness: 1}}
+      - {id: save, text: 储蓄, scores: {conscientiousness: 1}}
+    total: 100
+
+# 名人库(匹配用)—— 单独文件,见 data/figures/celebrity.yaml
