@@ -3,36 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>我的报告 — 心镜 MindMirror</title>
+<title>镜中影像 — 心镜 MindMirror</title>
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+<div class="ripple-bg"></div>
 <div class="container">
+
   <div class="take-header">
-    <a href="/" class="back-link">← 返回</a>
-    <h2 style="font-weight:400">我的报告</h2>
+    <a href="/" class="back-link">← 返 回</a>
+    <span class="title-label">镜 中 影 像</span>
   </div>
+
+  <header class="history-hero">
+    <div class="mirror-disc"></div>
+    <h1>曾 照 见</h1>
+    <p class="subtitle">V I S I O N S &nbsp; P A S T</p>
+    <p class="disclaimer">每一次凝视,皆留下一道影像</p>
+  </header>
+
   <div id="list" class="history-list"></div>
+
 </div>
 
 <script src="/app.js"></script>
 <script>
+  const TYPE_LABEL = { celebrity: '名 人 镜', value: '价 值 镜', ideology: '意 识 镜' };
+
   async function render() {
     const list = await api.get('/api/me/results');
     const el = document.getElementById('list');
     if (!list.length) {
-      el.innerHTML = `<p style="text-align:center;color:var(--fg-muted);padding:60px 0">还没有测评记录。<br><a href="/" style="color:var(--accent)">去做第一面镜子 →</a></p>`;
+      el.innerHTML = `
+        <div class="empty-state">
+          <p style="font-family:var(--font-serif);font-size:18px;letter-spacing:0.15em;color:var(--paper-dim);margin-bottom:8px">镜 面 尚 未 启 用</p>
+          <p style="font-size:13px;letter-spacing:0.2em;margin-bottom:32px">你的第一次凝视将在此留影</p>
+          <a href="/" class="btn-primary">入 镜 →</a>
+        </div>`;
       return;
     }
-    el.innerHTML = list.map(r => `
-      <a href="/report.html?id=${r.id}" class="history-item">
-        <div>
-          <div class="history-summary">${r.summary}</div>
-          <div class="history-meta">${r.assessment_type} · ${new Date(r.created_at).toLocaleString('zh-CN')}</div>
+    el.innerHTML = list.map((r, i) => {
+      const d = new Date(r.created_at);
+      const dateStr = `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+      const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      return `
+      <a href="/report.html?id=${r.id}" class="history-item" style="animation-delay:${0.1 + i*0.06}s">
+        <div class="history-main">
+          <div class="history-idx"><span class="num">${String(i+1).padStart(2,'0')}</span></div>
+          <div class="history-body">
+            <div class="history-summary">${r.summary}</div>
+            <div class="history-meta">
+              <span class="meta-type">${TYPE_LABEL[r.assessment_type] || r.assessment_type}</span>
+              <span class="meta-sep">·</span>
+              <span class="meta-date">${dateStr}</span>
+              <span class="meta-sep">·</span>
+              <span class="meta-time">${timeStr}</span>
+            </div>
+          </div>
         </div>
-        <span style="color:var(--accent)">→</span>
-      </a>
-    `).join('');
+        <span class="history-arrow">→</span>
+      </a>`;
+    }).join('');
   }
   render();
 </script>

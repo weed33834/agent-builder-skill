@@ -7,23 +7,69 @@
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+<div class="ripple-bg"></div>
 <div class="container">
-  <div class="take-header"><a href="/" class="back-link">← 返回</a></div>
-  <div class="report-section">
-    <h3>关于心镜</h3>
-    <p style="color:var(--fg-muted);line-height:1.8">心镜 MindMirror 不是普通的问卷测评。它通过<strong style="color:var(--accent)">两难困境、时间压力、资源分配、内隐联想</strong>等多元方式,绕开自我美化,照见真实的你。</p>
-    <p style="color:var(--fg-muted);line-height:1.8;margin-top:16px">三面镜子:</p>
-    <ul style="color:var(--fg-muted);line-height:2;margin-left:20px">
-      <li><strong style="color:var(--accent)">名人镜</strong> — 你与历史名人谁最相近</li>
-      <li><strong style="color:var(--accent)">价值镜</strong> — 你的价值观与道德水平</li>
-      <li><strong style="color:var(--accent)">意识镜</strong> — 你的意识形态定位</li>
+
+  <div class="take-header">
+    <a href="/" class="back-link">← 返 回</a>
+    <span class="title-label">关 于 心 镜</span>
+  </div>
+
+  <header class="history-hero">
+    <div class="mirror-disc"></div>
+    <h1>心 镜</h1>
+    <p class="subtitle">M I N D &nbsp; M I R R O R</p>
+    <p class="disclaimer">非问卷 · 非诊断 · 一面照见真实自我的水银镜</p>
+  </header>
+
+  <section class="about-section">
+    <h3>何 谓 心 镜</h3>
+    <p>世面上的测评多是量表 — 你勾选,它加总,你得到一个标签。</p>
+    <p>心镜不信量表。人会在答题时美化自己,会在权衡时藏起私心,会在意识层面欺骗自己。所以心镜不只用问题,它还用<strong>两难困境</strong>逼你在冲突中表态,用<strong>时间压力</strong>剥开理性伪装,用<strong>资源分配</strong>暴露真实优先级,用<strong>内隐联想</strong>绕过意识直接量度本能。</p>
+    <p>每一道题都记录你的<strong>耗时、修改次数、决策轨迹</strong>。你以为你在选答案,其实答案也在选你。</p>
+  </section>
+
+  <section class="about-section">
+    <h3>三 面 镜 子</h3>
+    <ul class="mirror-list">
+      <li>
+        <span class="mirror-list-icon">名</span>
+        <div>
+          <div class="mirror-list-title">名 人 镜</div>
+          <div class="mirror-list-desc">照见你与历史上哪位灵魂最为相近 — 不是模仿,是回响。</div>
+        </div>
+      </li>
+      <li>
+        <span class="mirror-list-icon">义</span>
+        <div>
+          <div class="mirror-list-title">价 值 镜</div>
+          <div class="mirror-list-desc">照见你的价值坐标与道德水平 — 你以为的原则,是否经得起情境的考验。</div>
+        </div>
+      </li>
+      <li>
+        <span class="mirror-list-icon">场</span>
+        <div>
+          <div class="mirror-list-title">意 识 镜</div>
+          <div class="mirror-list-desc">照见你的意识形态坐标 — 经济轴与社会轴上的真实位置。</div>
+        </div>
+      </li>
     </ul>
-  </div>
-  <div class="report-section">
-    <h3>数据与隐私</h3>
-    <p style="color:var(--fg-muted);line-height:1.8">本测评完全匿名,仅以本地 token 关联你的记录。我们不收集任何身份信息。行为轨迹(决策耗时、修改次数)仅用于生成更准的报告,不会外传。</p>
-    <p style="color:var(--fg-muted);line-height:1.8;margin-top:12px">本测评<strong style="color:var(--warn)">非心理诊断工具</strong>,结果仅供参考,不构成任何专业建议。</p>
-  </div>
+  </section>
+
+  <section class="about-section">
+    <h3>数 据 与 隐 私</h3>
+    <p>本测评<strong>完全匿名</strong>。我们仅以一个本地 token 关联你的记录,不收集姓名、邮箱、设备或任何身份信息。</p>
+    <p>行为轨迹(决策耗时、修改次数、拖拽路径)仅用于生成更精准的报告,不会外传,不会用于广告,不会用于训练。</p>
+    <p>你可以随时清除自己的全部记录 — 那些影像便从镜中消散,了无痕迹。</p>
+  </section>
+
+  <section class="about-section">
+    <h3>边 界 与 声 明</h3>
+    <p>心镜是<strong>一面镜子</strong>,不是一把尺子。</p>
+    <p>它能照见倾向,不能诊断疾病;它能引发思考,不能替代专业的心理咨询或医疗建议。若结果让你感到不安,请以平常心待之 — 镜中所见,不过是你某一刻的投影。</p>
+    <p style="margin-top:24px;color:var(--paper-faint);font-size:13px;letter-spacing:0.1em">— 镜 不 言,只 照 —</p>
+  </section>
+
 </div>
 </body>
 </html>

@@ -7,16 +7,25 @@
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+<div class="ripple-bg"></div>
 <div class="container">
   <div class="take-header">
     <a href="/" class="back-link">← 退出</a>
-    <span id="title" class="back-link"></span>
+    <span id="title" class="title-label"></span>
   </div>
-  <div class="progress-bar"><div id="progress" class="progress-fill" style="width:0"></div></div>
-  <div class="progress-text"><span id="progress-text">0 / 0</span></div>
+  <div class="progress-track"><div id="progress" class="progress-fill" style="width:0"></div></div>
+  <div class="progress-text"><span id="progress-text"><span class="num">0</span> / 0</span></div>
 
-  <div id="timer" class="timer-ring" style="display:none"></div>
-  <div id="question-area" style="margin-top:24px"></div>
+  <div id="timer" class="timer-ring" style="display:none">
+    <svg width="64" height="64">
+      <circle class="track" cx="32" cy="32" r="28" fill="none" stroke-width="2"/>
+      <circle class="fill" cx="32" cy="32" r="28" fill="none" stroke-width="2"
+              stroke-dasharray="175.93" stroke-dashoffset="0"/>
+    </svg>
+    <div class="num">15</div>
+  </div>
+
+  <div id="question-area"></div>
 </div>
 
 <script src="/app.js"></script>

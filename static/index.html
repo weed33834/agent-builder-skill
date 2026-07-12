@@ -9,17 +9,14 @@
 <body>
 <div class="container">
   <header class="hero">
-    <div class="mirror-icon">◈</div>
-    <h1>心镜 MindMirror</h1>
-    <p class="subtitle">看见真实的自己</p>
-    <p class="disclaimer">本测评非心理诊断,仅供参考</p>
+    <div class="mirror-disc"></div>
+    <h1>心 镜</h1>
+    <p class="subtitle">M I N D &nbsp; M I R R O R</p>
+    <p class="disclaimer">本测评非心理诊断 · 仅供参考</p>
   </header>
 
   <main>
-    <div id="mirrors" class="mirrors-grid">
-      <!-- JS 渲染三面镜子卡片 -->
-    </div>
-
+    <div id="mirrors" class="mirrors-grid"></div>
     <div class="actions">
       <a href="/history.html" class="btn-secondary">我的报告</a>
       <a href="/about.html" class="btn-link">关于</a>
@@ -29,25 +26,24 @@
 
 <script src="/app.js"></script>
 <script>
-  // 渲染三面镜子
   async function renderMirrors() {
     const mirrors = await api.get('/api/assessments');
     const map = {
-      celebrity: { icon: '✦', tagline: '与历史上的灵魂对望' },
-      value:     { icon: '⚖', tagline: '你的价值坐标' },
-      ideology:  { icon: '◈', tagline: '你在政治光谱上的位置' },
+      celebrity: { icon: '名', tagline: '与历史灵魂对望' },
+      value:     { icon: '义', tagline: '你的价值坐标' },
+      ideology:  { icon: '场', tagline: '政治光谱定位' },
     };
     document.getElementById('mirrors').innerHTML = mirrors.map(m => `
       <a href="/take.html?type=${m.type}" class="mirror-card">
-        <div class="card-icon">${map[m.type]?.icon || '◈'}</div>
+        <div class="card-icon">${map[m.type]?.icon || '镜'}</div>
         <h2>${m.title}</h2>
         <p class="tagline">${map[m.type]?.tagline || ''}</p>
         <p class="desc">${m.description}</p>
         <div class="meta">
-          <span>${m.question_count} 题</span>
-          <span>约 ${m.estimated_minutes} 分钟</span>
+          <span><span class="num">${m.question_count}</span> 题</span>
+          <span><span class="num">${m.estimated_minutes}</span> 分钟</span>
         </div>
-        <div class="start-btn">开始 →</div>
+        <div class="start-hint">入 镜 →</div>
       </a>
     `).join('');
   }
