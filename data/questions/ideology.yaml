@@ -1,5 +1,5 @@
 # 意识镜 —— 你的意识形态定位
-# 量表15 + 困境2 + 排序4 + IAT 4 = 25题
+# 量表28 + 困境8 + 排序8 + IAT 7 = 51题
 # 维度:经济轴(左←→右) + 社会轴(权威↑↓自由) + 传统vs进步 + 民族vs全球
 # 匹配意识形态标签:见 data/ideologies/ideology.yaml
 assessment_type: ideology
@@ -304,3 +304,293 @@ questions:
       - {word: 异见, category: right}
       - {word: 长官, category: left}
       - {word: 公民, category: right}
+
+  # ===== 扩展量表题 II(现代政策议题) =====
+  - id: i_s16
+    type: scale
+    prompt: 随着自动化与AI普及,是否应推行全民基本收入(UBI)?
+    dimensions: [econ_left, econ_right]
+    points:
+      - {id: "1", text: 应推行UBI, scores: {econ_left: 2}}
+      - {id: "2", text: 倾向推行, scores: {econ_left: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向不推, scores: {econ_right: 1}}
+      - {id: "5", text: 不应推行, scores: {econ_right: 2}}
+  - id: i_s17
+    type: scale
+    prompt: 是否应对高排放企业征收碳税以应对气候变化?
+    dimensions: [econ_left, econ_right, globalist]
+    points:
+      - {id: "1", text: 高额碳税, scores: {econ_left: 2, globalist: 1}}
+      - {id: "2", text: 适度碳税, scores: {econ_left: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向自愿减排, scores: {econ_right: 1}}
+      - {id: "5", text: 反对碳税, scores: {econ_right: 2}}
+  - id: i_s18
+    type: scale
+    prompt: 是否应严格管控民间枪支持有?
+    dimensions: [authority, liberty]
+    points:
+      - {id: "1", text: 全面禁枪, scores: {authority: 2}}
+      - {id: "2", text: 严格管控, scores: {authority: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 适度放宽, scores: {liberty: 1}}
+      - {id: "5", text: 自由持有, scores: {liberty: 2}}
+  - id: i_s19
+    type: scale
+    prompt: 女性堕胎权是否应由法律保障?
+    dimensions: [progress, tradition]
+    points:
+      - {id: "1", text: 完全保障, scores: {progress: 2}}
+      - {id: "2", text: 倾向保障, scores: {progress: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向限制, scores: {tradition: 1}}
+      - {id: "5", text: 严格禁止, scores: {tradition: 2}}
+  - id: i_s20
+    type: scale
+    prompt: 平台经济(外卖/网约车)的零工劳动者是否应享有正式工会权?
+    dimensions: [econ_left, econ_right]
+    points:
+      - {id: "1", text: 强制保障, scores: {econ_left: 2}}
+      - {id: "2", text: 倾向保障, scores: {econ_left: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向自愿, scores: {econ_right: 1}}
+      - {id: "5", text: 不应干预, scores: {econ_right: 2}}
+  - id: i_s21
+    type: scale
+    prompt: 是否应对巨额遗产征收高税率遗产税?
+    dimensions: [econ_left, econ_right]
+    points:
+      - {id: "1", text: 高额征收, scores: {econ_left: 2}}
+      - {id: "2", text: 适度征收, scores: {econ_left: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向低税, scores: {econ_right: 1}}
+      - {id: "5", text: 废除遗产税, scores: {econ_right: 2}}
+  - id: i_s22
+    type: scale
+    prompt: 高校招生是否应给弱势群体适当倾斜(教育平权)?
+    dimensions: [progress, tradition]
+    points:
+      - {id: "1", text: 强力倾斜, scores: {progress: 2}}
+      - {id: "2", text: 适度倾斜, scores: {progress: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向唯才, scores: {tradition: 1}}
+      - {id: "5", text: 严格唯才, scores: {tradition: 2}}
+  - id: i_s23
+    type: scale
+    prompt: 是否应立法打击网络谣言与AI深度伪造内容?
+    dimensions: [authority, liberty]
+    points:
+      - {id: "1", text: 严格立法, scores: {authority: 2}}
+      - {id: "2", text: 倾向管控, scores: {authority: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向自律, scores: {liberty: 1}}
+      - {id: "5", text: 不应限制, scores: {liberty: 2}}
+  - id: i_s24
+    type: scale
+    prompt: 企业收集个人数据用于算法推荐是否应严格限制?
+    dimensions: [liberty, authority]
+    points:
+      - {id: "1", text: 严格限制, scores: {liberty: 2}}
+      - {id: "2", text: 倾向限制, scores: {liberty: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向允许, scores: {authority: 1}}
+      - {id: "5", text: 允许自由使用, scores: {authority: 2}}
+  - id: i_s25
+    type: scale
+    prompt: 本国是否应提高移民配额以应对人口老龄化?
+    dimensions: [globalist, nationalist]
+    points:
+      - {id: "1", text: 大幅提高, scores: {globalist: 2}}
+      - {id: "2", text: 适度提高, scores: {globalist: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向收紧, scores: {nationalist: 1}}
+      - {id: "5", text: 严格收紧, scores: {nationalist: 2}}
+  - id: i_s26
+    type: scale
+    prompt: 是否应对进口商品加征关税以保护本国制造业?
+    dimensions: [nationalist, globalist]
+    points:
+      - {id: "1", text: 高关税保护, scores: {nationalist: 2}}
+      - {id: "2", text: 适度保护, scores: {nationalist: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向自由贸易, scores: {globalist: 1}}
+      - {id: "5", text: 完全自由贸易, scores: {globalist: 2}}
+  - id: i_s27
+    type: scale
+    prompt: 政府是否应强力监管人工智能的研发与应用?
+    dimensions: [authority, liberty, progress]
+    points:
+      - {id: "1", text: 强力监管, scores: {authority: 2}}
+      - {id: "2", text: 适度监管, scores: {authority: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向自律, scores: {liberty: 1}}
+      - {id: "5", text: 鼓励创新, scores: {liberty: 2, progress: 1}}
+  - id: i_s28
+    type: scale
+    prompt: 是否应立法限制工厂化养殖以保障动物福利?
+    dimensions: [progress, tradition]
+    points:
+      - {id: "1", text: 严格立法, scores: {progress: 2}}
+      - {id: "2", text: 倾向限制, scores: {progress: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向允许, scores: {tradition: 1}}
+      - {id: "5", text: 不应干预, scores: {tradition: 2}}
+
+  # ===== 扩展困境题(真实政治冲突) =====
+  - id: i_d3
+    type: dilemma
+    prompt: 贫困县发现稀土矿,开发能脱贫但会破坏生态,你?
+    dimensions: [econ_right, progress, globalist]
+    time_limit_sec: 15
+    scenario: 开采稀土能带来就业与税收、摆脱贫困,但会污染水源、破坏生态,影响世代生计。
+    options:
+      - {id: a, text: 优先开发,发展脱贫, scores: {econ_right: 2}}
+      - {id: b, text: 优先保护生态, scores: {progress: 2, globalist: 1}}
+      - {id: c, text: 有限开发加环保补偿, scores: {econ_right: 1, progress: 1}}
+  - id: i_d4
+    type: dilemma
+    prompt: 少数族群传统习俗与现代法律冲突,你?
+    dimensions: [progress, tradition, globalist, nationalist]
+    time_limit_sec: 15
+    scenario: 某少数族群的传统习俗(如面纱/早婚/族内裁决)与本国现代法律冲突。尊重多元还是统一规制?
+    options:
+      - {id: a, text: 尊重文化多元,例外包容, scores: {progress: 2, globalist: 1}}
+      - {id: b, text: 法律统一,维护主流文化, scores: {tradition: 2, nationalist: 1}}
+      - {id: c, text: 个案协商, scores: {progress: 1, tradition: 1}}
+  - id: i_d5
+    type: dilemma
+    prompt: 贫富悬殊严重,是否可征富人重税救济穷人,即便侵犯财产权?
+    dimensions: [econ_left, econ_right, liberty]
+    time_limit_sec: 15
+    scenario: 贫富差距极端。征重税能救济穷人,但批评者认为这侵犯财产权与个人自由。
+    options:
+      - {id: a, text: 征重税再分配, scores: {econ_left: 2}}
+      - {id: b, text: 保护财产权,减税, scores: {econ_right: 2, liberty: 1}}
+      - {id: c, text: 适度累进税, scores: {econ_left: 1, econ_right: 1}}
+  - id: i_d6
+    type: dilemma
+    prompt: 面对严重社会不公,应革命推翻还是渐进改良?
+    dimensions: [progress, tradition, authority, liberty]
+    time_limit_sec: 15
+    scenario: 制度严重不公,民怨沸腾。革命能彻底变革但伴随动荡流血;改良温和但可能被既得利益阻挠。
+    options:
+      - {id: a, text: 支持革命,彻底变革, scores: {progress: 2, liberty: 1}}
+      - {id: b, text: 支持改良,维护稳定, scores: {tradition: 2, authority: 1}}
+      - {id: c, text: 视情况而定, scores: {progress: 1, tradition: 1}}
+  - id: i_d7
+    type: dilemma
+    prompt: 组织公开煽动种族仇恨,是否应封禁?
+    dimensions: [authority, liberty]
+    time_limit_sec: 15
+    scenario: 一个组织公开宣扬种族仇恨、煽动排斥移民。封禁侵犯言论自由,但不封禁可能引发暴力。
+    options:
+      - {id: a, text: 立即封禁, scores: {authority: 2}}
+      - {id: b, text: 保护言论,不封禁, scores: {liberty: 2}}
+      - {id: c, text: 限制线下行动,线上警告, scores: {authority: 1, liberty: 1}}
+  - id: i_d8
+    type: dilemma
+    prompt: 全城部署AI人脸识别以预防犯罪,你?
+    dimensions: [authority, liberty]
+    time_limit_sec: 15
+    scenario: 全城部署AI人脸识别能大幅降低犯罪率,但意味着每个人的一举一动都被记录追踪。
+    options:
+      - {id: a, text: 支持部署,安全优先, scores: {authority: 2}}
+      - {id: b, text: 反对部署,自由优先, scores: {liberty: 2}}
+      - {id: c, text: 限定公共场所加定期删除, scores: {authority: 1, liberty: 1}}
+
+  # ===== 扩展排序题 II =====
+  - id: i_so5
+    type: sort
+    prompt: 排序你认为最该保障的公民权利(1=最该保障)
+    dimensions: [econ_left, econ_right, liberty, progress, tradition]
+    items:
+      - {id: subsistence, text: 生存权与基本生活保障, scores: {econ_left: 1}}
+      - {id: property, text: 财产权, scores: {econ_right: 1}}
+      - {id: speech, text: 言论自由, scores: {liberty: 1}}
+      - {id: equality, text: 平等权(反歧视), scores: {progress: 1}}
+      - {id: privacy, text: 隐私权, scores: {liberty: 1}}
+      - {id: culture, text: 文化与信仰权, scores: {tradition: 1}}
+  - id: i_so6
+    type: sort
+    prompt: 排序你认为最该被限制的政府权力(1=最该限制)
+    dimensions: [liberty, econ_right, progress]
+    items:
+      - {id: surveillance, text: 监控与数据收集, scores: {liberty: 1}}
+      - {id: censorship, text: 言论审查, scores: {liberty: 1}}
+      - {id: detention, text: 强制征用与拘留, scores: {liberty: 1}}
+      - {id: taxation, text: 征税权, scores: {econ_right: 1}}
+      - {id: regulation, text: 市场管制, scores: {econ_right: 1}}
+      - {id: moral, text: 道德与生活方式立法, scores: {progress: 1}}
+  - id: i_so7
+    type: sort
+    prompt: 排序你认为最重要的社会目标(1=最重要)
+    dimensions: [econ_left, econ_right, authority, liberty, tradition, progress]
+    items:
+      - {id: justice, text: 社会公正, scores: {econ_left: 1}}
+      - {id: prosperity, text: 经济繁荣, scores: {econ_right: 1}}
+      - {id: stability, text: 社会稳定, scores: {authority: 1}}
+      - {id: freedom, text: 个人自由, scores: {liberty: 1}}
+      - {id: heritage, text: 文化传承, scores: {tradition: 1}}
+      - {id: sustainability, text: 可持续未来, scores: {progress: 1}}
+  - id: i_so8
+    type: sort
+    prompt: 排序你认为当下最危险的社会趋势(1=最危险)
+    dimensions: [tradition, econ_left, liberty, authority, nationalist, globalist]
+    items:
+      - {id: moral_decline, text: 道德滑坡与传统瓦解, scores: {tradition: 1}}
+      - {id: inequality, text: 贫富极端分化, scores: {econ_left: 1}}
+      - {id: surveillance, text: 全面监控与自由侵蚀, scores: {liberty: 1}}
+      - {id: authoritarian, text: 权威扩张与民粹, scores: {authority: 1}}
+      - {id: globalization, text: 全球化冲击本国利益, scores: {nationalist: 1}}
+      - {id: nativism, text: 排外与民族主义抬头, scores: {globalist: 1}}
+
+  # ===== 扩展 IAT II(内隐联想) =====
+  - id: i_iat5
+    type: iat
+    prompt: 快速分类:平等与等级的直觉联想
+    dimensions: [progress, tradition]
+    time_limit_sec: 60
+    left_label: 平等/包容
+    right_label: 等级/秩序
+    words:
+      - {word: 均等, category: left}
+      - {word: 阶层, category: right}
+      - {word: 包容, category: left}
+      - {word: 尊卑, category: right}
+      - {word: 平权, category: left}
+      - {word: 特权, category: right}
+      - {word: 共享, category: left}
+      - {word: 等级, category: right}
+  - id: i_iat6
+    type: iat
+    prompt: 快速分类:集体与个人的直觉联想
+    dimensions: [econ_left, econ_right]
+    time_limit_sec: 60
+    left_label: 集体/共同体
+    right_label: 个人/自我
+    words:
+      - {word: 团结, category: left}
+      - {word: 独立, category: right}
+      - {word: 公共, category: left}
+      - {word: 私人, category: right}
+      - {word: 共同体, category: left}
+      - {word: 个体, category: right}
+      - {word: 互助, category: left}
+      - {word: 自立, category: right}
+  - id: i_iat7
+    type: iat
+    prompt: 快速分类:世俗与神圣的直觉联想
+    dimensions: [progress, tradition]
+    time_limit_sec: 60
+    left_label: 世俗/现世
+    right_label: 神圣/信仰
+    words:
+      - {word: 科学, category: left}
+      - {word: 信仰, category: right}
+      - {word: 理性, category: left}
+      - {word: 启示, category: right}
+      - {word: 现世, category: left}
+      - {word: 来世, category: right}
+      - {word: 世俗, category: left}
+      - {word: 神圣, category: right}

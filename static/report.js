@@ -1,4 +1,4 @@
-// 报告页 —— 水银镜显现 + 雷达图 + 维度/匹配/冲突/洞察
+// 报告页 —— 水银镜显现 + 画像标签 + 雷达图 + 维度/百分位/匹配/冲突/洞察
 
 const params = new URLSearchParams(location.search);
 const resultId = params.get('id');
@@ -10,17 +10,39 @@ const DIM_LABELS = {
   econ_left: '经济左', econ_right: '经济右', authority: '权威', liberty: '自由',
   tradition: '传统', progress: '进步', nationalist: '民族', globalist: '全球',
 };
-const INSIGHT_LABELS = { decision_style: '决策风格', time_pressure_effect: '时间压力', consistency: '一致性' };
+const INSIGHT_LABELS = {
+  decision_style: '决策风格',
+  time_pressure_effect: '时间压力',
+  consistency: '一致性',
+  iat_bias: '内隐偏向',
+  courage_index: '勇气指数',
+  ambivalence: '纠结度',
+};
+const INSIGHT_ORDER = ['decision_style', 'consistency', 'ambivalence', 'courage_index', 'time_pressure_effect', 'iat_bias'];
+const CONFLICT_TYPE_LABELS = {
+  high_hesitation: '犹豫',
+  frequent_change: '反复',
+  timeout_instinct: '本能',
+  dimension_contradiction: '矛盾',
+  iat_implicit_explicit: '分裂',
+  iat_hesitation: '潜犹豫',
+};
 
 async function render() {
   if (!resultId) { location.href = '/'; return; }
   const r = await api.get(`/api/results/${resultId}`);
   const dimEntries = Object.entries(r.dimensions);
+  const tags = (r.profile && r.profile.tags) || [];
+  const pcts = r.percentiles || {};
 
   const html = `
     <div class="report-hero">
       <div class="mirror-disc"></div>
       <div class="hero-divider"><span></span></div>
+      ${tags.length ? `
+      <div class="profile-tags">
+        ${tags.map(t => `<span class="profile-tag">${t}</span>`).join('')}
+      </div>` : ''}
       <p class="report-summary">${r.summary}</p>
     </div>
 
@@ -44,13 +66,19 @@ async function render() {
       <h3>维 度 详 解</h3>
       <div class="chart-container" id="radar"></div>
       <div class="dim-grid">
-        ${dimEntries.map(([k, v]) => `
+        ${dimEntries.map(([k, v]) => {
+          const pct = pcts[k];
+          const pctText = (pct !== undefined && pct !== null) ? `高于 ${Math.round(pct)}%` : '';
+          return `
           <div class="dim-item">
-            <div class="dim-name">${DIM_LABELS[k] || k}</div>
+            <div class="dim-head">
+              <div class="dim-name">${DIM_LABELS[k] || k}</div>
+              ${pctText ? `<div class="dim-pct">${pctText}</div>` : ''}
+            </div>
             <div class="dim-score">${v}</div>
             <div class="dim-bar"><div class="dim-bar-fill" style="width:0" data-w="${v}"></div></div>
-          </div>
-        `).join('')}
+          </div>`;
+        }).join('')}
       </div>
     </div>` : ''}
 
@@ -58,18 +86,45 @@ async function render() {
     <div class="report-section">
       <h3>内 在 冲 突</h3>
       <div class="conflict-list">
-        ${r.conflicts.map(c => `<div class="conflict-item">${c.description}</div>`).join('')}
+        ${r.conflicts.map(c => {
+          const sev = c.severity || 1;
+          const typeLabel = CONFLICT_TYPE_LABELS[c.conflict_type] || c.conflict_type;
+          return `
+          <div class="conflict-item sev-${sev}">
+            <div class="conflict-meta">
+              <span class="conflict-type">${typeLabel}</span>
+              <span class="conflict-dots">${'●'.repeat(sev)}${'○'.repeat(3 - sev)}</span>
+            </div>
+            <div class="conflict-desc">${c.description}</div>
+          </div>`;
+        }).join('')}
       </div>
     </div>` : ''}
 
     <div class="report-section">
       <h3>行 为 洞 察</h3>
       <div class="insight-list">
-        ${Object.entries(r.insights).map(([k, v]) => `
+        ${INSIGHT_ORDER.filter(k => r.insights[k]).map(k => {
+          const v = r.insights[k];
+          let extra = '';
+          if (k === 'courage_index' && typeof v.score === 'number') {
+            extra = `<div class="insight-bar"><div class="insight-bar-fill" style="width:0" data-w="${v.score}"></div></div>`;
+          } else if (k === 'ambivalence' && typeof v.score === 'number') {
+            extra = `<div class="insight-bar"><div class="insight-bar-fill amber" style="width:0" data-w="${v.score}"></div></div>`;
+          } else if (k === 'iat_bias' && typeof v.bias === 'number') {
+            const magnitude = Math.min(100, Math.abs(v.bias) / 3);
+            extra = `<div class="insight-bar"><div class="insight-bar-fill violet" style="width:0" data-w="${magnitude}"></div></div>`;
+          }
+          return `
           <div class="insight-item">
-            <span class="insight-label">${INSIGHT_LABELS[k] || k}</span>${v.label} — ${v.desc}
-          </div>
-        `).join('')}
+            <div class="insight-head">
+              <span class="insight-label">${INSIGHT_LABELS[k] || k}</span>
+              <span class="insight-value">${v.label}</span>
+            </div>
+            <div class="insight-desc">${v.desc}</div>
+            ${extra}
+          </div>`;
+        }).join('')}
       </div>
     </div>
 
@@ -80,9 +135,9 @@ async function render() {
   `;
   document.getElementById('report').innerHTML = html;
 
-  // 维度条动画 —— 延迟触发宽度过渡
+  // 维度条 + 洞察条动画 —— 延迟触发宽度过渡
   setTimeout(() => {
-    document.querySelectorAll('.dim-bar-fill').forEach(el => {
+    document.querySelectorAll('.dim-bar-fill, .insight-bar-fill').forEach(el => {
       el.style.width = el.dataset.w + '%';
     });
   }, 400);

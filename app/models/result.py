@@ -23,6 +23,8 @@ class Result(UlidPkMixin, Base):
     insights: Mapped[dict] = mapped_column(JSON)
     # 群体百分位 {dimension: percentile}
     percentiles: Mapped[dict] = mapped_column(JSON, default=dict)
+    # 综合画像 {tags: [...], archetype: str}
+    profile: Mapped[dict] = mapped_column(JSON, default=dict)
     # 一句话结论
     summary: Mapped[str] = mapped_column(String(500))
 

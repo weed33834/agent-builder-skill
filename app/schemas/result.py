@@ -19,6 +19,7 @@ class ResultOut(BaseModel):
     conflicts: list[dict]
     insights: dict
     percentiles: dict[str, float]
+    profile: dict = {}  # 综合画像标签 {tags: [...]}
 
 
 class ResultSummary(BaseModel):
@@ -27,3 +28,4 @@ class ResultSummary(BaseModel):
     assessment_type: str
     summary: str
     created_at: str
+    profile: dict = {}  # 画像标签(可选,用于历史列表展示)

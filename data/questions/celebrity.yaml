@@ -1,10 +1,11 @@
 # 名人镜 —— 你与历史上哪个名人最相近
 # 维度:大五人格 + 风险偏好 + 理想主义
-# 量表12 + 困境8(历史名人真实困境) + 资源分配3 + 排序1 = 24题
+# 量表12 + 困境10(历史名人真实困境) + 资源分配3 + 排序4 = 29题
+# 注:此处统计为基础题数,扩展后总题数 50,见下方"扩展 II"
 assessment_type: celebrity
 title: 名人镜
 description: 通过回答与历史名人真实困境相似的选择,测出你与谁最相近。
-estimated_minutes: 15
+estimated_minutes: 25
 dimensions:
   - openness
   - conscientiousness
@@ -283,3 +284,292 @@ questions:
       - {id: kind, text: 善良温和, scores: {agreeableness: 1}}
       - {id: principled, text: 坚守原则, scores: {idealism: 1}}
       - {id: bold, text: 敢冒风险, scores: {risk_taking: 1}}
+
+  # ===== 扩展量表题 II(细化情境) =====
+  - id: c_s13
+    type: scale
+    prompt: 看到陌生人遭遇明显不公,你的本能反应?
+    dimensions: [idealism, agreeableness]
+    points:
+      - {id: "1", text: 与我无关, scores: {idealism: -2, agreeableness: -1}}
+      - {id: "2", text: 同情不介入, scores: {idealism: -1}}
+      - {id: "3", text: 视情况, scores: {idealism: 0}}
+      - {id: "4", text: 想帮一把, scores: {idealism: 1, agreeableness: 1}}
+      - {id: "5", text: 立即挺身, scores: {idealism: 2, agreeableness: 2}}
+  - id: c_s14
+    type: scale
+    prompt: 你更欣赏哪一类作品?
+    dimensions: [openness]
+    points:
+      - {id: "1", text: 经典熟悉, scores: {openness: -2}}
+      - {id: "2", text: 大众流行, scores: {openness: -1}}
+      - {id: "3", text: 都可以, scores: {openness: 0}}
+      - {id: "4", text: 小众独特, scores: {openness: 1}}
+      - {id: "5", text: 前卫实验, scores: {openness: 2}}
+  - id: c_s15
+    type: scale
+    prompt: 重大失败后,你的第一反应?
+    dimensions: [neuroticism, conscientiousness]
+    points:
+      - {id: "1", text: 长期消沉, scores: {neuroticism: 2, conscientiousness: -1}}
+      - {id: "2", text: 短暂低落, scores: {neuroticism: 1}}
+      - {id: "3", text: 平复重启, scores: {neuroticism: 0}}
+      - {id: "4", text: 复盘原因, scores: {conscientiousness: 1, neuroticism: -1}}
+      - {id: "5", text: 立即再战, scores: {conscientiousness: 2, neuroticism: -2}}
+  - id: c_s16
+    type: scale
+    prompt: 上级给出你确信有误的指令,你?
+    dimensions: [openness, idealism]
+    points:
+      - {id: "1", text: 照做不疑, scores: {openness: -2, idealism: -1}}
+      - {id: "2", text: 勉强执行, scores: {openness: -1}}
+      - {id: "3", text: 私下嘀咕, scores: {openness: 0}}
+      - {id: "4", text: 委婉提出, scores: {openness: 1}}
+      - {id: "5", text: 当面反驳, scores: {openness: 2, idealism: 1}}
+  - id: c_s17
+    type: scale
+    prompt: 连续独处一周、几无联络,你会?
+    dimensions: [extraversion, neuroticism]
+    points:
+      - {id: "1", text: 焦虑难耐, scores: {extraversion: 2, neuroticism: 2}}
+      - {id: "2", text: 勉强适应, scores: {extraversion: 1}}
+      - {id: "3", text: 无所谓, scores: {extraversion: 0}}
+      - {id: "4", text: 享受清净, scores: {extraversion: -1}}
+      - {id: "5", text: 如鱼得水, scores: {extraversion: -2, neuroticism: -1}}
+  - id: c_s18
+    type: scale
+    prompt: 面对势均力敌的对手,你?
+    dimensions: [extraversion, risk_taking]
+    points:
+      - {id: "1", text: 主动退让, scores: {risk_taking: -2}}
+      - {id: "2", text: 避免冲突, scores: {risk_taking: -1}}
+      - {id: "3", text: 看利益, scores: {risk_taking: 0}}
+      - {id: "4", text: 迎接挑战, scores: {risk_taking: 1, extraversion: 1}}
+      - {id: "5", text: 志在必得, scores: {risk_taking: 2, extraversion: 2}}
+  - id: c_s19
+    type: scale
+    prompt: 你对他人的承诺,兑现程度?
+    dimensions: [conscientiousness, agreeableness]
+    points:
+      - {id: "1", text: 经常食言, scores: {conscientiousness: -2, agreeableness: -1}}
+      - {id: "2", text: 看心情, scores: {conscientiousness: -1}}
+      - {id: "3", text: 多数兑现, scores: {conscientiousness: 0}}
+      - {id: "4", text: 努力兑现, scores: {conscientiousness: 1}}
+      - {id: "5", text: 一诺千金, scores: {conscientiousness: 2, agreeableness: 2}}
+  - id: c_s20
+    type: scale
+    prompt: 是什么驱动你学习新东西?
+    dimensions: [openness]
+    points:
+      - {id: "1", text: 被迫需要, scores: {openness: -2}}
+      - {id: "2", text: 实用目的, scores: {openness: -1}}
+      - {id: "3", text: 半用半趣, scores: {openness: 0}}
+      - {id: "4", text: 纯粹好奇, scores: {openness: 1}}
+      - {id: "5", text: 无法抑制, scores: {openness: 2}}
+  - id: c_s21
+    type: scale
+    prompt: 做重要决定时,你主要依据?
+    dimensions: [conscientiousness, idealism]
+    points:
+      - {id: "1", text: 凭直觉, scores: {conscientiousness: -2}}
+      - {id: "2", text: 听熟人, scores: {conscientiousness: -1}}
+      - {id: "3", text: 权衡利弊, scores: {conscientiousness: 0}}
+      - {id: "4", text: 查证分析, scores: {conscientiousness: 1}}
+      - {id: "5", text: 价值优先, scores: {idealism: 2}}
+  - id: c_s22
+    type: scale
+    prompt: 高压之下,你的表现?
+    dimensions: [neuroticism, conscientiousness]
+    points:
+      - {id: "1", text: 全面崩溃, scores: {neuroticism: 2, conscientiousness: -2}}
+      - {id: "2", text: 明显失误, scores: {neuroticism: 1}}
+      - {id: "3", text: 勉强维持, scores: {neuroticism: 0}}
+      - {id: "4", text: 专注应对, scores: {conscientiousness: 1, neuroticism: -1}}
+      - {id: "5", text: 越压越强, scores: {conscientiousness: 2, neuroticism: -2}}
+  - id: c_s23
+    type: scale
+    prompt: 你的生活/工作空间通常是?
+    dimensions: [conscientiousness, openness]
+    points:
+      - {id: "1", text: 杂乱无章, scores: {conscientiousness: -2, openness: 1}}
+      - {id: "2", text: 略显凌乱, scores: {conscientiousness: -1}}
+      - {id: "3", text: 一般, scores: {conscientiousness: 0}}
+      - {id: "4", text: 整洁有序, scores: {conscientiousness: 1}}
+      - {id: "5", text: 一尘不染, scores: {conscientiousness: 2, openness: -1}}
+  - id: c_s24
+    type: scale
+    prompt: 群体讨论中,你通常?
+    dimensions: [extraversion, agreeableness]
+    points:
+      - {id: "1", text: 几乎不语, scores: {extraversion: -2}}
+      - {id: "2", text: 点到才说, scores: {extraversion: -1}}
+      - {id: "3", text: 适时发言, scores: {extraversion: 0}}
+      - {id: "4", text: 频频表达, scores: {extraversion: 1}}
+      - {id: "5", text: 主导全场, scores: {extraversion: 2, agreeableness: -1}}
+
+  # ===== 扩展困境题 II(全新历史名人困境) =====
+  - id: c_d9
+    type: dilemma
+    prompt: 你的观测证实颠覆性天文发现,宗教裁判所命你公开悔过、放弃学说。
+    dimensions: [idealism, risk_taking, openness]
+    time_limit_sec: 15
+    scenario: 你的望远镜看清了天体运行真相,与教义相悖。悔过可保命、私下继续研究;坚持则可能被处死或终身监禁,学说或随你湮灭。
+    options:
+      - {id: a, text: 公开悔过,私下续研, scores: {idealism: 1, risk_taking: 0, openness: 1}}
+      - {id: b, text: 坚持不改,坦然受刑, scores: {idealism: 2, risk_taking: 2, openness: 2}}
+      - {id: c, text: 彻底放弃,安度余生, scores: {idealism: -2, risk_taking: -2, openness: -1}}
+    historical_figure: 伽利略
+    historical_choice: a
+  - id: c_d10
+    type: dilemma
+    prompt: 你因直言触怒君主,死刑当前,可受宫刑免死,但史书未成。
+    dimensions: [idealism, conscientiousness, risk_taking]
+    time_limit_sec: 15
+    scenario: 你正撰写一部空前史书,功亏一篑。赎命则倾家荡产,宫刑则奇耻大辱,宁死则毕生心血湮灭。
+    options:
+      - {id: a, text: 忍辱受刑,完成史书, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}}
+      - {id: b, text: 倾家赎命,保全体面, scores: {idealism: 0, conscientiousness: 1}}
+      - {id: c, text: 宁死不受辱, scores: {idealism: 1, conscientiousness: -1, risk_taking: 2}}
+    historical_figure: 司马迁
+    historical_choice: a
+  - id: c_d11
+    type: dilemma
+    prompt: 你主持变法,核心政策能富国强兵,但满朝反对、百姓怨声载道。
+    dimensions: [idealism, risk_taking, agreeableness]
+    time_limit_sec: 15
+    scenario: 新政利在长远,却触犯既得利益、短期阵痛剧烈。坚持恐乱国,退让则功亏一篑。
+    options:
+      - {id: a, text: 力排众议,坚持变法, scores: {idealism: 2, risk_taking: 2, agreeableness: -1}}
+      - {id: b, text: 暂缓推进,先求共识, scores: {idealism: 1, risk_taking: 0, agreeableness: 1}}
+      - {id: c, text: 顺从众议,放弃新政, scores: {idealism: -2, risk_taking: -2, agreeableness: 1}}
+    historical_figure: 王安石
+    historical_choice: a
+  - id: c_d12
+    type: dilemma
+    prompt: 你兵败被俘,敌国许以高官劝降,旧友故旧纷纷仕敌。
+    dimensions: [idealism, conscientiousness, risk_taking]
+    time_limit_sec: 15
+    scenario: 降则荣华富贵、与故旧同列;拒则必死,但气节留名青史。你的家人也在敌营,生死系你一念。
+    options:
+      - {id: a, text: 拒降赴死, scores: {idealism: 2, conscientiousness: 2, risk_taking: 2}}
+      - {id: b, text: 假降图谋复国, scores: {idealism: 0, risk_taking: 1}}
+      - {id: c, text: 降顺求存, scores: {idealism: -2, conscientiousness: -2, risk_taking: -2}}
+    historical_figure: 文天祥
+    historical_choice: a
+  - id: c_d13
+    type: dilemma
+    prompt: 上级命你禁绝泛滥的毒品贸易,毒贩背后是强大外敌,禁则可能引发战争。
+    dimensions: [idealism, risk_taking, conscientiousness]
+    time_limit_sec: 15
+    scenario: 毒品祸国殃民,你手握禁令。雷厉风行可能招致坚船利炮、让你沦为替罪羊;放任则国民沉沦。
+    options:
+      - {id: a, text: 雷厉风行禁毒,承担战端, scores: {idealism: 2, risk_taking: 2, conscientiousness: 2}}
+      - {id: b, text: 缓禁设限,周旋各方, scores: {idealism: 1, risk_taking: 0}}
+      - {id: c, text: 阳奉阴违,保身为主, scores: {idealism: -2, risk_taking: -2}}
+    historical_figure: 林则徐
+    historical_choice: a
+  - id: c_d14
+    type: dilemma
+    prompt: 你的民族被殖民压迫,武力抗争或速胜但血流成河,非暴力见效慢且被讥软弱。
+    dimensions: [idealism, agreeableness, risk_taking]
+    time_limit_sec: 15
+    scenario: 你深知非暴力需以肉身抗暴、牺牲巨大,且殖民者不会轻易让步。武装起义或能复仇,却与你信念相悖。
+    options:
+      - {id: a, text: 坚持非暴力,以肉身抗暴, scores: {idealism: 2, agreeableness: 2, risk_taking: 1}}
+      - {id: b, text: 武装起义,以暴制暴, scores: {idealism: 1, agreeableness: -2, risk_taking: 2}}
+      - {id: c, text: 妥协谈判,求得自治, scores: {idealism: -1, agreeableness: 1, risk_taking: -1}}
+    historical_figure: 甘地
+    historical_choice: a
+
+  # ===== 扩展资源分配题 II =====
+  - id: c_a4
+    type: allocation
+    prompt: 你将离世,遗产如何分配?
+    dimensions: [agreeableness, idealism, conscientiousness, openness]
+    targets:
+      - {id: family, text: 留给家人, scores: {agreeableness: 1}}
+      - {id: charity, text: 捐助弱势, scores: {idealism: 1, agreeableness: 1}}
+      - {id: culture, text: 资助文化教育, scores: {openness: 1, idealism: 1}}
+      - {id: successor, text: 设基金培养接班人, scores: {conscientiousness: 1}}
+    total: 100
+  - id: c_a5
+    type: allocation
+    prompt: 未来三年,你的精力(100单位)如何分配?
+    dimensions: [conscientiousness, extraversion, agreeableness, openness]
+    targets:
+      - {id: expertise, text: 深耕专业, scores: {conscientiousness: 1}}
+      - {id: network, text: 拓展人脉, scores: {extraversion: 1}}
+      - {id: mentor, text: 培养后辈, scores: {agreeableness: 1}}
+      - {id: explore, text: 探索新领域, scores: {openness: 1}}
+    total: 100
+  - id: c_a6
+    type: allocation
+    prompt: 你获得100单位影响力,如何使用?
+    dimensions: [idealism, openness, agreeableness, conscientiousness]
+    targets:
+      - {id: policy, text: 推动政策变革, scores: {idealism: 1, conscientiousness: 1}}
+      - {id: enlighten, text: 启蒙大众思想, scores: {openness: 1, idealism: 1}}
+      - {id: help, text: 直接帮助个体, scores: {agreeableness: 1}}
+      - {id: legacy, text: 立言留名后世, scores: {conscientiousness: 1, openness: 1}}
+    total: 100
+
+  # ===== 扩展排序题 II =====
+  - id: c_so2
+    type: sort
+    prompt: 排序你最重要的人生目标(1=最重要)
+    dimensions: [neuroticism, conscientiousness, agreeableness, extraversion, idealism, openness, risk_taking]
+    items:
+      - {id: peace, text: 内心平静, scores: {neuroticism: 1}}
+      - {id: achievement, text: 事业成就, scores: {conscientiousness: 1}}
+      - {id: intimacy, text: 亲密关系, scores: {agreeableness: 1, extraversion: 1}}
+      - {id: change_world, text: 改变世界, scores: {idealism: 1, risk_taking: 1}}
+      - {id: self_know, text: 自我认知, scores: {openness: 1}}
+      - {id: freedom, text: 财务自由, scores: {risk_taking: -1}}
+  - id: c_so3
+    type: sort
+    prompt: 排序你的人际取舍中最看重的(1=最重要)
+    dimensions: [agreeableness, conscientiousness, openness, extraversion]
+    items:
+      - {id: sincere, text: 真诚, scores: {agreeableness: 1}}
+      - {id: loyal, text: 忠诚, scores: {agreeableness: 1, conscientiousness: 1}}
+      - {id: fun, text: 有趣, scores: {openness: 1, extraversion: 1}}
+      - {id: capable, text: 能力, scores: {conscientiousness: 1}}
+      - {id: tolerant, text: 包容, scores: {agreeableness: 1}}
+      - {id: distance, text: 保持距离, scores: {extraversion: -1}}
+  - id: c_so4
+    type: sort
+    prompt: 排序你最想留给后世的(1=最重要)
+    dimensions: [openness, conscientiousness, agreeableness, idealism, risk_taking]
+    items:
+      - {id: thought, text: 原创思想, scores: {openness: 1}}
+      - {id: work, text: 传世作品, scores: {openness: 1, idealism: 1}}
+      - {id: disciple, text: 培养传人, scores: {agreeableness: 1, conscientiousness: 1}}
+      - {id: institution, text: 制度建设, scores: {conscientiousness: 1, idealism: 1}}
+      - {id: wealth, text: 物质财富, scores: {risk_taking: -1}}
+      - {id: spirit, text: 精神风范, scores: {idealism: 1}}
+
+  # ===== 补足困境题(再加深历史回响) =====
+  - id: c_d15
+    type: dilemma
+    prompt: 你坚信地动说,教会判你火刑,只要公开认错就能活命。
+    dimensions: [idealism, openness, risk_taking]
+    time_limit_sec: 15
+    scenario: 你以理性确信日心说,但教会定性为异端。认错可活,但意味着背叛真理;坚持则被烧死。
+    options:
+      - {id: a, text: 坚持真理,从容赴火, scores: {idealism: 2, openness: 2, risk_taking: 2}}
+      - {id: b, text: 表面认错,内心坚守, scores: {idealism: 1, openness: 1, risk_taking: 0}}
+      - {id: c, text: 公开认错,保命要紧, scores: {idealism: -2, openness: -1, risk_taking: -2}}
+    historical_figure: 布鲁诺
+    historical_choice: a
+  - id: c_d16
+    type: dilemma
+    prompt: 皇帝让你改革,权贵集体反对,改革成功国家强盛,失败你身死族灭。
+    dimensions: [idealism, risk_taking, conscientiousness]
+    time_limit_sec: 15
+    scenario: 你被授全权推行变法。触动既得利益,反对声浪滔天。成功则国富兵强,失败则抄家灭族。
+    options:
+      - {id: a, text: 力推变法,不计后果, scores: {idealism: 2, risk_taking: 2, conscientiousness: 1}}
+      - {id: b, text: 渐进改革,稳扎稳打, scores: {idealism: 1, risk_taking: 0, conscientiousness: 2}}
+      - {id: c, text: 称病辞职,明哲保身, scores: {idealism: -2, risk_taking: -2, conscientiousness: 0}}
+    historical_figure: 王安石
+    historical_choice: a

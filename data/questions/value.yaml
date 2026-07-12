@@ -1,5 +1,5 @@
 # 价值镜 —— 你的价值观与道德水平
-# 量表2 + 困境12 + 资源分配5 + 排序5 = 24题(科尔伯格式分级)
+# 量表10 + 困境20 + 资源分配10 + 排序10 = 50题(科尔伯格式分级)
 # 维度:诚实/利他/公正/责任/共情/自律
 assessment_type: value
 title: 价值镜
@@ -267,3 +267,274 @@ questions:
       - {id: break_unjust, text: 违抗不义之法, scores: {justice: 1}}
       - {id: fail_duty, text: 因情失职, scores: {empathy: 1}}
       - {id: self_deception, text: 自欺欺人, scores: {honesty: 1}}
+
+  # ===== 再扩展困境题(现代道德两难) =====
+  - id: v_d13
+    type: dilemma
+    prompt: 你设计的自动驾驶车刹不住,撞老人还是撞墙伤车主?
+    dimensions: [justice, altruism, empathy]
+    time_limit_sec: 15
+    scenario: 你是算法工程师。车失控,要么撞向路口老人,要么撞墙让车主(你自己)重伤。代码由你定。
+    options:
+      - {id: a, text: 程序选择撞墙护路人, scores: {altruism: 2, empathy: 1, justice: 1}}
+      - {id: b, text: 程序优先保护车主, scores: {duty: 1, altruism: -1}}
+      - {id: c, text: 随机决定, scores: {justice: 2, empathy: -1}}
+  - id: v_d14
+    type: dilemma
+    prompt: 你能编辑胚胎让后代免疫绝症,但违禁且后果未知。
+    dimensions: [honesty, justice, duty, discipline]
+    time_limit_sec: 15
+    scenario: 技术可消除家族遗传病,但法律禁止人类胚胎编辑。你偷偷做了,孩子健康,但你是违法者。
+    options:
+      - {id: a, text: 拒绝,遵守禁令, scores: {duty: 2, honesty: 2, discipline: 1}}
+      - {id: b, text: 偷偷编辑, scores: {altruism: 1, honesty: -2, duty: -2}}
+      - {id: c, text: 推动修法后再做, scores: {justice: 2, duty: 1, discipline: 1}}
+  - id: v_d15
+    type: dilemma
+    prompt: 你发现公司产品有致命缺陷,吹哨会被索赔到破产。
+    dimensions: [honesty, justice, duty, empathy]
+    time_limit_sec: 15
+    scenario: 公司隐瞒缺陷已致多人伤亡。你掌握证据,但保密协议会让你被告到倾家荡产。
+    options:
+      - {id: a, text: 公开吹哨, scores: {honesty: 2, justice: 2, duty: 1, empathy: 1}}
+      - {id: b, text: 匿名透露媒体, scores: {honesty: 1, justice: 1, duty: 1}}
+      - {id: c, text: 保持沉默, scores: {honesty: -2, justice: -2, duty: -1}}
+  - id: v_d16
+    type: dilemma
+    prompt: 你能匿名网暴一个你认为的"坏人",没人知道是你。
+    dimensions: [honesty, justice, empathy, discipline]
+    time_limit_sec: 15
+    scenario: 对方网上言论恶劣,你掌握 ta 真实信息。匿名曝光能让 ta 社死,你不会暴露。
+    options:
+      - {id: a, text: 不参与, scores: {empathy: 1, honesty: 1, discipline: 1}}
+      - {id: b, text: 私下劝诫, scores: {empathy: 2, duty: 1}}
+      - {id: c, text: 匿名曝光, scores: {justice: -1, empathy: -2, honesty: -1}}
+  - id: v_d17
+    type: dilemma
+    prompt: 你发现至亲受贿,举报会毁了整个家。
+    dimensions: [honesty, justice, duty, empathy]
+    time_limit_sec: 15
+    scenario: 父母利用职务受贿维持家用。举报会让家破,不举报是包庇犯罪。
+    options:
+      - {id: a, text: 劝其退赃自首, scores: {honesty: 2, justice: 2, duty: 1, empathy: 1}}
+      - {id: b, text: 替其隐瞒, scores: {empathy: 2, honesty: -2, justice: -2}}
+      - {id: c, text: 匿名举报, scores: {justice: 2, duty: 1, empathy: -2}}
+  - id: v_d18
+    type: dilemma
+    prompt: 跳河救人,你可能终身残疾,对方是陌生孩子。
+    dimensions: [altruism, empathy, justice, discipline]
+    time_limit_sec: 15
+    scenario: 陌生孩子落水,水流湍急。你若跳下大概率能救起,但自己可能瘫痪。无人看见。
+    options:
+      - {id: a, text: 立即跳下救人, scores: {altruism: 2, empathy: 2, discipline: 1}}
+      - {id: b, text: 呼救并找工具, scores: {empathy: 1, duty: 1}}
+      - {id: c, text: 等更合适的人, scores: {empathy: -2, altruism: -2}}
+  - id: v_d19
+    type: dilemma
+    prompt: 朋友作品极差,求你真实评价,ta 靠此谋生。
+    dimensions: [honesty, empathy, altruism]
+    time_limit_sec: 15
+    scenario: 朋友辞职追梦,作品实难成功。说真话会击溃 ta,说假话会让 ta 继续投入沉没成本。
+    options:
+      - {id: a, text: 直言不讳, scores: {honesty: 2, empathy: -1, duty: 1}}
+      - {id: b, text: 委婉指出问题, scores: {honesty: 1, empathy: 1, altruism: 1}}
+      - {id: c, text: 鼓励支持, scores: {empathy: 2, honesty: -2}}
+  - id: v_d20
+    type: dilemma
+    prompt: VR 中你可任意虐待 NPC,它们表现得像真人一样痛苦。
+    dimensions: [empathy, discipline, honesty]
+    time_limit_sec: 15
+    scenario: 全沉浸虚拟世界里,NPC 有逼真情感反应。没人知道你做了什么,但你的行为会塑造你的心。
+    options:
+      - {id: a, text: 仍守底线, scores: {empathy: 2, discipline: 2, honesty: 1}}
+      - {id: b, text: 适度宣泄, scores: {empathy: -1, discipline: -1}}
+      - {id: c, text: 肆意妄为, scores: {empathy: -2, discipline: -2, honesty: -1}}
+
+  # ===== 再扩展资源分配题 =====
+  - id: v_a6
+    type: allocation
+    prompt: 你的遗产(100)如何分配?
+    dimensions: [justice, empathy, altruism, duty]
+    targets:
+      - {id: children, text: 子女均分, scores: {justice: 1, duty: 1}}
+      - {id: neediest, text: 给最需者多, scores: {empathy: 1, altruism: 1}}
+      - {id: charity, text: 捐公益, scores: {altruism: 1, justice: 1}}
+      - {id: talent, text: 奖有潜力者, scores: {discipline: 1}}
+    total: 100
+  - id: v_a7
+    type: allocation
+    prompt: 你的年度慈善预算(100)给谁?
+    dimensions: [altruism, justice, empathy, discipline]
+    targets:
+      - {id: local, text: 本地贫困, scores: {empathy: 1}}
+      - {id: global, text: 全球极端贫困, scores: {altruism: 1, justice: 1}}
+      - {id: research, text: 攻克绝症研究, scores: {discipline: 1, altruism: 1}}
+      - {id: animal, text: 动物保护, scores: {empathy: 1}}
+    total: 100
+  - id: v_a8
+    type: allocation
+    prompt: 一笔教育基金(100)如何投放?
+    dimensions: [justice, duty, altruism, discipline]
+    targets:
+      - {id: gifted, text: 资优生培养, scores: {discipline: 1}}
+      - {id: dropout, text: 辍学儿童重返, scores: {altruism: 1, justice: 1}}
+      - {id: rural, text: 乡村教师支持, scores: {duty: 1, empathy: 1}}
+      - {id: special, text: 特殊教育, scores: {empathy: 1, justice: 1}}
+    total: 100
+  - id: v_a9
+    type: allocation
+    prompt: 你每日的注意力(100)给谁?
+    dimensions: [empathy, duty, altruism, discipline]
+    targets:
+      - {id: family, text: 身边至亲, scores: {empathy: 1, duty: 1}}
+      - {id: friend, text: 挚友, scores: {empathy: 1}}
+      - {id: stranger, text: 陌生求助者, scores: {altruism: 1}}
+      - {id: self, text: 独处自省, scores: {discipline: 1}}
+    total: 100
+  - id: v_a10
+    type: allocation
+    prompt: 你的"原谅额度"(100)给哪些人?
+    dimensions: [empathy, justice, altruism, honesty]
+    targets:
+      - {id: family, text: 家人的过错, scores: {empathy: 1}}
+      - {id: friend, text: 朋友的背叛, scores: {empathy: 1, duty: 1}}
+      - {id: stranger, text: 陌生人的伤害, scores: {altruism: 1, justice: 1}}
+      - {id: self, text: 自己的失败, scores: {honesty: 1, discipline: 1}}
+    total: 100
+
+  # ===== 再扩展排序题(价值取向深化) =====
+  - id: v_s6
+    type: sort
+    prompt: 排序你生命中最重要的关系(1=最重要)
+    dimensions: [empathy, duty, altruism, honesty]
+    items:
+      - {id: partner, text: 伴侣, scores: {empathy: 1}}
+      - {id: parent, text: 父母, scores: {duty: 1}}
+      - {id: child, text: 子女, scores: {duty: 1, empathy: 1}}
+      - {id: friend, text: 挚友, scores: {honesty: 1}}
+      - {id: self, text: 与自己的关系, scores: {discipline: 1, honesty: 1}}
+  - id: v_s7
+    type: sort
+    prompt: 排序你最怕失去的东西(1=最怕失去)
+    dimensions: [honesty, altruism, justice, duty, empathy, discipline]
+    items:
+      - {id: health, text: 健康, scores: {discipline: 1}}
+      - {id: reputation, text: 名誉, scores: {honesty: 1}}
+      - {id: love, text: 至爱, scores: {empathy: 1}}
+      - {id: freedom, text: 自由, scores: {justice: 1}}
+      - {id: faith, text: 信念, scores: {duty: 1}}
+      - {id: wealth, text: 财富, scores: {discipline: -1}}
+  - id: v_s8
+    type: sort
+    prompt: 排序你最珍视的品德(1=最珍视)
+    dimensions: [honesty, altruism, justice, duty, empathy, discipline]
+    items:
+      - {id: integrity, text: 正直, scores: {honesty: 1}}
+      - {id: kindness, text: 善良, scores: {altruism: 1, empathy: 1}}
+      - {id: courage, text: 勇气, scores: {justice: 1}}
+      - {id: loyalty, text: 忠诚, scores: {duty: 1}}
+      - {id: temperance, text: 节制, scores: {discipline: 1}}
+      - {id: wisdom, text: 智慧, scores: {discipline: 1}}
+  - id: v_s9
+    type: sort
+    prompt: 排序你最不愿经历的遗憾(1=最不愿)
+    dimensions: [honesty, altruism, justice, duty, empathy]
+    items:
+      - {id: hurt, text: 伤害过他人, scores: {empathy: 1, altruism: 1}}
+      - {id: betray, text: 违背过诺言, scores: {duty: 1, honesty: 1}}
+      - {id: coward, text: 该发声时沉默, scores: {justice: 1, honesty: 1}}
+      - {id: waste, text: 蹉跎了岁月, scores: {discipline: 1}}
+      - {id: unfair, text: 默许了不公, scores: {justice: 1}}
+  - id: v_s10
+    type: sort
+    prompt: 排序你最想留给后世的东西(1=最想)
+    dimensions: [honesty, altruism, justice, duty, empathy, discipline]
+    items:
+      - {id: truth, text: 真相与记录, scores: {honesty: 1}}
+      - {id: kindness, text: 善行善举, scores: {altruism: 1, empathy: 1}}
+      - {id: institution, text: 更公正的制度, scores: {justice: 1, duty: 1}}
+      - {id: work, text: 一部作品, scores: {discipline: 1}}
+      - {id: example, text: 一个榜样, scores: {duty: 1, discipline: 1}}
+      - {id: genes, text: 后代, scores: {empathy: 1}}
+
+  # ===== 再扩展量表题(价值底色补全) =====
+  - id: v_s3_scale
+    type: scale
+    prompt: 为避免他人痛苦,你可以说"善意的谎言"吗?
+    dimensions: [honesty, empathy, altruism]
+    points:
+      - {id: "1", text: 绝不说谎, scores: {honesty: 2, empathy: -1}}
+      - {id: "2", text: 尽量诚实, scores: {honesty: 1}}
+      - {id: "3", text: 看情况, scores: {}}
+      - {id: "4", text: 必要时会说, scores: {empathy: 1, honesty: -1}}
+      - {id: "5", text: 经常说, scores: {empathy: 2, honesty: -2}}
+  - id: v_s4_scale
+    type: scale
+    prompt: 上级下达你确信有误的指令,你?
+    dimensions: [duty, honesty, justice]
+    points:
+      - {id: "1", text: 立即执行, scores: {duty: 2, honesty: -2}}
+      - {id: "2", text: 委婉建议后执行, scores: {duty: 1, honesty: 1}}
+      - {id: "3", text: 看情况, scores: {}}
+      - {id: "4", text: 据理力争, scores: {honesty: 1, justice: 1}}
+      - {id: "5", text: 拒绝执行, scores: {honesty: 2, duty: -1, justice: 2}}
+  - id: v_s5_scale
+    type: scale
+    prompt: 看到明显处于弱势的人,你第一反应?
+    dimensions: [empathy, altruism, justice]
+    points:
+      - {id: "1", text: 觉得是 ta 自己问题, scores: {empathy: -2, altruism: -1}}
+      - {id: "2", text: 同情但不介入, scores: {empathy: 1}}
+      - {id: "3", text: 看情况, scores: {}}
+      - {id: "4", text: 想办法帮一把, scores: {empathy: 1, altruism: 1}}
+      - {id: "5", text: 推动系统性帮扶, scores: {altruism: 2, justice: 2, empathy: 1}}
+  - id: v_s6_scale
+    type: scale
+    prompt: 兑现承诺会让你损失很大,你?
+    dimensions: [duty, honesty, discipline]
+    points:
+      - {id: "1", text: 找借口毁约, scores: {duty: -2, honesty: -2}}
+      - {id: "2", text: 协商调整, scores: {honesty: 1}}
+      - {id: "3", text: 看情况, scores: {}}
+      - {id: "4", text: 咬牙兑现, scores: {duty: 1, discipline: 1}}
+      - {id: "5", text: 不惜代价兑现, scores: {duty: 2, discipline: 2, honesty: 1}}
+  - id: v_s7_scale
+    type: scale
+    prompt: 被人严重伤害后,你倾向于?
+    dimensions: [justice, empathy, discipline]
+    points:
+      - {id: "1", text: 以牙还牙, scores: {justice: -1, empathy: -2, discipline: -1}}
+      - {id: "2", text: 让 ta 付出代价, scores: {justice: 1, empathy: -1}}
+      - {id: "3", text: 看情况, scores: {}}
+      - {id: "4", text: 通过法律讨公道, scores: {justice: 2, duty: 1}}
+      - {id: "5", text: 选择原谅放下, scores: {empathy: 2, discipline: 1, justice: -1}}
+  - id: v_s8_scale
+    type: scale
+    prompt: 为更大群体利益,牺牲少数无辜者,你?
+    dimensions: [justice, altruism, empathy]
+    points:
+      - {id: "1", text: 完全反对, scores: {empathy: 2, justice: 2}}
+      - {id: "2", text: 极不情愿, scores: {empathy: 1, justice: 1}}
+      - {id: "3", text: 看情况, scores: {}}
+      - {id: "4", text: 必要时可接受, scores: {altruism: 1, justice: -1}}
+      - {id: "5", text: 应当牺牲少数, scores: {altruism: 2, empathy: -2, justice: -2}}
+  - id: v_s9_scale
+    type: scale
+    prompt: 诚实与你珍视的其他价值冲突时,你?
+    dimensions: [honesty, empathy, duty]
+    points:
+      - {id: "1", text: 永远诚实优先, scores: {honesty: 2, empathy: -1}}
+      - {id: "2", text: 倾向诚实, scores: {honesty: 1}}
+      - {id: "3", text: 看情况, scores: {}}
+      - {id: "4", text: 可以为善而说谎, scores: {empathy: 1, honesty: -1}}
+      - {id: "5", text: 诚实非最高价值, scores: {empathy: 2, honesty: -2}}
+  - id: v_s10_scale
+    type: scale
+    prompt: 你认为"公正"最接近?
+    dimensions: [justice, empathy, discipline]
+    points:
+      - {id: "1", text: 一视同仁, scores: {justice: 2, discipline: 1}}
+      - {id: "2", text: 按规则办事, scores: {justice: 1, duty: 1}}
+      - {id: "3", text: 看情况, scores: {}}
+      - {id: "4", text: 照顾弱者, scores: {empathy: 1, justice: 1, altruism: 1}}
+      - {id: "5", text: 结果平等, scores: {justice: -1, empathy: 2, discipline: -1}}

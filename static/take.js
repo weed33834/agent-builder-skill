@@ -5,8 +5,29 @@ const type = params.get('type');
 
 let bank, session, tracker;
 let currentIdx = 0;
+let lastType = null;
 const answers = [];
 let timerInterval = null;
+
+// 题型中文名 + 分段标题
+const TYPE_META = {
+  scale:      { name: '量表题',   section: '人格底色',   hint: '凭第一直觉选择最贴近你的选项' },
+  dilemma:    { name: '困境题',   section: '抉择时刻',   hint: '设想自己身处此境,会如何抉择' },
+  allocation: { name: '资源分配', section: '价值天平',   hint: '分配总额须等于给定数值' },
+  sort:       { name: '排序题',   section: '优先序列',   hint: '拖拽排序,1 = 最重要' },
+  iat:        { name: '联想测验', section: '内隐联想',   hint: '凭直觉,越快越好' },
+};
+
+// 预计算:每种题型的题号分布 {type: [globalIdx, ...]} 与计数
+function buildTypeIndex(questions) {
+  const idx = {};
+  const count = {};
+  questions.forEach((q, i) => {
+    (idx[q.type] = idx[q.type] || []).push(i);
+    count[q.type] = (count[q.type] || 0) + 1;
+  });
+  return { idx, count };
+}
 
 async function init() {
   if (!type) { location.href = '/'; return; }
@@ -32,6 +53,7 @@ async function init() {
       }
     }
   }
+  bank._typeIndex = buildTypeIndex(bank.questions);
   tracker = new BehaviorTracker();
   renderQuestion();
 }
@@ -44,14 +66,54 @@ function renderQuestion() {
   const q = bank.questions[currentIdx];
   const pct = (currentIdx / bank.questions.length) * 100;
   document.getElementById('progress').style.width = pct + '%';
-  document.getElementById('progress-text').innerHTML = `<span class="num">${currentIdx + 1}</span> / ${bank.questions.length}`;
 
-  setupTimer(q);
+  // 题型内进度:当前题型中第几题 / 该题型总数
+  const ti = bank._typeIndex;
+  const typeList = ti.idx[q.type] || [];
+  const posInType = typeList.indexOf(currentIdx) + 1;
+  const typeCount = ti.count[q.type] || 0;
+  const meta = TYPE_META[q.type] || { name: q.type, section: '', hint: '' };
+
+  document.getElementById('progress-text').innerHTML =
+    `<span class="num">${currentIdx + 1}</span> / ${bank.questions.length}`
+    + ` <span class="type-badge">${meta.name} ${posInType}/${typeCount}</span>`;
+
   const area = document.getElementById('question-area');
-  tracker.start();
 
+  // 题型切换 → 显示分段过渡卡(此时不启动计时与轨迹)
+  const isSectionBreak = (lastType !== q.type);
+  if (isSectionBreak) {
+    clearInterval(timerInterval);
+    document.getElementById('timer').style.display = 'none';
+    area.innerHTML = `
+      <div class="section-intro">
+        <div class="section-eyebrow">第 ${phaseNumber(q.type, ti)} 部分</div>
+        <h2 class="section-title">${meta.section}</h2>
+        <p class="section-hint">${meta.hint}</p>
+        <button class="btn-primary section-start" type="button">开 始</button>
+      </div>`;
+    lastType = q.type;
+    document.querySelector('.section-start').addEventListener('click', () => {
+      area.innerHTML = '';
+      renderCurrent(q);
+    });
+  } else {
+    renderCurrent(q);
+  }
+}
+
+// 当前题型的"第几部分"(按题型出现顺序)
+function phaseNumber(type, ti) {
+  const order = Object.keys(ti.idx);
+  return order.indexOf(type) + 1;
+}
+
+function renderCurrent(q) {
+  const area = document.getElementById('question-area');
   const renderers = { scale: renderScale, dilemma: renderDilemma, allocation: renderAllocation, sort: renderSort, iat: renderIAT };
   area.innerHTML = renderers[q.type](q);
+  setupTimer(q);
+  tracker.start();
   bindEvents(q);
 }
 

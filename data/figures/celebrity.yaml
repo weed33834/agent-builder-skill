@@ -65,3 +65,99 @@
   name: 玛丽·安托瓦内特
   blurb: 享乐主义,脱离现实,危机中显现韧性
   dims: {extraversion: 80, openness: 55, conscientiousness: 30, agreeableness: 50, idealism: 25, risk_taking: 45, neuroticism: 70}
+- id: wang_yangming
+  name: 王阳明
+  blurb: 知行合一,内向悟道,以心学重塑儒学
+  dims: {idealism: 85, risk_taking: 60, conscientiousness: 85, agreeableness: 60, openness: 85, extraversion: 40, neuroticism: 45}
+- id: lu_xun
+  name: 鲁迅
+  blurb: 犀利批判国民性,内向深思,以笔为刀
+  dims: {idealism: 88, risk_taking: 70, conscientiousness: 80, agreeableness: 40, openness: 90, extraversion: 35, neuroticism: 65}
+- id: zhuge_liang
+  name: 诸葛亮
+  blurb: 鞠躬尽瘁,谨慎谋略,忠诚担当
+  dims: {idealism: 80, risk_taking: 45, conscientiousness: 95, agreeableness: 65, openness: 80, extraversion: 50, neuroticism: 50}
+- id: zeng_guofan
+  name: 曾国藩
+  blurb: 慎独克己,坚忍务实,以笨功夫成大业
+  dims: {idealism: 70, risk_taking: 50, conscientiousness: 95, agreeableness: 55, openness: 65, extraversion: 45, neuroticism: 70}
+- id: qin_shihuang
+  name: 秦始皇
+  blurb: 雄才铁腕,一统六合,功过两极
+  dims: {idealism: 50, risk_taking: 90, conscientiousness: 80, agreeableness: 20, openness: 60, extraversion: 70, neuroticism: 55}
+- id: wu_zetian
+  name: 武则天
+  blurb: 权谋果断,打破性别壁垒,用人不拘
+  dims: {idealism: 50, risk_taking: 85, conscientiousness: 85, agreeableness: 35, openness: 75, extraversion: 75, neuroticism: 55}
+- id: lin_huiyin
+  name: 林徽因
+  blurb: 文理兼修,诗意建筑,沙龙女主
+  dims: {idealism: 75, risk_taking: 55, conscientiousness: 75, agreeableness: 70, openness: 90, extraversion: 70, neuroticism: 50}
+- id: yuan_longping
+  name: 袁隆平
+  blurb: 田野里的理想主义者,朴实专注
+  dims: {idealism: 85, risk_taking: 50, conscientiousness: 90, agreeableness: 75, openness: 75, extraversion: 55, neuroticism: 35}
+- id: qian_xuesen
+  name: 钱学森
+  blurb: 归国报效,系统思维,严谨寡言
+  dims: {idealism: 85, risk_taking: 65, conscientiousness: 90, agreeableness: 55, openness: 85, extraversion: 35, neuroticism: 45}
+- id: tu_youyou
+  name: 屠呦呦
+  blurb: 低调执着,从古籍寻药,挽救百万
+  dims: {idealism: 80, risk_taking: 55, conscientiousness: 92, agreeableness: 60, openness: 80, extraversion: 25, neuroticism: 50}
+- id: mandela
+  name: 曼德拉
+  blurb: 二十七载不屈,以和解终结仇恨
+  dims: {idealism: 92, risk_taking: 80, conscientiousness: 85, agreeableness: 75, openness: 75, extraversion: 60, neuroticism: 40}
+- id: mlk
+  name: 马丁·路德·金
+  blurb: 以梦为旗,非暴力抗争,感召世代
+  dims: {idealism: 95, risk_taking: 80, conscientiousness: 80, agreeableness: 80, openness: 75, extraversion: 85, neuroticism: 55}
+- id: marx
+  name: 马克思
+  blurb: 洞察资本逻辑,毕生为劳工立言
+  dims: {idealism: 92, risk_taking: 70, conscientiousness: 80, agreeableness: 50, openness: 95, extraversion: 60, neuroticism: 60}
+- id: adam_smith
+  name: 亚当·斯密
+  blurb: 冷静观察市场,道德情操与自利并论
+  dims: {idealism: 60, risk_taking: 40, conscientiousness: 80, agreeableness: 65, openness: 90, extraversion: 40, neuroticism: 50}
+- id: freud
+  name: 弗洛伊德
+  blurb: 深掘潜意识,理论大胆,争议与开创并存
+  dims: {idealism: 60, risk_taking: 75, conscientiousness: 80, agreeableness: 45, openness: 95, extraversion: 50, neuroticism: 60}
+- id: nietzsche
+  name: 尼采
+  blurb: 颠覆偶像,孤独超人,激情与病痛交织
+  dims: {idealism: 85, risk_taking: 80, conscientiousness: 60, agreeableness: 30, openness: 95, extraversion: 40, neuroticism: 80}
+- id: kant
+  name: 康德
+  blurb: 律己如钟,理性立法,终身未离小城
+  dims: {idealism: 80, risk_taking: 30, conscientiousness: 98, agreeableness: 55, openness: 85, extraversion: 25, neuroticism: 45}
+- id: davinci
+  name: 达·芬奇
+  blurb: 文艺复兴全才,好奇无尽,留半成稿
+  dims: {idealism: 70, risk_taking: 60, conscientiousness: 60, agreeableness: 60, openness: 98, extraversion: 45, neuroticism: 55}
+- id: beethoven
+  name: 贝多芬
+  blurb: 扼住命运咽喉,孤傲暴躁,以音符抗争
+  dims: {idealism: 80, risk_taking: 70, conscientiousness: 85, agreeableness: 35, openness: 90, extraversion: 40, neuroticism: 75}
+- id: jobs
+  name: 乔布斯
+  blurb: 极致美学独裁,偏执完美,重塑科技体验
+  dims: {idealism: 75, risk_taking: 85, conscientiousness: 80, agreeableness: 30, openness: 90, extraversion: 70, neuroticism: 65}
+- id: musk
+  name: 马斯克
+  blurb: 狂想工程师,风险嗜好者,多线颠覆
+  dims: {idealism: 80, risk_taking: 95, conscientiousness: 75, agreeableness: 35, openness: 95, extraversion: 75, neuroticism: 70}
+- id: turing
+  name: 图灵
+  blurb: 内向天才,奠定计算之基,悲剧收场
+  dims: {idealism: 70, risk_taking: 60, conscientiousness: 75, agreeableness: 55, openness: 95, extraversion: 20, neuroticism: 70}
+- id: feynman
+  name: 费曼
+  blurb: 顽童式物理学家,反权威,热衷传播
+  dims: {idealism: 60, risk_taking: 70, conscientiousness: 70, agreeableness: 65, openness: 95, extraversion: 80, neuroticism: 40}
+- id: hawking
+  name: 霍金
+  blurb: 身困轮椅心游宇宙,幽默坚韧
+  dims: {idealism: 80, risk_taking: 55, conscientiousness: 85, agreeableness: 60, openness: 95, extraversion: 55, neuroticism: 45}
