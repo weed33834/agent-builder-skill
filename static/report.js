@@ -20,14 +20,15 @@ async function render() {
   const html = `
     <div class="report-hero">
       <div class="mirror-disc"></div>
+      <div class="hero-divider"><span></span></div>
       <p class="report-summary">${r.summary}</p>
     </div>
 
     <div class="report-section">
       <h3>核 心 匹 配</h3>
       <div class="match-list">
-        ${r.matches.map(m => `
-          <div class="match-item">
+        ${r.matches.map((m, i) => `
+          <div class="match-item ${i === 0 ? 'top' : ''}">
             <div>
               <div class="match-name">${m.name}</div>
               <div class="match-blurb">${m.blurb}</div>

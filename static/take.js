@@ -114,16 +114,31 @@ function renderAllocation(q) {
   return `
     <div class="question-card">
       <div class="question-prompt">${q.prompt}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">分配总和须 = ${q.total}</p>
-      <div data-q="${q.id}">
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">分配总和须 = ${q.total} · 可用按钮或拖动滑块</p>
+      <div data-q="${q.id}" class="alloc-list">
         ${q.targets.map(t => `
-          <div class="alloc-row">
-            <label>${t.text}</label>
-            <input type="range" min="0" max="${q.total}" value="0" data-id="${t.id}">
-            <span class="val">0</span>
+          <div class="alloc-row" data-id="${t.id}">
+            <div class="alloc-head">
+              <label>${t.text}</label>
+              <div class="alloc-controls">
+                <button class="alloc-btn" data-delta="-10" aria-label="减10">−10</button>
+                <button class="alloc-btn" data-delta="-1" aria-label="减1">−1</button>
+                <span class="val">0</span>
+                <button class="alloc-btn" data-delta="1" aria-label="加1">+1</button>
+                <button class="alloc-btn" data-delta="10" aria-label="加10">+10</button>
+              </div>
+            </div>
+            <div class="alloc-bar"><div class="alloc-bar-fill" style="width:0%"></div></div>
+            <input type="range" min="0" max="${q.total}" value="0" data-id="${t.id}" aria-label="${t.text}">
           </div>
         `).join('')}
-        <div class="alloc-total">总计 <span class="num">0</span> / ${q.total}</div>
+        <div class="alloc-total">
+          <span>总 计</span>
+          <span class="num">0</span>
+          <span class="sep">/</span>
+          <span class="target">${q.total}</span>
+          <button class="alloc-balance" id="alloc-balance" type="button">自 动 配 平</button>
+        </div>
       </div>
       <button class="btn-primary" id="alloc-confirm" style="margin-top:40px;display:block;width:100%">确 认</button>
     </div>`;
@@ -177,24 +192,67 @@ function bindEvents(q) {
   } else if (q.type === 'allocation') {
     const container = document.querySelector(`[data-q="${q.id}"]`);
     const total = q.total;
+
+    const setRow = (row, newVal) => {
+      newVal = Math.max(0, Math.min(total, newVal));
+      const input = row.querySelector('input[type=range]');
+      input.value = newVal;
+      row.querySelector('.val').textContent = newVal;
+      row.querySelector('.alloc-bar-fill').style.width = (newVal / total * 100) + '%';
+      updateSum();
+    };
     const updateSum = () => {
-      const sum = [...container.querySelectorAll('input[type=range]')].reduce((s, i) => s + +i.value, 0);
+      const rows = [...container.querySelectorAll('.alloc-row')];
+      const sum = rows.reduce((s, r) => s + +r.querySelector('input[type=range]').value, 0);
       const sumEl = container.querySelector('.alloc-total');
       sumEl.querySelector('.num').textContent = sum;
       sumEl.classList.toggle('ok', sum === total);
+      sumEl.classList.toggle('over', sum > total);
+      // 标记最大值行为 peak(并列取第一个)
+      let maxRow = null, maxVal = 0;
+      rows.forEach(r => {
+        const v = +r.querySelector('input[type=range]').value;
+        if (v > maxVal) { maxVal = v; maxRow = r; }
+      });
+      rows.forEach(r => r.classList.toggle('peak', r === maxRow && maxVal > 0));
     };
+
+    // 滑块拖动
     container.querySelectorAll('input[type=range]').forEach(input => {
       input.addEventListener('input', () => {
-        input.parentElement.querySelector('.val').textContent = input.value;
-        updateSum();
+        const row = input.closest('.alloc-row');
+        setRow(row, +input.value);
         tracker.recordChange(+input.value);
       });
     });
+    // ±1 / ±10 按钮
+    container.querySelectorAll('.alloc-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const row = btn.closest('.alloc-row');
+        const input = row.querySelector('input[type=range]');
+        setRow(row, +input.value + (+btn.dataset.delta));
+        tracker.recordChange(+input.value);
+      });
+    });
+    // 自动配平 —— 把差值补到当前最大项(并列取第一个)
+    document.getElementById('alloc-balance').addEventListener('click', () => {
+      const inputs = [...container.querySelectorAll('input[type=range]')];
+      const sum = inputs.reduce((s, i) => s + +i.value, 0);
+      const diff = total - sum;
+      if (diff === 0) return;
+      // 加:补到最大项;减:从最大项扣
+      let target = inputs[0];
+      for (const i of inputs) if (+i.value > +target.value) target = i;
+      const row = target.closest('.alloc-row');
+      setRow(row, +target.value + diff);
+      tracker.recordChange(+target.value);
+    });
+
     document.getElementById('alloc-confirm').addEventListener('click', () => {
       const alloc = {};
       container.querySelectorAll('input[type=range]').forEach(i => { alloc[i.dataset.id] = +i.value; });
       const sum = Object.values(alloc).reduce((a, b) => a + b, 0);
-      if (sum !== total) { alert(`总和须 = ${total}(当前 ${sum})`); return; }
+      if (sum !== total) { alert(`总和须 = ${total}(当前 ${sum})。可点击「自动配平」一键补齐。`); return; }
       recordAnswer(q, { allocation: alloc });
     });
   } else if (q.type === 'sort') {
