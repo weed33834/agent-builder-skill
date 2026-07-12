@@ -573,3 +573,47 @@ questions:
       - {id: c, text: 称病辞职,明哲保身, scores: {idealism: -2, risk_taking: -2, conscientiousness: 0}}
     historical_figure: 王安石
     historical_choice: a
+
+  # ===== 连续滑块题(强度测量) =====
+  - id: c_sl1
+    type: slider
+    prompt: 在"遵循传统"与"打破常规"之间,你天然倾向哪一端?
+    dimensions: [openness, idealism]
+    left_label: 坚守传统
+    right_label: 颠覆常规
+    scores:
+      openness: {low: -2, high: 2}
+      idealism: {low: -1, high: 1}
+
+  # ===== 强迫二选一(无中立,逼真实偏好) =====
+  - id: c_fc1
+    type: forced_choice
+    prompt: 你更愿意成为哪种人?必须选其一。
+    dimensions: [openness, conscientiousness, extraversion]
+    sides:
+      - {id: a, text: 一生专注一事,臻于化境(如康德), scores: {conscientiousness: 2, openness: -1, extraversion: -1}}
+      - {id: b, text: 涉猎万象,永葆好奇(如达·芬奇), scores: {openness: 2, conscientiousness: -1, extraversion: 1}}
+
+  # ===== 同意度矩阵(批量Likert) =====
+  - id: c_mx1
+    type: matrix
+    prompt: 请对以下陈述表明同意程度。
+    dimensions: [extraversion, idealism, openness, conscientiousness, agreeableness, neuroticism]
+    scale_max: 7
+    statements:
+      - {id: s1, text: 我宁愿孤独地追求真理,也不愿在喧嚣中随波逐流, scores: {extraversion: -2, idealism: 1}}
+      - {id: s2, text: 我常为未知的可能性而兴奋, scores: {openness: 2}}
+      - {id: s3, text: 我做事必须有明确的计划和期限, scores: {conscientiousness: 2}}
+      - {id: s4, text: 我容易被他人的情绪感染, scores: {agreeableness: 1, neuroticism: 1}}
+
+  # ===== 价值观拍卖(测绝对价值强度) =====
+  - id: c_au1
+    type: auction
+    prompt: 假设你有100枚"人生金币",你愿意为以下每种成就各投入多少?(可保留预算)
+    dimensions: [idealism, openness, agreeableness, conscientiousness, risk_taking]
+    budget: 100
+    items:
+      - {id: legacy, text: 留下传世之作或思想, scores: {idealism: 2, openness: 1}}
+      - {id: impact, text: 直接改善万人生活, scores: {agreeableness: 2, idealism: 1}}
+      - {id: mastery, text: 成为某领域顶尖专家, scores: {conscientiousness: 2}}
+      - {id: adventure, text: 体验极致冒险与未知, scores: {risk_taking: 2, openness: 1}}

@@ -17,6 +17,15 @@ for q in qs:
         a = {"order": [it["id"] for it in q["items"]]}
     elif typ == "iat":
         a = {"iat": [{"word": w["word"], "category": w["category"], "response": w["category"], "rt": 500, "correct": True} for w in q["words"]]}
+    elif typ == "slider":
+        a = {"position": 75}
+    elif typ == "forced_choice":
+        a = {"choice": q["sides"][0]["id"]}
+    elif typ == "matrix":
+        a = {"ratings": {s["id"]: 6 for s in q["statements"]}}
+    elif typ == "auction":
+        budget = q["budget"]; items = q["items"]; n = len(items)
+        a = {"bids": {items[i]["id"]: budget // n for i in range(n)}}
     answers.append({"question_id": q["id"], "answer": a, "duration_ms": 5000, "change_count": 1, "trajectory": [{"t": 0.0, "value": "x"}]})
 
 payload = {"answers": answers, "complete": True}

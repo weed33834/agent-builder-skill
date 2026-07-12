@@ -81,6 +81,36 @@ def _collect_directions(q, answer: dict, dim_directions: dict) -> None:
             if opt.id == answer["option_id"]:
                 for k, v in opt.scores.items():
                     dim_directions[k].append((q.id, v))
+    elif qtype == "forced_choice" and "choice" in answer:
+        for side in getattr(q, "sides", []):
+            if side.id == answer["choice"]:
+                for k, v in side.scores.items():
+                    dim_directions[k].append((q.id, v))
+    elif qtype == "slider" and "position" in answer:
+        pos = max(0.0, min(100.0, float(answer["position"]))) / 100.0
+        for dim, bounds in getattr(q, "scores", {}).items():
+            low = bounds.get("low", 0.0)
+            high = bounds.get("high", 0.0)
+            v = low + (high - low) * pos
+            dim_directions[dim].append((q.id, v))
+    elif qtype == "matrix" and "ratings" in answer:
+        ratings = answer["ratings"]
+        smax = max(4, getattr(q, "scale_max", 7))
+        for stmt in getattr(q, "statements", []):
+            r = ratings.get(stmt.id)
+            if r is None:
+                continue
+            mid = (smax + 1) / 2
+            norm = (r - mid) / ((smax - 1) / 2)
+            for dim, factor in stmt.scores.items():
+                dim_directions[dim].append((q.id, norm * factor))
+    elif qtype == "auction" and "bids" in answer:
+        budget = getattr(q, "budget", 100)
+        for item in getattr(q, "items", []):
+            bid = answer["bids"].get(item.id, 0)
+            ratio = max(0.0, bid) / budget
+            for dim, v in item.scores.items():
+                dim_directions[dim].append((q.id, v * ratio))
 
 
 def _detect_dimension_conflicts(dim_directions: dict, q_by_id: dict) -> list[dict]:

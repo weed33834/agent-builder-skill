@@ -76,7 +76,7 @@ def _score_answers(assessment_type: str, answers: SubmitAnswersIn) -> dict[str, 
 
 
 def _accumulate(q, answer: dict, raw: dict[str, float], weight_sum: dict[str, float], w: float) -> None:
-    """量表/困境/分配题的分数累加(带行为权重)。"""
+    """各题型分数累加(带行为权重)。"""
     qtype = q.type
     if qtype == "scale" and "option_id" in answer:
         for p in q.points:
@@ -97,6 +97,47 @@ def _accumulate(q, answer: dict, raw: dict[str, float], weight_sum: dict[str, fl
             for dim, v in tgt.scores.items():
                 raw[dim] += v * pct * 2 * w
                 weight_sum[dim] += abs(v) * pct * 2 * w
+    elif qtype == "slider" and "position" in answer:
+        # 连续滑块:position 0-100 线性插值 low→high
+        pos = max(0.0, min(100.0, float(answer["position"]))) / 100.0
+        for dim, bounds in q.scores.items():
+            low = bounds.get("low", 0.0)
+            high = bounds.get("high", 0.0)
+            v = low + (high - low) * pos
+            raw[dim] += v * w
+            weight_sum[dim] += max(abs(low), abs(high)) * w
+    elif qtype == "forced_choice" and "choice" in answer:
+        # 强迫二选一:选中侧全分(无妥协)
+        for side in q.sides:
+            if side.id == answer["choice"]:
+                for k, v in side.scores.items():
+                    raw[k] += v * w * 1.5  # 强迫选择信号强,加权 1.5
+                    weight_sum[k] += abs(v) * w * 1.5
+    elif qtype == "matrix" and "ratings" in answer:
+        # 同意度矩阵:rating 1-7 映射到 -3..+3,乘以陈述的权重因子
+        ratings = answer["ratings"]
+        smax = max(4, q.scale_max)
+        for stmt in q.statements:
+            r = ratings.get(stmt.id)
+            if r is None:
+                continue
+            # 归一化到 -1..1:(r - 中点) / 半幅
+            mid = (smax + 1) / 2
+            norm = (r - mid) / ((smax - 1) / 2)
+            for dim, factor in stmt.scores.items():
+                v = norm * factor
+                raw[dim] += v * w
+                weight_sum[dim] += abs(factor) * w
+    elif qtype == "auction" and "bids" in answer:
+        # 价值观拍卖:出价比例映射(预算可省,测绝对价值)
+        budget = q.budget
+        bids = answer["bids"]
+        for item in q.items:
+            bid = bids.get(item.id, 0)
+            ratio = max(0.0, bid) / budget  # 0..1
+            for dim, v in item.scores.items():
+                raw[dim] += v * ratio * 2 * w
+                weight_sum[dim] += abs(v) * ratio * 2 * w
 
 
 def _normalize(raw_score: float, total_weight: float) -> float:

@@ -6,6 +6,10 @@
 - allocation   资源分配题(滑块,总和=100)
 - sort         排序题(拖拽,记轨迹)
 - iat          内隐联想(快速分类,记反应时)
+- slider       连续滑块题(0-100,测强度/程度)
+- forced_choice 强迫二选一(无中立,逼真实偏好)
+- matrix       同意度矩阵(多陈述批量Likert)
+- auction      价值观拍卖(金币竞拍,测绝对价值)
 """
 
 from typing import Annotated, Literal
@@ -64,8 +68,52 @@ class IATQuestion(BaseQuestion):
     words: list[dict]  # [{word, category}] category 决定正确侧
 
 
+class SliderQuestion(BaseQuestion):
+    """连续滑块题 —— 0-100 无级调节,测强度/程度(比5点量表更精细)。
+
+    scores 格式:{dim: {low: -2, high: 2}} 按 position 线性插值。
+    position=0 → low 分;position=100 → high 分。
+    """
+    type: Literal["slider"] = "slider"
+    left_label: str  # 左端(0)标签
+    right_label: str  # 右端(100)标签
+    scores: dict[str, dict[str, float]]  # {dim: {low, high}}
+
+
+class ForcedChoiceQuestion(BaseQuestion):
+    """强迫二选一 —— 两个对立陈述,必须选其一,无中立选项。
+
+    逼出真实偏好(当两个都有吸引力/都排斥时,选择揭示真实优先级)。
+    """
+    type: Literal["forced_choice"] = "forced_choice"
+    sides: list[Option]  # 恰好 2 个,id/text/scores
+
+
+class MatrixQuestion(BaseQuestion):
+    """同意度矩阵 —— 多个陈述批量打同意度(7点Likert)。
+
+    一次问多个相关陈述,高效测量。rating 1=强烈反对 → 7=强烈同意。
+    scores 格式:{dim: factor},最终得分 = (rating - 4) / 3 * factor。
+    """
+    type: Literal["matrix"] = "matrix"
+    statements: list[Option]  # id/text/scores(scores 的 value 是权重因子)
+    scale_max: int = 7  # 量表最大值,默认7
+
+
+class AuctionQuestion(BaseQuestion):
+    """价值观拍卖 —— 给定预算金币,竞拍多种人生选项。
+
+    与 allocation 区别:预算可省(非零和),测绝对价值强度而非相对权衡。
+    出价比例(bid/budget)映射到维度分数。
+    """
+    type: Literal["auction"] = "auction"
+    budget: int = 100  # 预算金币
+    items: list[Option]  # id/text/scores
+
+
 Question = Annotated[
-    ScaleQuestion | DilemmaQuestion | AllocationQuestion | SortQuestion | IATQuestion,
+    ScaleQuestion | DilemmaQuestion | AllocationQuestion | SortQuestion | IATQuestion
+    | SliderQuestion | ForcedChoiceQuestion | MatrixQuestion | AuctionQuestion,
     Field(discriminator="type"),
 ]
 

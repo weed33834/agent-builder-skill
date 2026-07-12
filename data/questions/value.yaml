@@ -538,3 +538,47 @@ questions:
       - {id: "3", text: 看情况, scores: {}}
       - {id: "4", text: 照顾弱者, scores: {empathy: 1, justice: 1, altruism: 1}}
       - {id: "5", text: 结果平等, scores: {justice: -1, empathy: 2, discipline: -1}}
+
+  # ===== 连续滑块题(强度测量) =====
+  - id: v_sl1
+    type: slider
+    prompt: 在"个人利益"与"他人福祉"之间,你天然的着力点?
+    dimensions: [altruism, honesty]
+    left_label: 优先自利
+    right_label: 优先利他
+    scores:
+      altruism: {low: -2, high: 2}
+      honesty: {low: 0, high: 1}
+
+  # ===== 强迫二选一(无中立,逼真实偏好) =====
+  - id: v_fc1
+    type: forced_choice
+    prompt: 二者只能取其一,你选?
+    dimensions: [honesty, empathy]
+    sides:
+      - {id: a, text: 说真话,即使伤人且于己无益, scores: {honesty: 2, empathy: -1}}
+      - {id: b, text: 说善意的谎言,保护他人感受, scores: {empathy: 2, honesty: -1}}
+
+  # ===== 同意度矩阵(批量Likert) =====
+  - id: v_mx1
+    type: matrix
+    prompt: 请对以下陈述表明同意程度。
+    dimensions: [justice, empathy, duty, honesty, altruism, discipline]
+    scale_max: 7
+    statements:
+      - {id: s1, text: 规则面前不应有例外,哪怕对弱者, scores: {justice: 2, empathy: -1}}
+      - {id: s2, text: 承诺一旦作出,无论如何都要兑现, scores: {duty: 2, honesty: 1}}
+      - {id: s3, text: 看到他人受苦,我比自己受苦还难受, scores: {empathy: 2, altruism: 1}}
+      - {id: s4, text: 自律不是束缚,而是通向自由的阶梯, scores: {discipline: 2}}
+
+  # ===== 价值观拍卖(测绝对价值强度) =====
+  - id: v_au1
+    type: auction
+    prompt: 你有100枚"价值金币",愿意为以下每项投入多少?(可保留预算)
+    dimensions: [honesty, altruism, justice, discipline, duty, empathy]
+    budget: 100
+    items:
+      - {id: integrity, text: 一世清白,从不失信, scores: {honesty: 2, duty: 1}}
+      - {id: compassion, text: 倾尽所能帮助弱者, scores: {altruism: 2, empathy: 1}}
+      - {id: fairness, text: 推动一项公正的制度变革, scores: {justice: 2, discipline: 1}}
+      - {id: selfmastery, text: 达到对自身的完全掌控, scores: {discipline: 2, duty: 1}}

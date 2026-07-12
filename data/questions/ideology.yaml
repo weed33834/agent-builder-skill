@@ -594,3 +594,47 @@ questions:
       - {word: 来世, category: right}
       - {word: 世俗, category: left}
       - {word: 神圣, category: right}
+
+  # ===== 连续滑块题(强度测量) =====
+  - id: i_sl1
+    type: slider
+    prompt: 在"自由市场"与"政府干预"之间,你倾向哪一端?
+    dimensions: [econ_right, econ_left]
+    left_label: 自由市场优先
+    right_label: 政府调控优先
+    scores:
+      econ_right: {low: 2, high: -2}
+      econ_left: {low: -2, high: 2}
+
+  # ===== 强迫二选一(无中立,逼真实偏好) =====
+  - id: i_fc1
+    type: forced_choice
+    prompt: 二者只能取其一,你选?
+    dimensions: [liberty, authority, tradition]
+    sides:
+      - {id: a, text: 个人自由最大化,即使带来不平等, scores: {liberty: 2, econ_right: 1}}
+      - {id: b, text: 社会秩序优先,即使限制部分自由, scores: {authority: 2, tradition: 1}}
+
+  # ===== 同意度矩阵(批量Likert) =====
+  - id: i_mx1
+    type: matrix
+    prompt: 请对以下陈述表明同意程度。
+    dimensions: [nationalist, globalist, tradition, progress, econ_left, liberty]
+    scale_max: 7
+    statements:
+      - {id: s1, text: 国家应优先保障本国公民,而非全球协作, scores: {nationalist: 2, globalist: -2}}
+      - {id: s2, text: 传统价值是社会的基石,不宜轻易动摇, scores: {tradition: 2, progress: -1}}
+      - {id: s3, text: 财富分配不公是最大的社会问题, scores: {econ_left: 2, progress: 1}}
+      - {id: s4, text: 个人应有权不受干预地选择生活方式, scores: {liberty: 2, progress: 1}}
+
+  # ===== 价值观拍卖(测绝对价值强度) =====
+  - id: i_au1
+    type: auction
+    prompt: 你有100枚"政策金币",愿意为以下每项议程投入多少?(可保留预算)
+    dimensions: [econ_left, econ_right, authority, liberty, tradition, nationalist]
+    budget: 100
+    items:
+      - {id: welfare, text: 建立全民福利与医疗保障, scores: {econ_left: 2, liberty: 1}}
+      - {id: market, text: 减税放权,激发市场活力, scores: {econ_right: 2, liberty: 1}}
+      - {id: security, text: 强化治安与边境管控, scores: {authority: 2, nationalist: 1}}
+      - {id: culture, text: 保护传统文化与民族认同, scores: {tradition: 2, nationalist: 1}}

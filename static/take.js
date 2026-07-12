@@ -11,11 +11,15 @@ let timerInterval = null;
 
 // 题型中文名 + 分段标题
 const TYPE_META = {
-  scale:      { name: '量表题',   section: '人格底色',   hint: '凭第一直觉选择最贴近你的选项' },
-  dilemma:    { name: '困境题',   section: '抉择时刻',   hint: '设想自己身处此境,会如何抉择' },
-  allocation: { name: '资源分配', section: '价值天平',   hint: '分配总额须等于给定数值' },
-  sort:       { name: '排序题',   section: '优先序列',   hint: '拖拽排序,1 = 最重要' },
-  iat:        { name: '联想测验', section: '内隐联想',   hint: '凭直觉,越快越好' },
+  scale:        { name: '量表题',   section: '人格底色',   hint: '凭第一直觉选择最贴近你的选项' },
+  dilemma:      { name: '困境题',   section: '抉择时刻',   hint: '设想自己身处此境,会如何抉择' },
+  slider:       { name: '强度滑块', section: '程度光谱',   hint: '拖动滑块,标记你的倾向强度' },
+  forced_choice:{ name: '强迫抉择', section: '二选其一',   hint: '必须选一个,没有中间地带' },
+  matrix:       { name: '同意度',   section: '信念矩阵',   hint: '对每条陈述选择同意程度' },
+  auction:      { name: '价值拍卖', section: '人生竞拍',   hint: '分配金币,可保留预算' },
+  allocation:   { name: '资源分配', section: '价值天平',   hint: '分配总额须等于给定数值' },
+  sort:         { name: '排序题',   section: '优先序列',   hint: '拖拽排序,1 = 最重要' },
+  iat:          { name: '联想测验', section: '内隐联想',   hint: '凭直觉,越快越好' },
 };
 
 // 预计算:每种题型的题号分布 {type: [globalIdx, ...]} 与计数
@@ -110,7 +114,11 @@ function phaseNumber(type, ti) {
 
 function renderCurrent(q) {
   const area = document.getElementById('question-area');
-  const renderers = { scale: renderScale, dilemma: renderDilemma, allocation: renderAllocation, sort: renderSort, iat: renderIAT };
+  const renderers = {
+    scale: renderScale, dilemma: renderDilemma, allocation: renderAllocation,
+    sort: renderSort, iat: renderIAT,
+    slider: renderSlider, forced_choice: renderForcedChoice, matrix: renderMatrix, auction: renderAuction,
+  };
   area.innerHTML = renderers[q.type](q);
   setupTimer(q);
   tracker.start();
@@ -239,6 +247,103 @@ function renderIAT(q) {
     </div>`;
 }
 
+function renderSlider(q) {
+  return `
+    <div class="question-card">
+      <div class="question-prompt">${q.prompt}</div>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:40px;letter-spacing:0.1em;text-align:center">拖动滑块,标记你的倾向</p>
+      <div class="slider-area" data-q="${q.id}">
+        <div class="slider-value" id="slider-value">50</div>
+        <div class="slider-track-wrap">
+          <input type="range" min="0" max="100" value="50" id="slider-input" class="slider-input" aria-label="倾向滑块">
+          <div class="slider-fill" id="slider-fill"></div>
+        </div>
+        <div class="slider-labels">
+          <span>${q.left_label}</span>
+          <span>${q.right_label}</span>
+        </div>
+        <button class="btn-primary" id="slider-confirm" style="margin-top:40px;display:block;width:100%">确 认</button>
+      </div>
+    </div>`;
+}
+
+function renderForcedChoice(q) {
+  return `
+    <div class="question-card">
+      <div class="question-prompt">${q.prompt}</div>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:40px;letter-spacing:0.1em;text-align:center">必须选其一,无中间地带</p>
+      <div class="fc-area" data-q="${q.id}">
+        <div class="fc-cards">
+          ${q.sides.map((s, i) => `
+            <div class="fc-card" data-id="${s.id}">
+              <div class="fc-letter">${String.fromCharCode(65 + i)}</div>
+              <div class="fc-text">${s.text}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="fc-vs">VS</div>
+      </div>
+    </div>`;
+}
+
+function renderMatrix(q) {
+  const smax = q.scale_max || 7;
+  const labels = ['强烈反对', '反对', '较反对', '中立', '较同意', '同意', '强烈同意'];
+  return `
+    <div class="question-card">
+      <div class="question-prompt">${q.prompt}</div>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">对每条陈述选择同意程度</p>
+      <div class="matrix-area" data-q="${q.id}">
+        <div class="matrix-header">
+          <span></span>
+          <div class="matrix-scale-labels">
+            ${labels.slice(0, smax).map((l, i) => `<span>${i+1}</span>`).join('')}
+          </div>
+        </div>
+        ${q.statements.map(s => `
+          <div class="matrix-row" data-id="${s.id}">
+            <div class="matrix-text">${s.text}</div>
+            <div class="matrix-scale">
+              ${Array.from({length: smax}, (_, i) => `<div class="matrix-dot" data-val="${i+1}"></div>`).join('')}
+            </div>
+          </div>
+        `).join('')}
+        <button class="btn-primary" id="matrix-confirm" style="margin-top:40px;display:block;width:100%">确 认</button>
+      </div>
+    </div>`;
+}
+
+function renderAuction(q) {
+  return `
+    <div class="question-card">
+      <div class="question-prompt">${q.prompt}</div>
+      <div class="auction-area" data-q="${q.id}" data-budget="${q.budget}">
+        <div class="auction-budget">
+          <span>剩余金币</span>
+          <span class="auction-remaining" id="auction-remaining">${q.budget}</span>
+          <span>/ ${q.budget}</span>
+        </div>
+        ${q.items.map(it => `
+          <div class="auction-row" data-id="${it.id}">
+            <div class="auction-head">
+              <label>${it.text}</label>
+              <div class="alloc-controls">
+                <button class="alloc-btn" data-delta="-10" aria-label="减10">−10</button>
+                <button class="alloc-btn" data-delta="-1" aria-label="减1">−1</button>
+                <span class="val">0</span>
+                <button class="alloc-btn" data-delta="1" aria-label="加1">+1</button>
+                <button class="alloc-btn" data-delta="10" aria-label="加10">+10</button>
+              </div>
+            </div>
+            <div class="alloc-bar"><div class="alloc-bar-fill" style="width:0%"></div></div>
+          </div>
+        `).join('')}
+        <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:13px;margin-top:24px;letter-spacing:0.1em;text-align:center">可保留预算,出价反映你对每项的真实价值评估</p>
+        <button class="btn-primary" id="auction-confirm" style="margin-top:32px;display:block;width:100%">确 认 出 价</button>
+      </div>
+    </div>`;
+}
+
 // ===== 事件绑定 =====
 function bindEvents(q) {
   if (q.type === 'scale' || q.type === 'dilemma') {
@@ -334,6 +439,102 @@ function bindEvents(q) {
       const order = [...list.children].map(c => c.dataset.id);
       recordAnswer(q, { order });
     });
+  } else if (q.type === 'slider') {
+    const input = document.getElementById('slider-input');
+    const valEl = document.getElementById('slider-value');
+    const fill = document.getElementById('slider-fill');
+    const update = () => {
+      const v = +input.value;
+      valEl.textContent = v;
+      fill.style.width = v + '%';
+    };
+    update();
+    input.addEventListener('input', () => { update(); tracker.recordChange(+input.value); });
+    document.getElementById('slider-confirm').addEventListener('click', () => {
+      recordAnswer(q, { position: +input.value });
+    });
+  } else if (q.type === 'forced_choice') {
+    const container = document.querySelector(`[data-q="${q.id}"]`);
+    container.querySelectorAll('.fc-card').forEach(card => {
+      card.addEventListener('click', () => {
+        container.querySelectorAll('.fc-card').forEach(x => x.classList.remove('selected'));
+        card.classList.add('selected');
+        tracker.recordChange(card.dataset.id);
+        setTimeout(() => recordAnswer(q, { choice: card.dataset.id }), 350);
+      });
+    });
+  } else if (q.type === 'matrix') {
+    const container = document.querySelector(`[data-q="${q.id}"]`);
+    container.querySelectorAll('.matrix-row').forEach(row => {
+      row.querySelectorAll('.matrix-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+          const val = +dot.dataset.val;
+          row.querySelectorAll('.matrix-dot').forEach(d => d.classList.remove('selected'));
+          // 填充到选中位置
+          row.querySelectorAll('.matrix-dot').forEach(d => {
+            if (+d.dataset.val <= val) d.classList.add('selected');
+          });
+          row.dataset.val = val;
+          tracker.recordChange(val);
+        });
+      });
+    });
+    document.getElementById('matrix-confirm').addEventListener('click', () => {
+      const ratings = {};
+      let allDone = true;
+      container.querySelectorAll('.matrix-row').forEach(row => {
+        if (row.dataset.val) ratings[row.dataset.id] = +row.dataset.val;
+        else allDone = false;
+      });
+      if (!allDone) { alert('请为每条陈述都选择同意程度。'); return; }
+      recordAnswer(q, { ratings });
+    });
+  } else if (q.type === 'auction') {
+    const container = document.querySelector(`[data-q="${q.id}"]`);
+    const budget = q.budget;
+    const remainingEl = document.getElementById('auction-remaining');
+
+    const getSum = () => {
+      let sum = 0;
+      container.querySelectorAll('.auction-row').forEach(r => { sum += +(r.querySelector('.val').textContent); });
+      return sum;
+    };
+    const updateRemaining = () => {
+      const sum = getSum();
+      const rem = budget - sum;
+      remainingEl.textContent = rem;
+      remainingEl.parentElement.classList.toggle('over', rem < 0);
+      remainingEl.parentElement.classList.toggle('ok', rem === 0);
+      // 条形按预算比例
+      container.querySelectorAll('.auction-row').forEach(r => {
+        const v = +(r.querySelector('.val').textContent);
+        r.querySelector('.alloc-bar-fill').style.width = (v / budget * 100) + '%';
+      });
+    };
+    const setRow = (row, newVal) => {
+      // 不允许单行超过剩余预算(含已分配)
+      const others = getSum() - +(row.querySelector('.val').textContent);
+      const maxAllowed = budget - others;
+      newVal = Math.max(0, Math.min(maxAllowed, newVal));
+      row.querySelector('.val').textContent = newVal;
+      updateRemaining();
+    };
+    container.querySelectorAll('.alloc-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const row = btn.closest('.auction-row');
+        const cur = +(row.querySelector('.val').textContent);
+        setRow(row, cur + (+btn.dataset.delta));
+        tracker.recordChange(cur);
+      });
+    });
+    updateRemaining();
+    document.getElementById('auction-confirm').addEventListener('click', () => {
+      const bids = {};
+      container.querySelectorAll('.auction-row').forEach(r => { bids[r.dataset.id] = +(r.querySelector('.val').textContent); });
+      const sum = Object.values(bids).reduce((a, b) => a + b, 0);
+      if (sum > budget) { alert(`总出价不能超过预算 ${budget}(当前 ${sum})。`); return; }
+      recordAnswer(q, { bids });
+    });
   } else if (q.type === 'iat') {
     runIAT(q);
   }
@@ -391,6 +592,28 @@ function getCurrentAnswer(q) {
   if (q.type === 'scale' || q.type === 'dilemma') {
     const sel = document.querySelector(`[data-q="${q.id}"] .selected`);
     return sel ? { option_id: sel.dataset.id } : {};
+  }
+  if (q.type === 'slider') {
+    const input = document.getElementById('slider-input');
+    return input ? { position: +input.value } : {};
+  }
+  if (q.type === 'forced_choice') {
+    const sel = document.querySelector(`[data-q="${q.id}"] .fc-card.selected`);
+    return sel ? { choice: sel.dataset.id } : {};
+  }
+  if (q.type === 'matrix') {
+    const ratings = {};
+    document.querySelectorAll(`[data-q="${q.id}"] .matrix-row`).forEach(r => {
+      if (r.dataset.val) ratings[r.dataset.id] = +r.dataset.val;
+    });
+    return Object.keys(ratings).length ? { ratings } : {};
+  }
+  if (q.type === 'auction') {
+    const bids = {};
+    document.querySelectorAll(`[data-q="${q.id}"] .auction-row`).forEach(r => {
+      bids[r.dataset.id] = +(r.querySelector('.val').textContent);
+    });
+    return { bids };
   }
   return {};
 }
