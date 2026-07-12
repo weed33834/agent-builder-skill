@@ -23,7 +23,7 @@ class AnswerItem(BaseModel):
     # 行为轨迹(前端采集)
     duration_ms: int = 0
     change_count: int = 0
-    trajectory: dict | None = None  # 滑块路径/拖拽路径
+    trajectory: list | None = None  # 滑块路径/拖拽路径:[{t, value}, ...]
 
 
 class SubmitAnswersIn(BaseModel):

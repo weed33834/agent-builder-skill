@@ -106,7 +106,7 @@ function renderDilemma(q) {
       <div class="options" data-q="${q.id}">
         ${q.options.map(o => `<div class="option" data-id="${o.id}">${o.text}</div>`).join('')}
       </div>
-      ${q.historical_figure ? `<p style="font-family:var(--font-serif);color:var(--paper-faint);font-size:13px;margin-top:24px;letter-spacing:0.1em">— 历史上,${q.historical_figure} 亦曾面对相似抉择</p>` : ''}
+      ${q.historical_figure ? `<p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-top:32px;letter-spacing:0.1em;text-align:center">— 历史上,${q.historical_figure} 亦曾面对相似抉择</p>` : ''}
     </div>`;
 }
 
@@ -114,7 +114,7 @@ function renderAllocation(q) {
   return `
     <div class="question-card">
       <div class="question-prompt">${q.prompt}</div>
-      <p style="color:var(--paper-faint);font-size:13px;margin-bottom:24px;letter-spacing:0.1em">分配总和须 = ${q.total}</p>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">分配总和须 = ${q.total}</p>
       <div data-q="${q.id}">
         ${q.targets.map(t => `
           <div class="alloc-row">
@@ -125,7 +125,7 @@ function renderAllocation(q) {
         `).join('')}
         <div class="alloc-total">总计 <span class="num">0</span> / ${q.total}</div>
       </div>
-      <button class="btn-primary" id="alloc-confirm" style="margin-top:32px;display:block;width:100%">确 认</button>
+      <button class="btn-primary" id="alloc-confirm" style="margin-top:40px;display:block;width:100%">确 认</button>
     </div>`;
 }
 
@@ -134,11 +134,11 @@ function renderSort(q) {
   return `
     <div class="question-card">
       <div class="question-prompt">${q.prompt}</div>
-      <p style="color:var(--paper-faint);font-size:13px;margin-bottom:24px;letter-spacing:0.1em">拖拽排序,1 = 最重要</p>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">拖拽排序,1 = 最重要</p>
       <div class="sort-list" data-q="${q.id}">
         ${shuffled.map((it, i) => `<div class="sort-item" data-id="${it.id}" draggable="true"><span class="order">${i+1}</span>${it.text}</div>`).join('')}
       </div>
-      <button class="btn-primary" id="sort-confirm" style="margin-top:32px;display:block;width:100%">确 认 排 序</button>
+      <button class="btn-primary" id="sort-confirm" style="margin-top:40px;display:block;width:100%">确 认 排 序</button>
     </div>`;
 }
 
@@ -146,7 +146,7 @@ function renderIAT(q) {
   return `
     <div class="question-card">
       <div class="question-prompt">${q.prompt}</div>
-      <p style="color:var(--paper-faint);font-size:13px;text-align:center;letter-spacing:0.15em;margin-bottom:16px">凭直觉,越快越好</p>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;text-align:center;letter-spacing:0.15em;margin-bottom:20px">凭直觉,越快越好</p>
       <div class="iat-area" data-q="${q.id}">
         <div class="iat-labels">
           <span>← ${q.left_label}</span>
