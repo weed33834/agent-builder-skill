@@ -1,10 +1,10 @@
 # 名人镜 —— 你与历史上哪个名人最相近
 # 维度:大五人格 + 风险偏好 + 理想主义
-# 量表8 + 困境6(历史名人真实困境) + 资源分配2 = 16题
+# 量表12 + 困境8(历史名人真实困境) + 资源分配3 + 排序1 = 24题
 assessment_type: celebrity
 title: 名人镜
 description: 通过回答与历史名人真实困境相似的选择,测出你与谁最相近。
-estimated_minutes: 10
+estimated_minutes: 15
 dimensions:
   - openness
   - conscientiousness
@@ -191,3 +191,95 @@ questions:
       - {id: work_plan, text: 按计划工作, scores: {conscientiousness: 1}}
       - {id: rest, text: 休息放空, scores: {neuroticism: 1}}
     total: 100
+
+  # ===== 扩展量表题(深化维度) =====
+  - id: c_s9
+    type: scale
+    prompt: 当你听说一种与你截然相反的观点,你?
+    dimensions: [openness]
+    points:
+      - {id: "1", text: 本能抵触, scores: {openness: -2}}
+      - {id: "2", text: 不愿了解, scores: {openness: -1}}
+      - {id: "3", text: 看心情, scores: {openness: 0}}
+      - {id: "4", text: 愿意倾听, scores: {openness: 1}}
+      - {id: "5", text: 主动求教, scores: {openness: 2}}
+  - id: c_s10
+    type: scale
+    prompt: 任务截止前一周,你通常的状态?
+    dimensions: [conscientiousness, neuroticism]
+    points:
+      - {id: "1", text: 已完成大半, scores: {conscientiousness: 2, neuroticism: -1}}
+      - {id: "2", text: 稳步推进, scores: {conscientiousness: 1}}
+      - {id: "3", text: 还没开始, scores: {conscientiousness: 0}}
+      - {id: "4", text: 焦虑赶工, scores: {conscientiousness: -1, neuroticism: 1}}
+      - {id: "5", text: 通宵硬扛, scores: {conscientiousness: -2, neuroticism: 2}}
+  - id: c_s11
+    type: scale
+    prompt: 在一个全是陌生人的场合,你离开时的感受?
+    dimensions: [extraversion, neuroticism]
+    points:
+      - {id: "1", text: 精疲力竭, scores: {extraversion: -2, neuroticism: 1}}
+      - {id: "2", text: 略感疲惫, scores: {extraversion: -1}}
+      - {id: "3", text: 还好, scores: {extraversion: 0}}
+      - {id: "4", text: 意犹未尽, scores: {extraversion: 1}}
+      - {id: "5", text: 焕发活力, scores: {extraversion: 2, neuroticism: -1}}
+  - id: c_s12
+    type: scale
+    prompt: 当身边的人陷入负面情绪,你?
+    dimensions: [agreeableness, neuroticism]
+    points:
+      - {id: "1", text: 跟着低落, scores: {agreeableness: 1, neuroticism: 2}}
+      - {id: "2", text: 想躲开, scores: {agreeableness: -1, neuroticism: 1}}
+      - {id: "3", text: 理性对待, scores: {agreeableness: 0, neuroticism: -1}}
+      - {id: "4", text: 安慰陪伴, scores: {agreeableness: 1, neuroticism: -1}}
+      - {id: "5", text: 主动分担, scores: {agreeableness: 2, neuroticism: -2}}
+
+  # ===== 扩展困境题(更深的历史回响) =====
+  - id: c_d7
+    type: dilemma
+    prompt: 你能拯救一项濒危的文化遗产,但需耗尽半生精力且无回报。
+    dimensions: [idealism, conscientiousness, risk_taking]
+    time_limit_sec: 15
+    scenario: 一项古老技艺即将失传,只有你愿意学。学成需二十年,无市场、无传承资金,只有内心的回响。
+    options:
+      - {id: a, text: 投入毕生,任其寂寞, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}}
+      - {id: b, text: 记录保存,不亲自传承, scores: {idealism: 1, conscientiousness: 1}}
+      - {id: c, text: 让它安息,专注现实, scores: {idealism: -2, conscientiousness: 0}}
+    historical_figure: 樊锦诗
+    historical_choice: a
+  - id: c_d8
+    type: dilemma
+    prompt: 你的挚友成了你最大对手,你能用私密旧事击溃 ta,但会毁了 ta 一生。
+    dimensions: [agreeableness, risk_taking, idealism]
+    time_limit_sec: 15
+    scenario: 你们曾无话不谈。如今在巅峰对决,曝光 ta 的旧错就能赢,但 ta 将万劫不复。
+    options:
+      - {id: a, text: 公平较量,不用旧事, scores: {agreeableness: 2, idealism: 2, risk_taking: 1}}
+      - {id: b, text: 暗示警告,逼 ta 退让, scores: {agreeableness: -1, risk_taking: 0}}
+      - {id: c, text: 曝光旧事,确保胜利, scores: {agreeableness: -2, idealism: -2, risk_taking: 2}}
+    historical_figure: 苏轼
+    historical_choice: a
+
+  # ===== 扩展资源分配题 =====
+  - id: c_a3
+    type: allocation
+    prompt: 你有一年寿命可换任何成就,如何分配?
+    dimensions: [idealism, conscientiousness, openness, agreeableness]
+    targets:
+      - {id: art, text: 创作传世作品, scores: {openness: 1, idealism: 1}}
+      - {id: family_time, text: 陪伴家人, scores: {agreeableness: 1}}
+      - {id: cause, text: 推动一项事业, scores: {idealism: 1, conscientiousness: 1}}
+      - {id: knowledge, text: 探索未知, scores: {openness: 1}}
+    total: 100
+
+  # ===== 扩展排序题(价值优先级) =====
+  - id: c_so1
+    type: sort
+    prompt: 排序你最看重的品质(1=最重要)
+    dimensions: [openness, conscientiousness, agreeableness, idealism, risk_taking]
+    items:
+      - {id: curious, text: 好奇开放, scores: {openness: 1}}
+      - {id: steady, text: 踏实可靠, scores: {conscientiousness: 1}}
+      - {id: kind, text: 善良温和, scores: {agreeableness: 1}}
+      - {id: principled, text: 坚守原则, scores: {idealism: 1}}
+      - {id: bold, text: 敢冒风险, scores: {risk_taking: 1}}

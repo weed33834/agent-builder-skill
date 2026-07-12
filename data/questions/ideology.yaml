@@ -1,11 +1,11 @@
 # 意识镜 —— 你的意识形态定位
-# 量表10 + 排序3 + IAT 3 = 16题
+# 量表15 + 困境2 + 排序4 + IAT 4 = 25题
 # 维度:经济轴(左←→右) + 社会轴(权威↑↓自由) + 传统vs进步 + 民族vs全球
 # 匹配意识形态标签:见 data/ideologies/ideology.yaml
 assessment_type: ideology
 title: 意识镜
 description: 测出你在政治光谱上的定位,与哪种意识形态最接近。
-estimated_minutes: 10
+estimated_minutes: 15
 dimensions:
   - econ_left
   - econ_right
@@ -200,3 +200,107 @@ questions:
       - {word: 移民, category: right}
       - {word: 主权, category: left}
       - {word: 联合国, category: right}
+
+  # ===== 扩展量表题(深化各轴) =====
+  - id: i_s11
+    type: scale
+    prompt: 工会与劳动者集体谈判权是否应被强化?
+    dimensions: [econ_left, econ_right]
+    points:
+      - {id: "1", text: 大幅强化, scores: {econ_left: 2}}
+      - {id: "2", text: 适度强化, scores: {econ_left: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 适度限制, scores: {econ_right: 1}}
+      - {id: "5", text: 严格限制, scores: {econ_right: 2}}
+  - id: i_s12
+    type: scale
+    prompt: 政府是否应审查媒体与网络内容以维护稳定?
+    dimensions: [authority, liberty]
+    points:
+      - {id: "1", text: 应当审查, scores: {authority: 2}}
+      - {id: "2", text: 倾向审查, scores: {authority: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向自由, scores: {liberty: 1}}
+      - {id: "5", text: 绝对自由, scores: {liberty: 2}}
+  - id: i_s13
+    type: scale
+    prompt: 性别角色是否应回归传统分工?
+    dimensions: [tradition, progress]
+    points:
+      - {id: "1", text: 完全回归, scores: {tradition: 2}}
+      - {id: "2", text: 倾向传统, scores: {tradition: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向平等, scores: {progress: 1}}
+      - {id: "5", text: 彻底平等, scores: {progress: 2}}
+  - id: i_s14
+    type: scale
+    prompt: 国际组织(联合国/世卫)的决议对本国是否有约束力?
+    dimensions: [globalist, nationalist]
+    points:
+      - {id: "1", text: 高于本国, scores: {globalist: 2}}
+      - {id: "2", text: 应当尊重, scores: {globalist: 1}}
+      - {id: "3", text: 中立, scores: {}}
+      - {id: "4", text: 倾向自主, scores: {nationalist: 1}}
+      - {id: "5", text: 完全自主, scores: {nationalist: 2}}
+  - id: i_s15
+    type: scale
+    prompt: 教育与医疗应作为基本权利免费提供,还是由市场决定?
+    dimensions: [econ_left, econ_right]
+    points:
+      - {id: "1", text: 全部免费, scores: {econ_left: 2}}
+      - {id: "2", text: 基本免费, scores: {econ_left: 1}}
+      - {id: "3", text: 混合制, scores: {}}
+      - {id: "4", text: 倾向市场, scores: {econ_right: 1}}
+      - {id: "5", text: 完全市场, scores: {econ_right: 2}}
+
+  # ===== 困境题(意识形态真实冲突) =====
+  - id: i_d1
+    type: dilemma
+    prompt: 经济危机中,政府应救大企业还是直接发钱给民众?
+    dimensions: [econ_left, econ_right]
+    time_limit_sec: 15
+    scenario: 危机来临。救企业能保就业但肥了资本;发钱给民众即时有效但可能通胀。
+    options:
+      - {id: a, text: 直接发钱给民众, scores: {econ_left: 2}}
+      - {id: b, text: 救企业保就业, scores: {econ_right: 2}}
+      - {id: c, text: 两者各半, scores: {econ_left: 0, econ_right: 0}}
+  - id: i_d2
+    type: dilemma
+    prompt: 为反恐,政府要求全面监控通信,你?
+    dimensions: [authority, liberty]
+    time_limit_sec: 15
+    scenario: 恐袭威胁升高。全面监控能预防袭击,但所有公民隐私将不复存在。
+    options:
+      - {id: a, text: 支持监控,安全优先, scores: {authority: 2}}
+      - {id: b, text: 反对监控,自由优先, scores: {liberty: 2}}
+      - {id: c, text: 有监督的有限监控, scores: {authority: 1, liberty: 1}}
+
+  # ===== 扩展排序题 =====
+  - id: i_so4
+    type: sort
+    prompt: 排序你认为最重要的公民自由(1=最重要)
+    dimensions: [liberty, authority, tradition, progress]
+    items:
+      - {id: speech, text: 言论自由, scores: {liberty: 1}}
+      - {id: privacy, text: 隐私权, scores: {liberty: 1}}
+      - {id: assembly, text: 集会结社, scores: {liberty: 1, progress: 1}}
+      - {id: religion, text: 信仰自由, scores: {liberty: 1, tradition: 1}}
+      - {id: arms, text: 持有权, scores: {liberty: 1, authority: -1}}
+
+  # ===== 扩展 IAT(内隐联想) =====
+  - id: i_iat4
+    type: iat
+    prompt: 快速分类:权威与自由的直觉联想
+    dimensions: [authority, liberty]
+    time_limit_sec: 60
+    left_label: 秩序/权威
+    right_label: 自由/权利
+    words:
+      - {word: 法治, category: left}
+      - {word: 抗争, category: right}
+      - {word: 服从, category: left}
+      - {word: 反抗, category: right}
+      - {word: 稳定, category: left}
+      - {word: 异见, category: right}
+      - {word: 长官, category: left}
+      - {word: 公民, category: right}

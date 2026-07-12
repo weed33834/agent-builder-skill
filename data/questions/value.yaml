@@ -1,10 +1,10 @@
 # 价值镜 —— 你的价值观与道德水平
-# 困境9 + 资源分配3 + 排序3 = 15题(科尔伯格式分级)
+# 量表2 + 困境12 + 资源分配5 + 排序5 = 24题(科尔伯格式分级)
 # 维度:诚实/利他/公正/责任/共情/自律
 assessment_type: value
 title: 价值镜
 description: 通过两难困境与资源分配,测出你的真实价值观与道德水平。
-estimated_minutes: 12
+estimated_minutes: 18
 dimensions:
   - honesty
   - altruism
@@ -169,3 +169,101 @@ questions:
       - {id: breach, text: 违背承诺, scores: {duty: 1}}
       - {id: cold, text: 冷漠无情, scores: {empathy: 1}}
       - {id: lazy, text: 怠惰放纵, scores: {discipline: 1}}
+
+  # ===== 扩展量表题(价值底色) =====
+  - id: v_s1_scale
+    type: scale
+    prompt: 当说实话会伤害他人感情,你通常?
+    dimensions: [honesty, empathy]
+    points:
+      - {id: "1", text: 委婉避开, scores: {empathy: 2, honesty: -1}}
+      - {id: "2", text: 稍加修饰, scores: {empathy: 1, honesty: 0}}
+      - {id: "3", text: 看情况, scores: {}}
+      - {id: "4", text: 倾向直说, scores: {honesty: 1}}
+      - {id: "5", text: 毫不掩饰, scores: {honesty: 2, empathy: -1}}
+  - id: v_s2_scale
+    type: scale
+    prompt: 看到陌生人遭遇不公,你?
+    dimensions: [justice, empathy, altruism]
+    points:
+      - {id: "1", text: 绕道走开, scores: {empathy: -2, altruism: -2}}
+      - {id: "2", text: 心里同情, scores: {empathy: 1}}
+      - {id: "3", text: 看情况, scores: {}}
+      - {id: "4", text: 上前询问, scores: {empathy: 1, justice: 1}}
+      - {id: "5", text: 挺身而出, scores: {justice: 2, altruism: 2, empathy: 1}}
+
+  # ===== 扩展困境题(更深的两难) =====
+  - id: v_d10
+    type: dilemma
+    prompt: 你发现恩师的成名作涉嫌抄袭,曝光会毁掉 ta 与整个学科声誉。
+    dimensions: [honesty, justice, empathy, duty]
+    time_limit_sec: 15
+    scenario: 你整理恩师遗稿时发现关键论点抄袭自一位已被遗忘的学者。恩师已故,学科根基将动摇。
+    options:
+      - {id: a, text: 公开真相,纠正历史, scores: {honesty: 2, justice: 2, empathy: -1}}
+      - {id: b, text: 内部说明,不公开, scores: {honesty: 1, duty: 1}}
+      - {id: c, text: 让它随风, scores: {honesty: -2, justice: -2, empathy: 1}}
+  - id: v_d11
+    type: dilemma
+    prompt: 你的孩子犯下严重错误,自首会断送前程,包庇违背你的信念。
+    dimensions: [honesty, justice, duty, empathy]
+    time_limit_sec: 15
+    scenario: 孩子酒驾撞人逃逸,受害者昏迷。你若不报,孩子或能逃过;你若报,孩子半生尽毁。
+    options:
+      - {id: a, text: 劝其自首,陪伴承担, scores: {honesty: 2, justice: 2, duty: 2, empathy: 1}}
+      - {id: b, text: 替 ta 隐瞒, scores: {empathy: 2, honesty: -2, justice: -2}}
+      - {id: c, text: 匿名举报, scores: {justice: 2, empathy: -2, duty: 1}}
+  - id: v_d12
+    type: dilemma
+    prompt: 你掌管救命物资,规则要求平分,但有人明显更需要。
+    dimensions: [justice, altruism, duty, empathy]
+    time_limit_sec: 15
+    scenario: 灾区物资按人头分。但一户有重症患者急需双倍,另一户健康。规则不允许灵活分配。
+    options:
+      - {id: a, text: 严守规则,平分, scores: {justice: 2, duty: 2, empathy: -1}}
+      - {id: b, text: 灵活倾斜,救急者, scores: {altruism: 2, empathy: 2, justice: -1}}
+      - {id: c, text: 劝健康户让出, scores: {empathy: 1, altruism: 1, duty: -1}}
+
+  # ===== 扩展资源分配题 =====
+  - id: v_a4
+    type: allocation
+    prompt: 一笔善款由你支配,如何分配?
+    dimensions: [altruism, justice, empathy, discipline]
+    targets:
+      - {id: emergency, text: 急救重症, scores: {empathy: 1, altruism: 1}}
+      - {id: education, text: 贫困教育, scores: {justice: 1, altruism: 1}}
+      - {id: elderly, text: 孤寡老人, scores: {empathy: 1}}
+      - {id: audit, text: 监督透明, scores: {discipline: 1, justice: 1}}
+    total: 100
+  - id: v_a5
+    type: allocation
+    prompt: 你的社会资本(100)如何投放?
+    dimensions: [duty, justice, altruism, empathy]
+    targets:
+      - {id: mentor, text: 提携后辈, scores: {duty: 1, altruism: 1}}
+      - {id: whistle, text: 揭露问题, scores: {justice: 1, duty: 1}}
+      - {id: support, text: 扶持弱者, scores: {empathy: 1, altruism: 1}}
+      - {id: network, text: 经营人脉, scores: {discipline: 1}}
+    total: 100
+
+  # ===== 扩展排序题(价值取向深化) =====
+  - id: v_s4
+    type: sort
+    prompt: 排序你最敬重的生命姿态(1=最敬重)
+    dimensions: [honesty, altruism, justice, duty, empathy, discipline]
+    items:
+      - {id: whistleblower, text: 吹哨揭黑, scores: {honesty: 1, justice: 1}}
+      - {id: volunteer, text: 默默行善, scores: {altruism: 1, empathy: 1}}
+      - {id: keeper, text: 守诺如山, scores: {duty: 1, discipline: 1}}
+      - {id: reformer, text: 推动改革, scores: {justice: 1}}
+      - {id: ascetic, text: 苦行自律, scores: {discipline: 1}}
+  - id: v_s5
+    type: sort
+    prompt: 排序你认为最该被原谅的过错(1=最该原谅)
+    dimensions: [honesty, altruism, justice, duty, empathy]
+    items:
+      - {id: lie_help, text: 为救人而撒谎, scores: {altruism: 1, empathy: 1}}
+      - {id: steal_hunger, text: 饥寒所迫的偷盗, scores: {empathy: 1}}
+      - {id: break_unjust, text: 违抗不义之法, scores: {justice: 1}}
+      - {id: fail_duty, text: 因情失职, scores: {empathy: 1}}
+      - {id: self_deception, text: 自欺欺人, scores: {honesty: 1}}
