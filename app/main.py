@@ -6,8 +6,9 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api import ROUTERS
@@ -37,7 +38,25 @@ app.add_middleware(
 for router in ROUTERS:
     app.include_router(router)
 
+
 # 前端静态文件 —— 挂在根,API 走 /api 前缀
 static_dir = Path(__file__).resolve().parent.parent / "static"
 if static_dir.exists():
+
+    # 路由:/?id=...  →  /report.html?id=...  (兼容分享链接)
+    @app.get("/")
+    async def root(request: Request):
+        qs = request.url.query
+        if qs:
+            # 把 id 视为结果报告,其他参数走各自页面
+            if "id=" in qs and "type=" not in qs:
+                return RedirectResponse(url=f"/report.html?{qs}")
+            if "type=" in qs:
+                return RedirectResponse(url=f"/take.html?{qs}")
+        index = static_dir / "index.html"
+        if index.exists():
+            return FileResponse(index)
+        return {"detail": "no index"}
+
+    # 直接挂静态文件(覆盖默认 /)
     app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
