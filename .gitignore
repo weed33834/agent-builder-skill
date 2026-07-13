@@ -19,6 +19,14 @@ data/db/
 htmlcov/
 .coverage
 
+# 临时/调试文件
+screenshots/
+*.png
+*.jpg
+capture_*.py
+test_one.py
+/tmp/
+
 # 系统
 .DS_Store
 Thumbs.db
