@@ -12,65 +12,266 @@
 <div class="container">
 
   <div class="take-header">
-    <a href="/" class="back-link">← 返 回</a>
-    <span class="title-label">关 于 心 镜</span>
+    <a href="/" class="back-link" data-i18n="back">← 返 回</a>
+    <span class="title-label" data-i18n="about_title">关 于 心 镜</span>
+    <div class="lang-switch" id="lang-switch">
+      <button class="lang-btn active" data-lang="zh">中</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+      <button class="lang-btn" data-lang="ja">日</button>
+    </div>
   </div>
 
   <header class="history-hero">
     <div class="mirror-disc"></div>
-    <h1>心 镜</h1>
+    <h1 data-i18n="brand">心 镜</h1>
     <p class="subtitle">M I N D &nbsp; M I R R O R</p>
-    <p class="disclaimer">非问卷 · 非诊断 · 一面照见真实自我的水银镜</p>
+    <p class="disclaimer" data-i18n="tagline">非问卷 · 非诊断 · 一面照见真实自我的水银镜</p>
   </header>
 
   <section class="about-section">
-    <h3>何 谓 心 镜</h3>
-    <p>世面上的测评多是量表 — 你勾选,它加总,你得到一个标签。</p>
-    <p>心镜不信量表。人会在答题时美化自己,会在权衡时藏起私心,会在意识层面欺骗自己。所以心镜不只用问题,它还用<strong>两难困境</strong>逼你在冲突中表态,用<strong>时间压力</strong>剥开理性伪装,用<strong>资源分配</strong>暴露真实优先级,用<strong>内隐联想</strong>绕过意识直接量度本能。</p>
-    <p>每一道题都记录你的<strong>耗时、修改次数、决策轨迹</strong>。你以为你在选答案,其实答案也在选你。</p>
+    <h3 data-i18n="sec_concept">何 谓 心 镜</h3>
+    <div data-i18n-html="concept_body"></div>
   </section>
 
   <section class="about-section">
-    <h3>三 面 镜 子</h3>
-    <ul class="mirror-list">
-      <li>
-        <span class="mirror-list-icon">名</span>
-        <div>
-          <div class="mirror-list-title">名 人 镜</div>
-          <div class="mirror-list-desc">照见你与历史上哪位灵魂最为相近 — 不是模仿,是回响。</div>
-        </div>
-      </li>
-      <li>
-        <span class="mirror-list-icon">义</span>
-        <div>
-          <div class="mirror-list-title">价 值 镜</div>
-          <div class="mirror-list-desc">照见你的价值坐标与道德水平 — 你以为的原则,是否经得起情境的考验。</div>
-        </div>
-      </li>
-      <li>
-        <span class="mirror-list-icon">场</span>
-        <div>
-          <div class="mirror-list-title">意 识 镜</div>
-          <div class="mirror-list-desc">照见你的意识形态坐标 — 经济轴与社会轴上的真实位置。</div>
-        </div>
-      </li>
-    </ul>
+    <h3 data-i18n="sec_mirrors">三 面 镜 子</h3>
+    <ul class="mirror-list" id="mirror-list"></ul>
   </section>
 
   <section class="about-section">
-    <h3>数 据 与 隐 私</h3>
-    <p>本测评<strong>完全匿名</strong>。我们仅以一个本地 token 关联你的记录,不收集姓名、邮箱、设备或任何身份信息。</p>
-    <p>行为轨迹(决策耗时、修改次数、拖拽路径)仅用于生成更精准的报告,不会外传,不会用于广告,不会用于训练。</p>
-    <p>你可以随时清除自己的全部记录 — 那些影像便从镜中消散,了无痕迹。</p>
+    <h3 data-i18n="sec_methods">九 种 答 题 方 法</h3>
+    <div class="method-grid" id="method-grid"></div>
   </section>
 
   <section class="about-section">
-    <h3>边 界 与 声 明</h3>
-    <p>心镜是<strong>一面镜子</strong>,不是一把尺子。</p>
-    <p>它能照见倾向,不能诊断疾病;它能引发思考,不能替代专业的心理咨询或医疗建议。若结果让你感到不安,请以平常心待之 — 镜中所见,不过是你某一刻的投影。</p>
-    <p style="margin-top:24px;color:var(--paper-faint);font-size:13px;letter-spacing:0.1em">— 镜 不 言,只 照 —</p>
+    <h3 data-i18n="sec_behavior">行 为 轨 迹 与 计 分</h3>
+    <div data-i18n-html="behavior_body"></div>
+  </section>
+
+  <section class="about-section">
+    <h3 data-i18n="sec_privacy">数 据 与 隐 私</h3>
+    <div data-i18n-html="privacy_body"></div>
+  </section>
+
+  <section class="about-section">
+    <h3 data-i18n="sec_boundary">边 界 与 声 明</h3>
+    <div data-i18n-html="boundary_body"></div>
   </section>
 
 </div>
+
+<script>
+// ============================================================
+// 三语文案 —— 中 / 英 / 日
+// ============================================================
+const I18N = {
+  zh: {
+    back: '← 返 回',
+    about_title: '关 于 心 镜',
+    brand: '心 镜',
+    tagline: '非问卷 · 非诊断 · 一面照见真实自我的水银镜',
+    sec_concept: '何 谓 心 镜',
+    concept_body: `
+      <p>市面上的人格测评大多是量表——你勾选,它加总,你得到一个标签。这套流程把人压缩成几个数字,却丢弃了最有价值的部分:你在面对两难时如何抉择,你在时间压力下流露的本能,你在改主意与笃定之间的微妙差异。</p>
+      <p>心镜不满足于此。它用<strong>两难困境</strong>将你置入历史情境,逼你在冲突中表态而非在安全区打分;用<strong>强迫抉择</strong>取消中间地带,让回避无处藏身;用<strong>价值拍卖</strong>以有限预算竞拍信念,出价即真实排序;用<strong>内隐联想</strong>绕过意识层,直接量度本能反应时差异。</p>
+      <p>每一道题都记录你的<strong>作答耗时、修改次数、决策轨迹</strong>。这些行为数据不是装饰——它们直接进入计分。秒选的答案会被降权,反复犹豫的会被标记,笃定的选择获得更高权重。你以为你在选答案,其实答案也在选你。</p>
+    `,
+    sec_mirrors: '三 面 镜 子',
+    mirrors: [
+      { icon: '名', title: '名 人 镜', desc: '照见你与历史上哪位灵魂最为相近。54 道题,40 位历史人物库——不是模仿,是回响。从林肯的坚守到图灵的内向天才,找到与你底色共振的那个人。' },
+      { icon: '义', title: '价 值 镜', desc: '照见你的价值坐标与道德水平。54 道题,从利他、公正、诚实到自律,多维度刻画你在利益与原则之间的真实站位——你以为的原则,是否经得起情境的考验。' },
+      { icon: '场', title: '意 识 镜', desc: '照见你的意识形态坐标。55 道题,32 种意识形态库,经济轴与社会轴交叉定位。不预设立场,不引导结论,只如实呈现你在政治光谱上的投影。' },
+    ],
+    sec_methods: '九 种 答 题 方 法',
+    methods: [
+      { name: '量表题', en: 'Scale', desc: '五点量表,测量稳定的人格倾向。看似简单,却是校准基准线的基础。' },
+      { name: '困境题', en: 'Dilemma', desc: '历史两难情境,逼你在冲突中表态。没有标准答案,只有你的选择。' },
+      { name: '强度滑块', en: 'Slider', desc: '0-100 连续光谱,取消离散选项的安全感。你必须精确标记倾向强度。' },
+      { name: '强迫抉择', en: 'Forced Choice', desc: '二选其一,无中间地带。当逃避被取消,真实的偏好才浮现。' },
+      { name: '同意度矩阵', en: 'Matrix', desc: '多条陈述 × 七点 Likert,测量结构化信念系统的一致性与矛盾。' },
+      { name: '价值拍卖', en: 'Auction', desc: '有限预算竞拍价值观。出价即真实排序,可保留预算反映保留态度。' },
+      { name: '资源分配', en: 'Allocation', desc: '总额固定,分配即优先级。总和必须等于给定值,无处藏私。' },
+      { name: '排序题', en: 'Sort', desc: '拖拽排序,1 = 最重要。位置权重非线性递减,第一名远比第四名重要。' },
+      { name: '内隐联想', en: 'IAT', desc: '凭直觉快速分类。反应时差异绕过意识,直接量度本能偏向。' },
+    ],
+    sec_behavior: '行 为 轨 迹 与 计 分',
+    behavior_body: `
+      <p>心镜的计分引擎不只是加总选项分值。每个答案都携带三项行为数据,它们直接决定该答案在最终分数中的权重:</p>
+      <p><strong>作答耗时</strong>——3 至 15 秒被视为理想区间,权重 1.0。低于 1 秒的秒选降权至 0.7(近乎随意),超时或本能反应降权至 0.75(缺乏深思)。这套加权基于一个假设:经过适度思考的答案比本能反应更接近真实倾向。</p>
+      <p><strong>修改次数</strong>——改主意两次以上的答案降权至 0.85。价值未定型的信号弱于笃定的选择。这并非惩罚犹豫,而是承认:反复摇摆的回答,其信息量低于一次笃定的回答。</p>
+      <p><strong>决策轨迹</strong>——排序题的位置权重非线性递减,第一名与第二名的分差远大于第四与第五。资源分配题的峰值项会被高亮。这些轨迹数据让计分从"你最终选了什么"升级为"你如何选"。</p>
+      <p>最终,各维度的加权得分经动态归一化映射到 0-100,再通过正态分布 CDF 估算百分位——告诉你在这个维度上高于多少人。冲突检测会揪出跨题型的维度矛盾(量表说左、排序说右)、IAT 内隐与外显的分裂、犹豫与反复的模式,生成六维行为洞察。</p>
+    `,
+    sec_privacy: '数 据 与 隐 私',
+    privacy_body: `
+      <p>本测评<strong>完全匿名</strong>。系统仅以一个本地 token 关联你的记录,不收集姓名、邮箱、设备标识或任何身份信息。行为轨迹(作答耗时、修改次数、拖拽路径)仅用于生成更精准的报告,不会外传,不会用于广告投放,不会用于模型训练。</p>
+      <p>所有数据存储在你本地的 SQLite 数据库中。你可以随时清除自己的全部记录——那些影像便从镜中消散,了无痕迹。若部署到生产环境,数据将存储于服务端数据库,但匿名原则不变。</p>
+    `,
+    sec_boundary: '边 界 与 声 明',
+    boundary_body: `
+      <p>心镜是<strong>一面镜子</strong>,不是一把尺子。</p>
+      <p>它能照见倾向,不能诊断疾病;它能引发思考,不能替代专业的心理咨询或医疗建议。人格是多维且流动的,任何测评都只是某个切面的投影。若结果让你感到不安,请以平常心待之——镜中所见,不过是你某一刻的投影,而非你的全部。</p>
+      <p>名人匹配基于历史人物的典型行为特征评估,意识形态匹配基于经典理论坐标定位,两者均非精确科学,仅供自我探索与参考。</p>
+      <p style="margin-top:32px;color:var(--paper-faint);font-size:13px;letter-spacing:0.15em">— 镜 不 言,只 照 —</p>
+    `,
+  },
+
+  en: {
+    back: '← BACK',
+    about_title: 'ABOUT MINDMIRROR',
+    brand: 'MindMirror',
+    tagline: 'Not a questionnaire · Not a diagnosis · A mirror that reveals who you truly are',
+    sec_concept: 'WHAT IS MINDMIRROR',
+    concept_body: `
+      <p>Most personality assessments are checklists — you tick boxes, it tallies scores, you receive a label. This process compresses a person into a handful of numbers and discards the most valuable signal: how you decide under conflict, what instinct surfaces under time pressure, the subtle difference between hesitation and conviction.</p>
+      <p>MindMirror rejects this reduction. It uses <strong>moral dilemmas</strong> to place you in historical situations, forcing you to take a stand rather than score from a safe distance. It uses <strong>forced choice</strong> to eliminate the middle ground, leaving avoidance nowhere to hide. It uses <strong>value auctions</strong> where you bid on beliefs with a finite budget — your bid is your true ranking. It uses <strong>implicit association</strong> to bypass the conscious mind and measure raw reaction-time differences.</p>
+      <p>Every question records your <strong>response time, edit count, and decision trajectory</strong>. This behavioral data is not decorative — it enters the scoring directly. Instant picks are downweighted, repeated hesitation is flagged, confident choices carry more weight. You think you are choosing answers; the answers are also choosing you.</p>
+    `,
+    sec_mirrors: 'THREE MIRRORS',
+    mirrors: [
+      { icon: '名', title: 'Celebrity Mirror', desc: 'Reveals which historical soul you most closely resemble. 54 questions, a library of 40 historical figures — not imitation, but resonance. From Lincoln\'s resolve to Turing\'s introverted genius, find the figure whose undertone harmonizes with yours.' },
+      { icon: '义', title: 'Value Mirror', desc: 'Maps your value coordinates and moral level. 54 questions across altruism, justice, honesty, and discipline — multidimensional portrayal of where you truly stand between interest and principle. Can your convictions survive the test of context?' },
+      { icon: '场', title: 'Ideology Mirror', desc: 'Locates your ideological coordinates. 55 questions, a library of 32 ideologies, cross-positioned on economic and social axes. No presupposed stance, no guided conclusion — only an honest projection of where you fall on the political spectrum.' },
+    ],
+    sec_methods: 'NINE QUESTION TYPES',
+    methods: [
+      { name: 'Scale', en: 'Scale', desc: 'Five-point Likert scale measuring stable personality traits. Simple in form, yet the foundation for calibrating the baseline.' },
+      { name: 'Dilemma', en: 'Dilemma', desc: 'Historical moral dilemmas forcing you to take a stand under conflict. No correct answer — only your answer.' },
+      { name: 'Slider', en: 'Slider', desc: 'A 0-100 continuous spectrum removing the safety of discrete options. You must precisely mark the intensity of your inclination.' },
+      { name: 'Forced Choice', en: 'Forced Choice', desc: 'Pick one of two, no middle ground. When escape is cancelled, true preference surfaces.' },
+      { name: 'Matrix', en: 'Matrix', desc: 'Multiple statements × seven-point Likert, measuring the consistency and contradictions within your belief system.' },
+      { name: 'Auction', en: 'Auction', desc: 'Bid on values with a finite budget. Your bid is your true ranking; retaining budget reflects reserved attitudes.' },
+      { name: 'Allocation', en: 'Allocation', desc: 'Fixed total — distribution is priority. The sum must equal the given value, leaving no room to hide.' },
+      { name: 'Sort', en: 'Sort', desc: 'Drag to rank, 1 = most important. Position weights decay non-linearly; first place matters far more than fourth.' },
+      { name: 'IAT', en: 'IAT', desc: 'Classify by intuition, fast as possible. Reaction-time differences bypass consciousness, measuring implicit bias directly.' },
+    ],
+    sec_behavior: 'BEHAVIORAL TRAJECTORY & SCORING',
+    behavior_body: `
+      <p>MindMirror\'s scoring engine does more than tally option values. Every answer carries three behavioral metrics that directly determine its weight in the final score:</p>
+      <p><strong>Response time</strong> — 3 to 15 seconds is the ideal window, weighted 1.0. Sub-second instant picks are downweighted to 0.7 (near-random), timeouts or instinctive reactions to 0.75 (lacking deliberation). This weighting rests on one assumption: a moderately considered answer is closer to your true inclination than a reflex.</p>
+      <p><strong>Edit count</strong> — answers changed two or more times are downweighted to 0.85. A signal from an unformed value is weaker than one from a conviction. This is not punishment for hesitation, but acknowledgment that a wavering answer carries less information than a decisive one.</p>
+      <p><strong>Decision trajectory</strong> — in ranking questions, position weights decay non-linearly; the gap between first and second far exceeds that between fourth and fifth. In allocation questions, the peak item is highlighted. This trajectory data elevates scoring from "what you chose" to "how you chose."</p>
+      <p>Finally, weighted scores per dimension are dynamically normalized to 0-100, then fed through a normal-distribution CDF to estimate percentiles — telling you what fraction of people you surpass on each dimension. Conflict detection surfaces cross-type contradictions (left on the scale, right in the ranking), IAT implicit-explicit splits, and hesitation patterns, yielding six-dimensional behavioral insights.</p>
+    `,
+    sec_privacy: 'DATA & PRIVACY',
+    privacy_body: `
+      <p>This assessment is <strong>fully anonymous</strong>. The system associates your records with a single local token — it collects no name, email, device identifier, or any personally identifying information. Behavioral trajectories (response time, edit count, drag path) are used solely to generate a more precise report. They are never transmitted externally, used for advertising, or used for model training.</p>
+      <p>All data is stored in a local SQLite database. You may clear your complete records at any time — those reflections dissipate from the mirror without a trace. In a production deployment, data resides server-side, but the anonymity principle remains unchanged.</p>
+    `,
+    sec_boundary: 'BOUNDARIES & DISCLAIMER',
+    boundary_body: `
+      <p>MindMirror is <strong>a mirror, not a ruler</strong>.</p>
+      <p>It can reveal tendencies, not diagnose illness; it can provoke thought, not replace professional psychological counseling or medical advice. Personality is multidimensional and fluid — any assessment is merely a projection of one cross-section. If a result unsettles you, receive it with equanimity: what the mirror shows is but a projection of a single moment, not the whole of you.</p>
+      <p>Celebrity matching is based on assessed typical behavioral traits of historical figures; ideology matching is based on classical-theory coordinate positioning. Neither is exact science — both are for self-exploration and reference only.</p>
+      <p style="margin-top:32px;color:var(--paper-faint);font-size:13px;letter-spacing:0.15em">— The mirror speaks not; it only reflects —</p>
+    `,
+  },
+
+  ja: {
+    back: '← 戻 る',
+    about_title: '心鏡について',
+    brand: '心 鏡',
+    tagline: 'アンケートにあらず · 診断にあらず · 真の自己を映す一面の水銀鏡',
+    sec_concept: '心鏡とは',
+    concept_body: `
+      <p>世にある性格診断の多くは評定尺度です——あなたがチェックを入れ、それを合計し、ラベルを受け取る。このプロセスは人間をいくつかの数字に圧縮し、最も価値ある信号を捨て去ります:葛藤の中でどう決断するか、時間制圧下で現れる本能、躊躇と確信の間の微妙な差異。</p>
+      <p>心鏡はこれに満足しません。<strong>ジレンマ</strong>であなたを歴史的状況に置き、安全な距離から採点するのではなく葛藤の中で態度を表明させます。<strong>強制選択</strong>で中間地帯を撤廃し、逃避の余地を奪います。<strong>価値オークション</strong>で有限の予算で信念に入札させ——入札額こそが真の順位です。<strong>内隠連想</strong>で意識を迂回し、純粋な反応時間の差を直接測定します。</p>
+      <p>各問題はあなたの<strong>回答時間、修正回数、意思決定の軌跡</strong>を記録します。これらの行動データは装飾ではありません——直接採点に組み込まれます。即答は減点され、躊躇はフラグ付けされ、確信ある選択はより高い重みを得ます。あなたが答えを選んでいると思う時、答えもまたあなたを選んでいるのです。</p>
+    `,
+    sec_mirrors: '三 面 の 鏡',
+    mirrors: [
+      { icon: '名', title: '名人鏡', desc: '歴史上のどの魂に最も近いかを映し出す。54問、40人の歴史人物庫——模倣ではなく、共鳴。リンカーンの堅持からチューリングの内向的な天才まで、あなたの本色と共鳴する人物を見つける。' },
+      { icon: '義', title: '価値鏡', desc: 'あなたの価値座標と道徳水準を映し出す。54問、利他・公正・誠実・自律から、利益と原則の間での真の立ち位置を多角的に描写——あなたの原則は状況の試練に耐えられるか。' },
+      { icon: '場', title: '意識鏡', desc: 'あなたのイデオロギー座標を映し出す。55問、32のイデオロギー庫、経済軸と社会軸の交叉で位置づけ。立場を前提せず、結論を誘導せず、政治スペクトル上の投影をありのままに提示する。' },
+    ],
+    sec_methods: '九 つ の 回答方法',
+    methods: [
+      { name: '評定尺度', en: 'Scale', desc: '五点尺度、安定した性格傾向を測定。形式はシンプルだが、基準線を較正する基盤。' },
+      { name: 'ジレンマ', en: 'Dilemma', desc: '歴史的倫理ジレンマ、葛藤の中で態度を強要。正解なし——あなたの答えのみ。' },
+      { name: 'スライダー', en: 'Slider', desc: '0-100の連続スペクトル、離散選択肢の安心感を排除。傾向の強度を正確に标记しなければならない。' },
+      { name: '強制選択', en: 'Forced Choice', desc: '二択、中間地帯なし。逃避が取消された時、真の嗜好が浮上する。' },
+      { name: '同意度行列', en: 'Matrix', desc: '複数の陳述×七点リッカート、信念体系の一貫性と矛盾を測定。' },
+      { name: '価値オークション', en: 'Auction', desc: '有限予算で価値に入札。入札額こそ真の順位、予算の保留は保留態度を反映。' },
+      { name: '資源配分', en: 'Allocation', desc: '総額固定、配分即優先順位。合計は与えられた値に等しくなければならず、隠れ場所なし。' },
+      { name: '並べ替え', en: 'Sort', desc: 'ドラッグで順位付け、1 = 最重要。位置の重みは非線形減衰、第一位は第四位より遥かに重要。' },
+      { name: '内隠連想', en: 'IAT', desc: '直感で高速分類。反応時間の差が意識を迂回し、本能的偏見を直接測定。' },
+    ],
+    sec_behavior: '行動軌跡と採点',
+    behavior_body: `
+      <p>心鏡の採点エンジンは選択肢の値を合計するだけではありません。各回答は三つの行動指標を持ち、それらが最終スコアにおける重みを直接決定します:</p>
+      <p><strong>回答時間</strong>——3〜15秒を理想区間とし、重み1.0。1秒未満の即答は0.7に減点(ほぼランダム)、タイムアウトや本能的反応は0.75に減点(熟考を欠く)。この重み付けは一つの仮定に基づきます:適度に考えた回答は本能的反応よりも真の傾向に近い。</p>
+      <p><strong>修正回数</strong>——二回以上変更された回答は0.85に減点。未成型の価値からの信号は確信からのものより弱い。これは躊躇への罰ではなく、揺れる回答が確定的な回答より情報量が少ないという承認です。</p>
+      <p><strong>意思決定軌跡</strong>——並べ替え問題では位置の重みが非線形減衰し、第一位と第二位の差は第四位と第五位の差を遥かに超える。配分問題ではピーク項が強調される。この軌跡データは採点を「何を選んだか」から「どう選んだか」へ昇格させます。</p>
+      <p>最終的に、各次元の加重スコアは動的に0-100に正規化され、正規分布CDFで百分位を推定します——各次元であなたが何パーセントの人を上回るかを示す。矛盾検出は次元を跨ぐ矛盾(尺度では左、並べ替えでは右)、IATの内隠と外顕の分裂、躊躇パターンを摘出し、六次元の行動インサイトを生成します。</p>
+    `,
+    sec_privacy: 'データとプライバシー',
+    privacy_body: `
+      <p>本診断は<strong>完全匿名</strong>です。システムは単一のローカルトークンであなたの記録を関連付けるだけで、氏名、メール、デバイス識別子、いかなる個人情報も収集しません。行動軌跡(回答時間、修正回数、ドラッグ経路)はより精緻なレポート生成にのみ使用され、外部送信、広告利用、モデル学習には一切使用されません。</p>
+      <p>全データはローカルのSQLiteデータベースに保存されます。いつでも全記録を清除できます——那些影像は鏡から消散し、痕跡を残しません。本番環境にデプロイした場合、データはサーバー側に保存されますが、匿名の原則は変わりません。</p>
+    `,
+    sec_boundary: '境界と免責',
+    boundary_body: `
+      <p>心鏡は<strong>鏡であって、定規ではない</strong>。</p>
+      <p>傾向を映し出すことはできても、疾病を診断することはできません。思考を促すことはできても、専門的な心理相談や医療アドバイスの代わりにはなりません。性格は多次元かつ流動的であり、いかなる診断も一断面の投影に過ぎません。結果に不安を感じたなら、平常心で受け止めてください——鏡に映るのは、ある瞬間のあなたの投影であり、あなたのすべてではありません。</p>
+      <p>名人マッチングは歴史人物の典型的行動特徴の評価に基づき、イデオロギーマッチングは古典理論の座標定位に基づきます。いずれも精密科学ではなく、自己探求と参考のためのものです。</p>
+      <p style="margin-top:32px;color:var(--paper-faint);font-size:13px;letter-spacing:0.15em">— 鏡は語らず、ただ映す —</p>
+    `,
+  },
+};
+
+// ============================================================
+// 语言切换逻辑
+// ============================================================
+function applyLang(lang) {
+  const t = I18N[lang];
+  if (!t) return;
+  // 简单文本
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+  // HTML 内容
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const key = el.dataset.i18nHtml;
+    if (t[key] !== undefined) el.innerHTML = t[key];
+  });
+  // 三面镜子列表
+  document.getElementById('mirror-list').innerHTML = t.mirrors.map(m => `
+    <li>
+      <span class="mirror-list-icon">${m.icon}</span>
+      <div>
+        <div class="mirror-list-title">${m.title}</div>
+        <div class="mirror-list-desc">${m.desc}</div>
+      </div>
+    </li>
+  `).join('');
+  // 九种方法网格
+  document.getElementById('method-grid').innerHTML = t.methods.map(m => `
+    <div class="method-card">
+      <div class="method-name">${m.name}</div>
+      <div class="method-en">${m.en}</div>
+      <div class="method-desc">${m.desc}</div>
+    </div>
+  `).join('');
+  // html lang
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+  // 激活态
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+  // 记忆
+  try { localStorage.setItem('mm_lang', lang); } catch(e) {}
+}
+
+document.getElementById('lang-switch').addEventListener('click', e => {
+  const btn = e.target.closest('.lang-btn');
+  if (btn) applyLang(btn.dataset.lang);
+});
+
+// 初始化:读取记忆或默认中文
+let initLang = 'zh';
+try { initLang = localStorage.getItem('mm_lang') || 'zh'; } catch(e) {}
+applyLang(initLang);
+</script>
 </body>
 </html>

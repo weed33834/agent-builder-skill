@@ -1938,6 +1938,97 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; letter-spacing: 0
   line-height: 1.85;
 }
 
+/* 语言切换器 —— 右上角三语胶囊 */
+.lang-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line-bright);
+  border-radius: 2px;
+  background: rgba(20,20,26,0.5);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.lang-btn {
+  padding: 5px 12px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--paper-faint);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: all 0.3s var(--ease-out);
+  font-variation-settings: 'opsz' 24, 'SOFT' 50;
+}
+.lang-btn:hover {
+  color: var(--mercury-light);
+}
+.lang-btn.active {
+  color: var(--cinnabar);
+  background: var(--cinnabar-soft);
+  box-shadow: inset 0 0 0 1px rgba(208,73,64,0.3);
+}
+
+/* 九种答题方法网格 —— 玻璃卡片 */
+.method-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+}
+.method-card {
+  padding: 28px 24px;
+  background: var(--ink-glass);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: all 0.4s var(--ease-out);
+  position: relative;
+}
+.method-card:hover {
+  background: rgba(28,28,36,0.7);
+  z-index: 1;
+}
+.method-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--cinnabar);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.4s var(--ease-out);
+}
+.method-card:hover::before { transform: scaleY(1); }
+.method-name {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--paper);
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+.method-en {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--cinnabar);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  font-variation-settings: 'opsz' 24, 'SOFT' 50;
+}
+.method-desc {
+  font-size: 13px;
+  color: var(--paper-dim);
+  line-height: 1.75;
+}
+
 /* ============================================================
    响应式
    ============================================================ */
@@ -1966,6 +2057,11 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; letter-spacing: 0
   .mirror-list li { gap: 18px; padding: 24px 0; }
   .mirror-list-icon { width: 48px; height: 48px; font-size: 26px; }
   .mirror-list-title { font-size: 17px; }
+  /* 九种方法网格单列 */
+  .method-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 960px) and (min-width: 601px) {
+  .method-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ============================================================
