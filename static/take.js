@@ -289,6 +289,8 @@ function renderForcedChoice(q) {
 function renderMatrix(q) {
   const smax = q.scale_max || 7;
   const labels = ['强烈反对', '反对', '较反对', '中立', '较同意', '同意', '强烈同意'];
+  const leftAnchor = labels[0];
+  const rightAnchor = labels[smax - 1];
   return `
     <div class="question-card">
       <div class="question-prompt">${q.prompt}</div>
@@ -296,8 +298,14 @@ function renderMatrix(q) {
       <div class="matrix-area" data-q="${q.id}">
         <div class="matrix-header">
           <span></span>
-          <div class="matrix-scale-labels">
-            ${labels.slice(0, smax).map((l, i) => `<span>${i+1}</span>`).join('')}
+          <div>
+            <div class="matrix-anchors">
+              <span>${leftAnchor}</span>
+              <span>${rightAnchor}</span>
+            </div>
+            <div class="matrix-scale-labels">
+              ${labels.slice(0, smax).map((l, i) => `<span>${i+1}</span>`).join('')}
+            </div>
           </div>
         </div>
         ${q.statements.map(s => `
@@ -335,7 +343,7 @@ function renderAuction(q) {
                 <button class="alloc-btn" data-delta="10" aria-label="加10">+10</button>
               </div>
             </div>
-            <div class="alloc-bar"><div class="alloc-bar-fill" style="width:0%"></div></div>
+            <div class="auction-bar"><div class="auction-bar-fill" style="width:0%"></div></div>
           </div>
         `).join('')}
         <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:13px;margin-top:24px;letter-spacing:0.1em;text-align:center">可保留预算,出价反映你对每项的真实价值评估</p>
@@ -505,10 +513,17 @@ function bindEvents(q) {
       remainingEl.textContent = rem;
       remainingEl.parentElement.classList.toggle('over', rem < 0);
       remainingEl.parentElement.classList.toggle('ok', rem === 0);
-      // 条形按预算比例
+      // 找到当前最高出价,用于 peak 高亮
+      let maxVal = 0;
       container.querySelectorAll('.auction-row').forEach(r => {
         const v = +(r.querySelector('.val').textContent);
-        r.querySelector('.alloc-bar-fill').style.width = (v / budget * 100) + '%';
+        if (v > maxVal) maxVal = v;
+      });
+      // 条形按预算比例 + peak 标记
+      container.querySelectorAll('.auction-row').forEach(r => {
+        const v = +(r.querySelector('.val').textContent);
+        r.querySelector('.auction-bar-fill').style.width = (v / budget * 100) + '%';
+        r.classList.toggle('peak', v > 0 && v === maxVal);
       });
     };
     const setRow = (row, newVal) => {

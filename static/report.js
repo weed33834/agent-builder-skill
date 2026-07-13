@@ -27,6 +27,11 @@ const CONFLICT_TYPE_LABELS = {
   iat_implicit_explicit: '分裂',
   iat_hesitation: '潜犹豫',
 };
+const ASSESSMENT_TITLES = {
+  celebrity: { eyebrow: 'C E L E B R I T Y', title: '名 镜 · 灵魂对望' },
+  value:     { eyebrow: 'V A L U E',         title: '义 镜 · 价值坐标' },
+  ideology:  { eyebrow: 'I D E O L O G Y',   title: '意 识 镜 · 光谱定位' },
+};
 
 async function render() {
   if (!resultId) { location.href = '/'; return; }
@@ -34,15 +39,18 @@ async function render() {
   const dimEntries = Object.entries(r.dimensions);
   const tags = (r.profile && r.profile.tags) || [];
   const pcts = r.percentiles || {};
+  const titleInfo = ASSESSMENT_TITLES[r.assessment_type] || { eyebrow: r.assessment_type.toUpperCase(), title: '心 镜 报 告' };
 
   const html = `
     <div class="report-hero">
       <div class="mirror-disc"></div>
+      <div class="report-eyebrow">${titleInfo.eyebrow}</div>
+      <h2 class="report-title">${titleInfo.title}</h2>
       <div class="hero-divider"><span></span></div>
       ${tags.length ? `
       <div class="profile-tags">
         ${tags.map(t => `<span class="profile-tag">${t}</span>`).join('')}
-      </div>` : ''}
+      </div>` : `<p class="profile-empty">— 数据尚不足以生成画像标签 —</p>`}
       <p class="report-summary">${r.summary}</p>
     </div>
 
@@ -147,27 +155,29 @@ async function render() {
 
 function drawRadar(entries) {
   const chart = echarts.init(document.getElementById('radar'), null, { renderer: 'canvas' });
+  // 维度多时缩小半径,避免标签拥挤
+  const radius = entries.length >= 7 ? '58%' : '68%';
   chart.setOption({
     backgroundColor: 'transparent',
     radar: {
       indicator: entries.map(([k, v]) => ({ name: DIM_LABELS[k] || k, max: 100 })),
       center: ['50%', '52%'],
-      radius: '70%',
+      radius: radius,
       axisName: {
-        color: '#b8b4ac',
+        color: '#d4d8e0',
         fontSize: 13,
         fontFamily: "'Noto Serif SC', serif",
-        padding: [4, 8],
+        padding: [6, 10],
       },
-      splitLine: { lineStyle: { color: 'rgba(52, 52, 60, 0.8)' } },
-      splitArea: { areaStyle: { color: ['transparent', 'rgba(138,141,150,0.04)'] } },
-      axisLine: { lineStyle: { color: 'rgba(52, 52, 60, 0.8)' } },
+      splitLine: { lineStyle: { color: 'rgba(62, 62, 72, 0.9)' } },
+      splitArea: { areaStyle: { color: ['transparent', 'rgba(138,141,150,0.05)'] } },
+      axisLine: { lineStyle: { color: 'rgba(62, 62, 72, 0.9)' } },
     },
     series: [{
       type: 'radar',
       data: [{
         value: entries.map(([, v]) => v),
-        areaStyle: { color: 'rgba(208, 73, 64, 0.18)' },
+        areaStyle: { color: 'rgba(208, 73, 64, 0.2)' },
         lineStyle: { color: '#d04940', width: 2 },
         itemStyle: { color: '#d04940', borderColor: '#fff', borderWidth: 1 },
         symbol: 'circle',
