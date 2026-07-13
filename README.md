@@ -1,109 +1,93 @@
 # 心镜 MindMirror
 
-> 通过问卷与情境测评,看见真实的自己。三面镜子,九种答题方法,行为轨迹全程采集。
+> 三面镜子,映照真实的你。
+
+心镜是一套基于情境与行为轨迹的人格测评工具。它不满足于简单的量表打分——通过九种答题方法、全程行为采集与多维冲突分析,试图在那些你犹豫、改主意、凭直觉反应的瞬间,捕捉到比"你选了什么"更真实的信号。
 
 ## 三面镜子
 
-- **名人镜** —— 你与历史上哪个名人最相近(54 题 · 40 位历史人物库)
-- **价值镜** —— 你的价值观与道德水平(54 题 · 利他/公正/诚实多维)
-- **意识镜** —— 你的意识形态定位(55 题 · 32 种意识形态库)
+- **名镜** — 与历史名人对望。54 道题,40 位历史人物库,测你与谁的灵魂底色最相近。
+- **义镜** — 价值坐标定位。54 道题,从利他、公正、诚实到自律,刻画你的道德光谱。
+- **意识镜** — 政治光谱定位。55 道题,32 种意识形态库,经济轴与社会轴交叉定位。
 
 ## 九种答题方法
 
-| 类型 | 中文名 | 说明 |
-|------|--------|------|
-| `scale` | 量表题 | 五点量表,凭第一直觉 |
-| `dilemma` | 困境题 | 历史情境抉择 |
-| `slider` | 强度滑块 | 0-100 连续光谱,标记倾向强度 |
-| `forced_choice` | 强迫抉择 | 二选其一,无中间地带 |
-| `matrix` | 同意度矩阵 | 多条陈述 × 7 点 Likert |
-| `auction` | 价值拍卖 | 预算竞拍,反映真实价值评估 |
-| `allocation` | 资源分配 | 总额固定,分配反映优先级 |
-| `sort` | 排序题 | 拖拽排序,1 = 最重要 |
-| `iat` | 内隐联想 | 快速分类,测内隐偏向 |
+心镜不止于"选一个"。每种题型都在测量不同层面的你:
 
-## 核心算法
+**量表与困境**是基础——前者测稳定倾向,后者把人放进真实的历史两难,看你怎么选。**滑块与强迫抉择**逼出极端:连续光谱上没有安全的中间点,二选一时没有逃避余地。**矩阵与拍卖**测量结构化信念——前者是多陈述的同意度矩阵,后者用有限预算竞拍价值观,出价即真实排序。**分配与排序**直接暴露优先级。**内隐联想(IAT)**测的是你自己都没意识到的偏向——凭直觉快速分类,反应时的差异比任何深思熟虑都诚实。
 
-- **行为加权计分 v2** —— 耗时适中(3-15s)权重 1.0;过快/超时降权;改主意 ≥2 次降权
-- **动态归一化** —— 每维度按累计权重归一化到 0-100
-- **百分位估算** —— 正态分布 CDF,输出"高于 X% 的人"
-- **画像标签** —— 综合维度生成 3-5 个关键词
-- **冲突检测** —— 跨题型维度矛盾、IAT 内隐-外显分裂、犹豫/反复/本能
-- **行为洞察** —— 决策风格、一致性、纠结度、勇气指数、时间压力效应、内隐偏向
+## 行为轨迹
+
+每个答案都附带行为数据:作答耗时、改主意次数、操作轨迹。这些不是辅助信息——它们直接参与计分。
+
+耗时 3-15 秒的答案权重最高;秒选的降权(太随意),超时的降权(可能本能而非思考)。改主意两次以上的降权——价值未定型的信号弱于笃定的选择。排序题的位置权重非线性递减,第一名和第二名的差距远大于第四和第五。
+
+## 核心能力
+
+计分引擎按维度累计加权得分,动态归一化到 0-100。百分位通过正态分布 CDF 估算,告诉你"在这个维度上高于多少人"。冲突检测会揪出跨题型的维度矛盾(量表说左、排序说右)、IAT 内隐与外显的分裂、犹豫与反复的模式。最终生成 3-5 个画像关键词,以及六维行为洞察:决策风格、一致性、纠结度、勇气指数、时间压力效应、内隐偏向。
 
 ## 技术栈
 
-- **后端**:Python 3.12+ / FastAPI / SQLAlchemy 2.0 async / aiosqlite / Pydantic v2
-- **前端**:纯 HTML + JS + CSS(无构建步骤),ECharts 雷达图
-- **设计**:Fraunces 可变衬线 + Noto Serif SC + Glassmorphism 2.0,WCAG AA 对比度
-- **数据**:题库 YAML 数据驱动,行为轨迹全程采集(耗时/改主意次数/轨迹)
+后端是 Python 3.12 + FastAPI + SQLAlchemy 2.0 async,数据层用 aiosqlite(可平滑切换 Postgres)。题库 YAML 驱动,新增题型只需扩展 schema 与计分分支,不动路由层。前端是纯 HTML + JS + CSS,无构建步骤,可直接部署。视觉上用 Fraunces 可变衬线 + Noto Serif SC,Glassmorphism 2.0 风格,遵循 WCAG AA 对比度。
 
-## 本地开发
+## 本地运行
 
 ```bash
 cp .env.example .env
 pip install -e ".[dev]"
 fastapi dev app/main.py
-# 访问 http://localhost:8000
 ```
 
-## API 一览
+启动后访问 `http://localhost:8000`,API 文档在 `/api/docs`。
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/assessments` | 三面镜子元信息 |
-| GET | `/api/assessments/{type}/questions` | 题库 |
-| POST | `/api/sessions?assessment_type={type}` | 开始/恢复测评 |
-| POST | `/api/sessions/{id}/responses` | 提交答案(complete=true 触发计分) |
-| GET | `/api/results/{id}` | 取报告 |
-| GET | `/api/me/results` | 我的历史报告 |
-| GET | `/api/sessions/{id}/result` | 按会话取结果 |
+## API
 
-API 文档:启动后访问 `/api/docs`(FastAPI 自动生成)。
+```
+GET  /api/assessments                      三面镜子元信息
+GET  /api/assessments/{type}/questions     题库
+POST /api/sessions?assessment_type={type}  开始或恢复测评
+POST /api/sessions/{id}/responses          提交答案(complete=true 触发计分)
+GET  /api/results/{id}                     取报告
+GET  /api/me/results                       历史报告
+GET  /api/sessions/{id}/result             按会话取结果
+```
+
+## 答案格式
+
+```javascript
+scale:         { option_id: "3" }
+dilemma:       { option_id: "a" }
+slider:        { position: 75 }                  // 0-100 连续光谱
+forced_choice: { choice: "side_a" }              // 二选一
+matrix:        { ratings: { s1: 6, s2: 4 } }     // 1-7 同意度
+auction:       { bids: { item1: 30, item2: 20 } }
+allocation:    { allocation: { t1: 40, t2: 60 } } // 总和须等于 total
+sort:          { order: ["a", "b", "c"] }         // 1 = 最重要
+iat:           { iat: [{ word, category, response, rt, correct }, ...] }
+```
+
+每个答案携带 `duration_ms`、`change_count`、`trajectory` 三项行为数据。
 
 ## 目录结构
 
 ```
 app/
-  api/routes/   路由层 — 参数校验 + 调 service
-  services/     业务层 — 计分/匹配/冲突/洞察/百分位/画像(平台无关)
-  models/       数据模型(Session/Result/User)
-  schemas/      Pydantic 请求/响应(9 题型判别联合)
-  core/         配置/DB/认证扩展点
+  api/routes/   路由层 — 参数校验,调 service
+  services/     业务层 — 计分/匹配/冲突/洞察/百分位/画像
+  models/       数据模型
+  schemas/      Pydantic schema(9 题型判别联合)
+  core/         配置/DB/认证
 data/
-  questions/    题库 YAML(数据驱动,9 题型)
+  questions/    题库(9 题型,YAML 驱动)
   figures/      名人库(40 位)
   ideologies/   意识形态库(32 种)
-static/         前端(纯 HTML+JS+CSS,无构建)
+static/         前端(纯 HTML+JS+CSS)
 ```
 
-## 答案格式
+## 扩展点
 
-每种题型的答案 JSON 格式:
+换 Postgres 改 `DATABASE_URL`;接微信登录把 `AUTH_PROVIDER` 设为 `wx`;前端替换为 Vue 或小程序,API 层不动。题库增删改 YAML 即可,无需改代码。
 
-```javascript
-scale:        { option_id: "3" }
-dilemma:      { option_id: "a" }
-slider:       { position: 75 }              // 0-100
-forced_choice:{ choice: "side_a" }
-matrix:       { ratings: { s1: 6, s2: 4 } } // 1-7
-auction:      { bids: { item1: 30, item2: 20 } }
-allocation:   { allocation: { t1: 40, t2: 60 } }  // 总和须 = total
-sort:         { order: ["a", "b", "c"] }    // 1 = 最重要
-iat:          { iat: [{ word, category, response, rt, correct }, ...] }
-```
+## 声明
 
-每个答案附带行为轨迹:`duration_ms`(耗时)、`change_count`(改主意次数)、`trajectory`(轨迹数组)。
-
-## 上线扩展点
-
-- **数据库**:改 `DATABASE_URL` 换 Postgres
-- **认证**:`AUTH_PROVIDER` 切 `jwt` / `wx`(微信 wx.login)
-- **CORS**:`CORS_ORIGINS` 加域名/小程序 servicemock
-- **前端**:`static/` 替换为 Vue/React 或小程序原生,API 不变
-
-## 无障碍
-
-- 遵循 WCAG AA 对比度(4.5:1)
-- 支持 `prefers-reduced-motion`(减弱动画)
-- 所有交互元素有 `aria-label`
+心镜不是心理诊断工具,结果仅供自我探索与参考。
