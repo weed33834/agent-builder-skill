@@ -58,9 +58,10 @@ def _score_answers(assessment_type: str, answers: SubmitAnswersIn) -> dict[str, 
         _accumulate(q, ans.answer, raw, weight_sum, w)
 
     # 排序题:位置越靠前权重越大,递减系数 0.15
+    # 注意:auction 题也有 items 属性,必须用 type 明确判断,不能用 getattr(q,"items")
     for ans in answers.answers:
         q = q_by_id.get(ans.question_id)
-        if q and getattr(q, "items", None) and "order" in ans.answer:
+        if q and q.type == "sort" and "order" in ans.answer:
             w = _answer_weight(ans)
             for idx, item_id in enumerate(ans.answer["order"]):
                 weight = (1.0 - idx * 0.15) * 2.0 * w

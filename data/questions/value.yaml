@@ -1,5 +1,5 @@
 # 价值镜 —— 你的价值观与道德水平
-# 量表10 + 困境20 + 资源分配10 + 排序10 = 50题(科尔伯格式分级)
+# 量表10 + 困境20 + 资源分配10 + 排序10 + 滑块1 + 强迫抉择1 + 矩阵1 + 拍卖1 = 54题
 # 维度:诚实/利他/公正/责任/共情/自律
 assessment_type: value
 title: 价值镜
@@ -17,7 +17,7 @@ questions:
   - id: v_d1
     type: dilemma
     prompt: 配偶患重病,药价十倍于成本,你偷不偷?
-    dimensions: [honesty, altruism, justice]
+    dimensions: [honesty, altruism, justice, duty]
     time_limit_sec: 15
     scenario: 药商垄断抬价,你配偶将死。偷药能救 ta,但违法。
     options:
@@ -27,7 +27,7 @@ questions:
   - id: v_d2
     type: dilemma
     prompt: 你无意导致同事被开除,真相不说没人知道。
-    dimensions: [honesty, justice, duty]
+    dimensions: [honesty, justice, duty, empathy]
     time_limit_sec: 15
     scenario: 你的失误被算到同事头上,ta 因此失业。澄清会让你被开除。
     options:
@@ -37,7 +37,7 @@ questions:
   - id: v_d3
     type: dilemma
     prompt: 你捡到钱包,内有失主救命钱。
-    dimensions: [honesty, altruism, empathy]
+    dimensions: [honesty, altruism, empathy, justice]
     time_limit_sec: 15
     scenario: 钱包里有 5 万现金和一张医院缴费单。失主显然急需。
     options:
@@ -57,7 +57,7 @@ questions:
   - id: v_d5
     type: dilemma
     prompt: 朋友酒驾撞人,求你顶包。
-    dimensions: [honesty, altruism, justice, empathy]
+    dimensions: [honesty, altruism, justice, empathy, duty]
     time_limit_sec: 15
     scenario: 朋友恳求你替 ta 承担,否则 ta 仕途尽毁。受害者重伤但脱离危险。
     options:
@@ -129,7 +129,7 @@ questions:
   - id: v_a3
     type: allocation
     prompt: 你的精力(100)投入何处?
-    dimensions: [duty, justice, altruism, discipline]
+    dimensions: [duty, justice, altruism, discipline, empathy]
     targets:
       - {id: own, text: 个人目标, scores: {discipline: 1}}
       - {id: family, text: 家庭责任, scores: {duty: 1, empathy: 1}}
@@ -238,7 +238,7 @@ questions:
   - id: v_a5
     type: allocation
     prompt: 你的社会资本(100)如何投放?
-    dimensions: [duty, justice, altruism, empathy]
+    dimensions: [duty, justice, altruism, empathy, discipline]
     targets:
       - {id: mentor, text: 提携后辈, scores: {duty: 1, altruism: 1}}
       - {id: whistle, text: 揭露问题, scores: {justice: 1, duty: 1}}
@@ -272,7 +272,7 @@ questions:
   - id: v_d13
     type: dilemma
     prompt: 你设计的自动驾驶车刹不住,撞老人还是撞墙伤车主?
-    dimensions: [justice, altruism, empathy]
+    dimensions: [justice, altruism, empathy, duty]
     time_limit_sec: 15
     scenario: 你是算法工程师。车失控,要么撞向路口老人,要么撞墙让车主(你自己)重伤。代码由你定。
     options:
@@ -282,7 +282,7 @@ questions:
   - id: v_d14
     type: dilemma
     prompt: 你能编辑胚胎让后代免疫绝症,但违禁且后果未知。
-    dimensions: [honesty, justice, duty, discipline]
+    dimensions: [honesty, justice, duty, discipline, altruism]
     time_limit_sec: 15
     scenario: 技术可消除家族遗传病,但法律禁止人类胚胎编辑。你偷偷做了,孩子健康,但你是违法者。
     options:
@@ -302,7 +302,7 @@ questions:
   - id: v_d16
     type: dilemma
     prompt: 你能匿名网暴一个你认为的"坏人",没人知道是你。
-    dimensions: [honesty, justice, empathy, discipline]
+    dimensions: [honesty, justice, empathy, discipline, duty]
     time_limit_sec: 15
     scenario: 对方网上言论恶劣,你掌握 ta 真实信息。匿名曝光能让 ta 社死,你不会暴露。
     options:
@@ -322,7 +322,7 @@ questions:
   - id: v_d18
     type: dilemma
     prompt: 跳河救人,你可能终身残疾,对方是陌生孩子。
-    dimensions: [altruism, empathy, justice, discipline]
+    dimensions: [altruism, empathy, justice, discipline, duty]
     time_limit_sec: 15
     scenario: 陌生孩子落水,水流湍急。你若跳下大概率能救起,但自己可能瘫痪。无人看见。
     options:
@@ -332,7 +332,7 @@ questions:
   - id: v_d19
     type: dilemma
     prompt: 朋友作品极差,求你真实评价,ta 靠此谋生。
-    dimensions: [honesty, empathy, altruism]
+    dimensions: [honesty, empathy, altruism, duty]
     time_limit_sec: 15
     scenario: 朋友辞职追梦,作品实难成功。说真话会击溃 ta,说假话会让 ta 继续投入沉没成本。
     options:
@@ -354,7 +354,7 @@ questions:
   - id: v_a6
     type: allocation
     prompt: 你的遗产(100)如何分配?
-    dimensions: [justice, empathy, altruism, duty]
+    dimensions: [justice, empathy, altruism, duty, discipline]
     targets:
       - {id: children, text: 子女均分, scores: {justice: 1, duty: 1}}
       - {id: neediest, text: 给最需者多, scores: {empathy: 1, altruism: 1}}
@@ -374,7 +374,7 @@ questions:
   - id: v_a8
     type: allocation
     prompt: 一笔教育基金(100)如何投放?
-    dimensions: [justice, duty, altruism, discipline]
+    dimensions: [justice, duty, altruism, discipline, empathy]
     targets:
       - {id: gifted, text: 资优生培养, scores: {discipline: 1}}
       - {id: dropout, text: 辍学儿童重返, scores: {altruism: 1, justice: 1}}
@@ -394,7 +394,7 @@ questions:
   - id: v_a10
     type: allocation
     prompt: 你的"原谅额度"(100)给哪些人?
-    dimensions: [empathy, justice, altruism, honesty]
+    dimensions: [empathy, justice, altruism, honesty, duty, discipline]
     targets:
       - {id: family, text: 家人的过错, scores: {empathy: 1}}
       - {id: friend, text: 朋友的背叛, scores: {empathy: 1, duty: 1}}
@@ -406,7 +406,7 @@ questions:
   - id: v_s6
     type: sort
     prompt: 排序你生命中最重要的关系(1=最重要)
-    dimensions: [empathy, duty, altruism, honesty]
+    dimensions: [empathy, duty, altruism, honesty, discipline]
     items:
       - {id: partner, text: 伴侣, scores: {empathy: 1}}
       - {id: parent, text: 父母, scores: {duty: 1}}
@@ -438,7 +438,7 @@ questions:
   - id: v_s9
     type: sort
     prompt: 排序你最不愿经历的遗憾(1=最不愿)
-    dimensions: [honesty, altruism, justice, duty, empathy]
+    dimensions: [honesty, altruism, justice, duty, empathy, discipline]
     items:
       - {id: hurt, text: 伤害过他人, scores: {empathy: 1, altruism: 1}}
       - {id: betray, text: 违背过诺言, scores: {duty: 1, honesty: 1}}
@@ -501,7 +501,7 @@ questions:
   - id: v_s7_scale
     type: scale
     prompt: 被人严重伤害后,你倾向于?
-    dimensions: [justice, empathy, discipline]
+    dimensions: [justice, empathy, discipline, duty]
     points:
       - {id: "1", text: 以牙还牙, scores: {justice: -1, empathy: -2, discipline: -1}}
       - {id: "2", text: 让 ta 付出代价, scores: {justice: 1, empathy: -1}}
@@ -531,7 +531,7 @@ questions:
   - id: v_s10_scale
     type: scale
     prompt: 你认为"公正"最接近?
-    dimensions: [justice, empathy, discipline]
+    dimensions: [justice, empathy, discipline, duty, altruism]
     points:
       - {id: "1", text: 一视同仁, scores: {justice: 2, discipline: 1}}
       - {id: "2", text: 按规则办事, scores: {justice: 1, duty: 1}}

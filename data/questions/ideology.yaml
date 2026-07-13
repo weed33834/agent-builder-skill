@@ -1,5 +1,5 @@
 # 意识镜 —— 你的意识形态定位
-# 量表28 + 困境8 + 排序8 + IAT 7 = 51题
+# 量表28 + 困境8 + 排序8 + IAT 7 + 滑块1 + 强迫抉择1 + 矩阵1 + 拍卖1 = 55题
 # 维度:经济轴(左←→右) + 社会轴(权威↑↓自由) + 传统vs进步 + 民族vs全球
 # 匹配意识形态标签:见 data/ideologies/ideology.yaml
 assessment_type: ideology
@@ -610,7 +610,7 @@ questions:
   - id: i_fc1
     type: forced_choice
     prompt: 二者只能取其一,你选?
-    dimensions: [liberty, authority, tradition]
+    dimensions: [liberty, authority, tradition, econ_right]
     sides:
       - {id: a, text: 个人自由最大化,即使带来不平等, scores: {liberty: 2, econ_right: 1}}
       - {id: b, text: 社会秩序优先,即使限制部分自由, scores: {authority: 2, tradition: 1}}

@@ -111,6 +111,21 @@ def _collect_directions(q, answer: dict, dim_directions: dict) -> None:
             ratio = max(0.0, bid) / budget
             for dim, v in item.scores.items():
                 dim_directions[dim].append((q.id, v * ratio))
+    elif qtype == "allocation" and "allocation" in answer:
+        alloc = answer["allocation"]
+        for tgt in getattr(q, "targets", []):
+            pct = alloc.get(tgt.id, 0) / 100.0
+            for dim, v in tgt.scores.items():
+                dim_directions[dim].append((q.id, v * pct))
+    elif qtype == "sort" and "order" in answer:
+        # 排序题:位置越靠前贡献越大(方向 = 分值 × 位置权重)
+        order = answer["order"]
+        for idx, item_id in enumerate(order):
+            weight = 1.0 - idx * 0.15
+            item = next((i for i in getattr(q, "items", []) if i.id == item_id), None)
+            if item:
+                for dim, v in item.scores.items():
+                    dim_directions[dim].append((q.id, v * weight))
 
 
 def _detect_dimension_conflicts(dim_directions: dict, q_by_id: dict) -> list[dict]:
