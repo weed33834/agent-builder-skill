@@ -358,6 +358,8 @@ function bindEvents(q) {
     const container = document.querySelector(`[data-q="${q.id}"]`);
     container.querySelectorAll('.scale-point, .option').forEach(el => {
       el.addEventListener('click', () => {
+        if (container.dataset.locked) return;  // 防双击竞态
+        container.dataset.locked = '1';
         container.querySelectorAll('.scale-point, .option').forEach(x => x.classList.remove('selected'));
         el.classList.add('selected');
         tracker.recordChange(el.dataset.id);
@@ -409,18 +411,26 @@ function bindEvents(q) {
         tracker.recordChange(+input.value);
       });
     });
-    // 自动配平 —— 把差值补到当前最大项(并列取第一个)
+    // 自动配平 —— 按比例分摊差值,迭代直到配平
     document.getElementById('alloc-balance').addEventListener('click', () => {
       const inputs = [...container.querySelectorAll('input[type=range]')];
-      const sum = inputs.reduce((s, i) => s + +i.value, 0);
-      const diff = total - sum;
+      let sum = inputs.reduce((s, i) => s + +i.value, 0);
+      let diff = total - sum;
       if (diff === 0) return;
-      // 加:补到最大项;减:从最大项扣
-      let target = inputs[0];
-      for (const i of inputs) if (+i.value > +target.value) target = i;
-      const row = target.closest('.alloc-row');
-      setRow(row, +target.value + diff);
-      tracker.recordChange(+target.value);
+      // 差值为正:补到最大项;差值为负:从最大项扣,不够则继续扣次大项
+      let guard = 0;
+      while (diff !== 0 && guard++ < inputs.length + 2) {
+        // 找当前最大项
+        let target = inputs[0];
+        for (const i of inputs) if (+i.value > +target.value) target = i;
+        const cur = +target.value;
+        const newVal = Math.max(0, Math.min(total, cur + diff));
+        const actual = newVal - cur;
+        diff -= actual;
+        const row = target.closest('.alloc-row');
+        setRow(row, newVal);
+        tracker.recordChange(newVal);
+      }
     });
 
     document.getElementById('alloc-confirm').addEventListener('click', () => {
@@ -457,7 +467,7 @@ function bindEvents(q) {
       fill.style.width = v + '%';
     };
     update();
-    input.addEventListener('input', () => { update(); tracker.recordChange(+input.value); });
+    input.addEventListener('input', () => { update(); tracker.recordChange(+input.value); input.dataset.touched = '1'; });
     document.getElementById('slider-confirm').addEventListener('click', () => {
       recordAnswer(q, { position: +input.value });
     });
@@ -465,6 +475,8 @@ function bindEvents(q) {
     const container = document.querySelector(`[data-q="${q.id}"]`);
     container.querySelectorAll('.fc-card').forEach(card => {
       card.addEventListener('click', () => {
+        if (container.dataset.locked) return;  // 防双击竞态
+        container.dataset.locked = '1';
         container.querySelectorAll('.fc-card').forEach(x => x.classList.remove('selected'));
         card.classList.add('selected');
         tracker.recordChange(card.dataset.id);
@@ -573,8 +585,11 @@ function runIAT(q) {
   let idx = 0;
   let wordStart = 0;
   const reactions = [];
+  const area = document.querySelector(`[data-q="${q.id}"]`);
   const wordEl = document.getElementById('iat-word');
   const progEl = document.getElementById('iat-progress');
+  // 挂到 DOM 上,供 getCurrentAnswer 超时场景读取
+  if (area) area._iatReactions = reactions;
 
   function next() {
     if (idx >= q.words.length) { recordAnswer(q, { iat: reactions }); return; }
@@ -610,7 +625,9 @@ function getCurrentAnswer(q) {
   }
   if (q.type === 'slider') {
     const input = document.getElementById('slider-input');
-    return input ? { position: +input.value } : {};
+    // 未拖动过返回空,避免默认值 50 污染数据
+    if (!input || !input.dataset.touched) return {};
+    return { position: +input.value };
   }
   if (q.type === 'forced_choice') {
     const sel = document.querySelector(`[data-q="${q.id}"] .fc-card.selected`);
@@ -625,10 +642,37 @@ function getCurrentAnswer(q) {
   }
   if (q.type === 'auction') {
     const bids = {};
+    let touched = false;
     document.querySelectorAll(`[data-q="${q.id}"] .auction-row`).forEach(r => {
-      bids[r.dataset.id] = +(r.querySelector('.val').textContent);
+      const val = +(r.querySelector('.val').textContent);
+      if (val > 0) touched = true;
+      bids[r.dataset.id] = val;
     });
-    return { bids };
+    // 全 0 = 未操作,返回空避免污染
+    return touched ? { bids } : {};
+  }
+  if (q.type === 'allocation') {
+    const allocation = {};
+    let touched = false;
+    document.querySelectorAll(`[data-q="${q.id}"] .alloc-row`).forEach(r => {
+      const val = +(r.querySelector('.val').textContent);
+      if (val > 0) touched = true;
+      allocation[r.dataset.id] = val;
+    });
+    return touched ? { allocation } : {};
+  }
+  if (q.type === 'sort') {
+    const order = [];
+    document.querySelectorAll(`[data-q="${q.id}"] .sort-item`).forEach(el => {
+      order.push(el.dataset.id);
+    });
+    return order.length ? { order } : {};
+  }
+  if (q.type === 'iat') {
+    const area = document.querySelector(`[data-q="${q.id}"]`);
+    if (!area) return {};
+    const reactions = area._iatReactions || [];
+    return reactions.length ? { iat: reactions } : {};
   }
   return {};
 }
@@ -644,6 +688,7 @@ function recordAnswer(q, answer, timeout = false) {
     duration_ms: snap.duration_ms,
     change_count: snap.change_count,
     trajectory: snap.trajectory,
+    _timeout: timeout,  // 标记超时,供 submitAll 保留
   };
   currentIdx++;
   // 存草稿
@@ -652,10 +697,15 @@ function recordAnswer(q, answer, timeout = false) {
 }
 
 async function submitAll(complete) {
-  const valid = answers.filter(a => a && a.answer && Object.keys(a.answer).length > 0);
-  const res = await api.post(`/api/sessions/${session.id}/responses`, { answers: valid, complete: true });
-  if (res.result_id) {
+  // 保留:有答案的题 + 超时未操作的题(后者让后端能生成 timeout_instinct 冲突)
+  const valid = answers.filter(a => a && (Object.keys(a.answer || {}).length > 0 || a._timeout));
+  // 去掉内部标记字段,不传后端
+  const payload = valid.map(({ _timeout, ...rest }) => rest);
+  const res = await api.post(`/api/sessions/${session.id}/responses`, { answers: payload, complete: true });
+  if (res && res.result_id) {
     location.href = `/report.html?id=${res.result_id}`;
+  } else {
+    alert('提交失败,请重试');
   }
 }
 

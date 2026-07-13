@@ -114,9 +114,9 @@ def _derive_courage(answers) -> dict:
     for a in answers.answers:
         if "option_id" not in a.answer:
             continue
-        # 仅困境题算(简化:看 option_id 是否为 a/b/c)
         opt = a.answer["option_id"]
-        if opt not in ("a", "b", "c"):
+        # 仅困境题算:option_id 为单字母(dilemma 常用 a/b/c/d),排除 scale 的数字 id
+        if not (isinstance(opt, str) and len(opt) == 1 and opt.isalpha()):
             continue
         total += 1
         if opt == "a":

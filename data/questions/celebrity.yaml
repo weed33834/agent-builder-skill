@@ -563,15 +563,15 @@ questions:
     historical_choice: a
   - id: c_d16
     type: dilemma
-    prompt: 皇帝让你改革,权贵集体反对,改革成功国家强盛,失败你身死族灭。
+    prompt: 你的变法已见成效,但旧贵族暗中布局,新君即位后清算在即。
     dimensions: [idealism, risk_taking, conscientiousness]
     time_limit_sec: 15
-    scenario: 你被授全权推行变法。触动既得利益,反对声浪滔天。成功则国富兵强,失败则抄家灭族。
+    scenario: 变法使国富兵强,却也树敌无数。新君态度暧昧,旧势力卷土重来。逃则前功尽弃,留则性命堪忧——你的下场可能是车裂。
     options:
-      - {id: a, text: 力推变法,不计后果, scores: {idealism: 2, risk_taking: 2, conscientiousness: 1}}
-      - {id: b, text: 渐进改革,稳扎稳打, scores: {idealism: 1, risk_taking: 0, conscientiousness: 2}}
-      - {id: c, text: 称病辞职,明哲保身, scores: {idealism: -2, risk_taking: -2, conscientiousness: 0}}
-    historical_figure: 王安石
+      - {id: a, text: 以身殉法,留守到底, scores: {idealism: 2, risk_taking: 2, conscientiousness: 2}}
+      - {id: b, text: 据理力争,寻求转机, scores: {idealism: 1, risk_taking: 1, conscientiousness: 2}}
+      - {id: c, text: 出奔他国,留待时机, scores: {idealism: -1, risk_taking: -1, conscientiousness: 0}}
+    historical_figure: 商鞅
     historical_choice: a
 
   # ===== 连续滑块题(强度测量) =====

@@ -51,19 +51,19 @@ async function render() {
       <div class="profile-tags">
         ${tags.map(t => `<span class="profile-tag">${t}</span>`).join('')}
       </div>` : `<p class="profile-empty">— 数据尚不足以生成画像标签 —</p>`}
-      <p class="report-summary">${r.summary}</p>
+      <p class="report-summary">${r.summary || ''}</p>
     </div>
 
     <div class="report-section">
       <h3>核 心 匹 配</h3>
       <div class="match-list">
-        ${r.matches.map((m, i) => `
+        ${(r.matches || []).map((m, i) => `
           <div class="match-item ${i === 0 ? 'top' : ''}">
             <div>
               <div class="match-name">${m.name}</div>
               <div class="match-blurb">${m.blurb}</div>
             </div>
-            <div class="match-pct">${m.match_pct}<span style="font-size:14px;opacity:0.6">%</span></div>
+            <div class="match-pct">${m.match_pct || ''}<span style="font-size:14px;opacity:0.6">%</span></div>
           </div>
         `).join('')}
       </div>
@@ -83,19 +83,19 @@ async function render() {
               <div class="dim-name">${DIM_LABELS[k] || k}</div>
               ${pctText ? `<div class="dim-pct">${pctText}</div>` : ''}
             </div>
-            <div class="dim-score">${v}</div>
-            <div class="dim-bar"><div class="dim-bar-fill" style="width:0" data-w="${v}"></div></div>
+            <div class="dim-score">${v ?? ''}</div>
+            <div class="dim-bar"><div class="dim-bar-fill" style="width:0" data-w="${Math.min(100, Math.max(0, v))}"></div></div>
           </div>`;
         }).join('')}
       </div>
     </div>` : ''}
 
-    ${r.conflicts.length ? `
+    ${(r.conflicts && r.conflicts.length) ? `
     <div class="report-section">
       <h3>内 在 冲 突</h3>
       <div class="conflict-list">
         ${r.conflicts.map(c => {
-          const sev = c.severity || 1;
+          const sev = Math.min(3, Math.max(1, +c.severity || 1));
           const typeLabel = CONFLICT_TYPE_LABELS[c.conflict_type] || c.conflict_type;
           return `
           <div class="conflict-item sev-${sev}">
@@ -112,7 +112,7 @@ async function render() {
     <div class="report-section">
       <h3>行 为 洞 察</h3>
       <div class="insight-list">
-        ${INSIGHT_ORDER.filter(k => r.insights[k]).map(k => {
+        ${INSIGHT_ORDER.filter(k => r.insights && r.insights[k]).map(k => {
           const v = r.insights[k];
           let extra = '';
           if (k === 'courage_index' && typeof v.score === 'number') {
@@ -156,7 +156,7 @@ async function render() {
 function drawRadar(entries) {
   const chart = echarts.init(document.getElementById('radar'), null, { renderer: 'canvas' });
   // 维度多时缩小半径,避免标签拥挤
-  const radius = entries.length >= 7 ? '58%' : '68%';
+  const radius = entries.length >= 10 ? '52%' : (entries.length >= 7 ? '58%' : '68%');
   chart.setOption({
     backgroundColor: 'transparent',
     radar: {
