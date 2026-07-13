@@ -601,10 +601,10 @@ questions:
     dimensions: [extraversion, idealism, openness, conscientiousness, agreeableness, neuroticism]
     scale_max: 7
     statements:
-      - {id: s1, text: 我宁愿孤独地追求真理,也不愿在喧嚣中随波逐流, scores: {extraversion: -2, idealism: 1}}
-      - {id: s2, text: 我常为未知的可能性而兴奋, scores: {openness: 2}}
-      - {id: s3, text: 我做事必须有明确的计划和期限, scores: {conscientiousness: 2}}
-      - {id: s4, text: 我容易被他人的情绪感染, scores: {agreeableness: 1, neuroticism: 1}}
+      - {id: s1, text: "我宁愿孤独地追求真理,也不愿在喧嚣中随波逐流", scores: {extraversion: -2, idealism: 1}}
+      - {id: s2, text: "我常为未知的可能性而兴奋", scores: {openness: 2}}
+      - {id: s3, text: "我做事必须有明确的计划和期限", scores: {conscientiousness: 2}}
+      - {id: s4, text: "我容易被他人的情绪感染", scores: {agreeableness: 1, neuroticism: 1}}
 
   # ===== 价值观拍卖(测绝对价值强度) =====
   - id: c_au1

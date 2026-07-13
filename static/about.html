@@ -3,74 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>关于 — 心镜 MindMirror</title>
+<title data-i18n="common.about_brand">关于心镜 — MindMirror</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 <div class="ripple-bg"></div>
 <div class="container">
-
   <div class="take-header">
-    <a href="/" class="back-link" data-i18n="back">← 返 回</a>
-    <span class="title-label" data-i18n="about_title">关 于 心 镜</span>
-  </div>
-  <div class="lang-switch" id="lang-switch">
-    <button class="lang-btn active" data-lang="zh">中</button>
-    <button class="lang-btn" data-lang="en">EN</button>
-    <button class="lang-btn" data-lang="ja">日</button>
+    <a href="/" class="back-link" data-i18n="common.back">← 返 回</a>
+    <span class="title-label" data-i18n="common.about_brand">关 于 心 镜</span>
   </div>
 
-  <header class="history-hero">
+  <header class="hero hero-about">
     <div class="mirror-disc"></div>
-    <h1 data-i18n="brand">心 镜</h1>
-    <p class="subtitle">M I N D &nbsp; M I R R O R</p>
-    <p class="disclaimer" data-i18n="tagline">非问卷 · 非诊断 · 一面照见真实自我的水银镜</p>
+    <h1 data-i18n="home.brand">心 镜</h1>
+    <p class="subtitle" data-i18n="home.subtitle">M I N D &nbsp; M I R R O R</p>
+    <div class="hero-divider"><span></span></div>
+    <p class="disclaimer" data-i18n="home.disclaimer">非 心 理 诊 断 · 仅 供 参 考</p>
   </header>
 
-  <section class="about-section">
-    <h3 data-i18n="sec_concept">何 谓 心 镜</h3>
-    <div data-i18n-html="concept_body"></div>
-  </section>
+  <main>
+    <!-- 理解心镜 -->
+    <section class="about-section">
+      <h2 class="about-section-title" data-i18n="about.sec_concept">理 解 心 镜</h2>
+      <div class="about-body" data-i18n-html="about.concept_body"></div>
+    </section>
 
-  <section class="about-section">
-    <h3 data-i18n="sec_mirrors">三 面 镜 子</h3>
-    <ul class="mirror-list" id="mirror-list"></ul>
-  </section>
+    <!-- 三面镜子 -->
+    <section class="about-section">
+      <h2 class="about-section-title" data-i18n="about.sec_mirrors">三 面 镜 子</h2>
+      <ul class="mirror-list" id="mirror-list"></ul>
+    </section>
 
-  <section class="about-section">
-    <h3 data-i18n="sec_methods">九 种 答 题 方 法</h3>
-    <div class="method-grid" id="method-grid"></div>
-  </section>
+    <!-- 九种方法 -->
+    <section class="about-section">
+      <h2 class="about-section-title" data-i18n="about.sec_methods">九 种 答 题 方 法</h2>
+      <div class="method-grid" id="method-grid"></div>
+    </section>
 
-  <section class="about-section">
-    <h3 data-i18n="sec_behavior">行 为 轨 迹 与 计 分</h3>
-    <div data-i18n-html="behavior_body"></div>
-  </section>
+    <!-- 计分 -->
+    <section class="about-section">
+      <h2 class="about-section-title" data-i18n="about.sec_behavior">行 为 轨 迹 与 计 分</h2>
+      <div class="about-body" data-i18n-html="about.behavior_body"></div>
+    </section>
 
-  <section class="about-section">
-    <h3 data-i18n="sec_privacy">数 据 与 隐 私</h3>
-    <div data-i18n-html="privacy_body"></div>
-  </section>
+    <!-- 隐私 -->
+    <section class="about-section">
+      <h2 class="about-section-title" data-i18n="about.sec_privacy">数 据 与 隐 私</h2>
+      <div class="about-body" data-i18n-html="about.privacy_body"></div>
+    </section>
 
-  <section class="about-section">
-    <h3 data-i18n="sec_boundary">边 界 与 声 明</h3>
-    <div data-i18n-html="boundary_body"></div>
-  </section>
+    <!-- 边界 -->
+    <section class="about-section">
+      <h2 class="about-section-title" data-i18n="about.sec_boundary">边 界 与 声 明</h2>
+      <div class="about-body" data-i18n-html="about.boundary_body"></div>
+    </section>
 
+    <div class="actions">
+      <a href="/" class="btn-primary" data-i18n="common.back_home">回 到 首 页</a>
+    </div>
+  </main>
 </div>
 
+<script src="/vendor/i18next.min.js"></script>
+<script src="/i18n.js"></script>
 <script>
-// ============================================================
-// 三语文案 —— 中 / 英 / 日
-// ============================================================
-const I18N = {
+// 关于页专用的 I18N 资源(只在 about 页加载时合并)
+const ABOUT_RES = {
   zh: {
-    back: '← 返 回',
-    about_title: '关 于 心 镜',
-    brand: '心 镜',
-    tagline: '非问卷 · 非诊断 · 一面照见真实自我的水银镜',
-    sec_concept: '何 谓 心 镜',
+    sec_concept: '理 解 心 镜',
     concept_body: `
       <p>市面上的人格测评大多是量表——你勾选,它加总,你得到一个标签。这套流程把人压缩成几个数字,却丢弃了最有价值的部分:你在面对两难时如何抉择,你在时间压力下流露的本能,你在改主意与笃定之间的微妙差异。</p>
       <p>心镜不满足于此。它用<strong>两难困境</strong>将你置入历史情境,逼你在冲突中表态而非在安全区打分;用<strong>强迫抉择</strong>取消中间地带,让回避无处藏身;用<strong>价值拍卖</strong>以有限预算竞拍信念,出价即真实排序;用<strong>内隐联想</strong>绕过意识层,直接量度本能反应时差异。</p>
@@ -115,12 +117,7 @@ const I18N = {
       <p style="margin-top:32px;color:var(--paper-faint);font-size:13px;letter-spacing:0.15em">— 镜 不 言,只 照 —</p>
     `,
   },
-
   en: {
-    back: '← BACK',
-    about_title: 'ABOUT MINDMIRROR',
-    brand: 'MindMirror',
-    tagline: 'Not a questionnaire · Not a diagnosis · A mirror that reveals who you truly are',
     sec_concept: 'WHAT IS MINDMIRROR',
     concept_body: `
       <p>Most personality assessments are checklists — you tick boxes, it tallies scores, you receive a label. This process compresses a person into a handful of numbers and discards the most valuable signal: how you decide under conflict, what instinct surfaces under time pressure, the subtle difference between hesitation and conviction.</p>
@@ -129,9 +126,9 @@ const I18N = {
     `,
     sec_mirrors: 'THREE MIRRORS',
     mirrors: [
-      { icon: '名', title: 'Celebrity Mirror', desc: 'Reveals which historical soul you most closely resemble. 54 questions, a library of 40 historical figures — not imitation, but resonance. From Lincoln\'s resolve to Turing\'s introverted genius, find the figure whose undertone harmonizes with yours.' },
-      { icon: '义', title: 'Value Mirror', desc: 'Maps your value coordinates and moral level. 54 questions across altruism, justice, honesty, and discipline — multidimensional portrayal of where you truly stand between interest and principle. Can your convictions survive the test of context?' },
-      { icon: '场', title: 'Ideology Mirror', desc: 'Locates your ideological coordinates. 55 questions, a library of 32 ideologies, cross-positioned on economic and social axes. No presupposed stance, no guided conclusion — only an honest projection of where you fall on the political spectrum.' },
+      { icon: 'C', title: 'Celebrity Mirror', desc: 'Reveals which historical soul you most closely resemble. 54 questions, a library of 40 historical figures — not imitation, but resonance. From Lincoln\'s resolve to Turing\'s introverted genius, find the figure whose undertone harmonizes with yours.' },
+      { icon: 'V', title: 'Value Mirror', desc: 'Maps your value coordinates and moral level. 54 questions across altruism, justice, honesty, and discipline — multidimensional portrayal of where you truly stand between interest and principle. Can your convictions survive the test of context?' },
+      { icon: 'I', title: 'Ideology Mirror', desc: 'Locates your ideological coordinates. 55 questions, a library of 32 ideologies, cross-positioned on economic and social axes. No presupposed stance, no guided conclusion — only an honest projection of where you fall on the political spectrum.' },
     ],
     sec_methods: 'NINE QUESTION TYPES',
     methods: [
@@ -150,7 +147,7 @@ const I18N = {
       <p>MindMirror\'s scoring engine does more than tally option values. Every answer carries three behavioral metrics that directly determine its weight in the final score:</p>
       <p><strong>Response time</strong> — 3 to 15 seconds is the ideal window, weighted 1.0. Sub-second instant picks are downweighted to 0.7 (near-random), timeouts or instinctive reactions to 0.75 (lacking deliberation). This weighting rests on one assumption: a moderately considered answer is closer to your true inclination than a reflex.</p>
       <p><strong>Edit count</strong> — answers changed two or more times are downweighted to 0.85. A signal from an unformed value is weaker than one from a conviction. This is not punishment for hesitation, but acknowledgment that a wavering answer carries less information than a decisive one.</p>
-      <p><strong>Decision trajectory</strong> — in ranking questions, position weights decay non-linearly; the gap between first and second far exceeds that between fourth and fifth. In allocation questions, the peak item is highlighted. This trajectory data elevates scoring from "what you chose" to "how you chose."</p>
+      <p><strong>Decision trajectory</strong> — in ranking questions, position weights decay non-linearly; the gap between first and second far exceeds that between fourth and fifth. In allocation questions, the peak item is highlighted. This trajectory data elevates scoring from "what you chose" to "how you chose".</p>
       <p>Finally, weighted scores per dimension are dynamically normalized to 0-100, then fed through a normal-distribution CDF to estimate percentiles — telling you what fraction of people you surpass on each dimension. Conflict detection surfaces cross-type contradictions (left on the scale, right in the ranking), IAT implicit-explicit splits, and hesitation patterns, yielding six-dimensional behavioral insights.</p>
     `,
     sec_privacy: 'DATA & PRIVACY',
@@ -166,12 +163,7 @@ const I18N = {
       <p style="margin-top:32px;color:var(--paper-faint);font-size:13px;letter-spacing:0.15em">— The mirror speaks not; it only reflects —</p>
     `,
   },
-
   ja: {
-    back: '← 戻 る',
-    about_title: '心鏡について',
-    brand: '心 鏡',
-    tagline: 'アンケートにあらず · 診断にあらず · 真の自己を映す一面の水銀鏡',
     sec_concept: '心鏡とは',
     concept_body: `
       <p>世にある性格診断の多くは評定尺度です——あなたがチェックを入れ、それを合計し、ラベルを受け取る。このプロセスは人間をいくつかの数字に圧縮し、最も価値ある信号を捨て去ります:葛藤の中でどう決断するか、時間制圧下で現れる本能、躊躇と確信の間の微妙な差異。</p>
@@ -219,59 +211,47 @@ const I18N = {
   },
 };
 
-// ============================================================
-// 语言切换逻辑
-// ============================================================
-function applyLang(lang) {
-  const t = I18N[lang];
-  if (!t) return;
-  // 简单文本
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    if (t[key] !== undefined) el.textContent = t[key];
-  });
-  // HTML 内容
-  document.querySelectorAll('[data-i18n-html]').forEach(el => {
-    const key = el.dataset.i18nHtml;
-    if (t[key] !== undefined) el.innerHTML = t[key];
-  });
-  // 三面镜子列表
-  document.getElementById('mirror-list').innerHTML = t.mirrors.map(m => `
-    <li>
-      <span class="mirror-list-icon">${m.icon}</span>
-      <div>
-        <div class="mirror-list-title">${m.title}</div>
-        <div class="mirror-list-desc">${m.desc}</div>
-      </div>
-    </li>
-  `).join('');
-  // 九种方法网格
-  document.getElementById('method-grid').innerHTML = t.methods.map(m => `
-    <div class="method-card">
-      <div class="method-name">${m.name}</div>
-      <div class="method-en">${m.en}</div>
-      <div class="method-desc">${m.desc}</div>
-    </div>
-  `).join('');
-  // html lang
-  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
-  // 激活态
-  document.querySelectorAll('.lang-btn').forEach(b => {
-    b.classList.toggle('active', b.dataset.lang === lang);
-  });
-  // 记忆
-  try { localStorage.setItem('mm_lang', lang); } catch(e) {}
+// 合并到全局 i18n 引擎
+for (const lang of Object.keys(ABOUT_RES)) {
+  if (!MM_I18N_RESOURCES[lang]) MM_I18N_RESOURCES[lang] = {};
+  MM_I18N_RESOURCES[lang].about = ABOUT_RES[lang];
 }
 
-document.getElementById('lang-switch').addEventListener('click', e => {
-  const btn = e.target.closest('.lang-btn');
-  if (btn) applyLang(btn.dataset.lang);
-});
+// 注:不要在这里调用 applyLang,i18n.js 的 initLang() 会在 DOMContentLoaded 时
+// 读取 localStorage.mm_lang 并应用,过早调用会覆盖已保存语言,造成刷新丢失.
 
-// 初始化:读取记忆或默认中文
-let initLang = 'zh';
-try { initLang = localStorage.getItem('mm_lang') || 'zh'; } catch(e) {}
-applyLang(initLang);
+// 渲染三面镜子列表
+function renderAboutLists() {
+  const t = MM_I18N_RESOURCES[mmI18n.lang]?.about;
+  if (!t) return;
+  if (document.getElementById('mirror-list')) {
+    document.getElementById('mirror-list').innerHTML = t.mirrors.map(m => `
+      <li>
+        <span class="mirror-list-icon">${m.icon}</span>
+        <div>
+          <div class="mirror-list-title">${m.title}</div>
+          <div class="mirror-list-desc">${m.desc}</div>
+        </div>
+      </li>
+    `).join('');
+  }
+  if (document.getElementById('method-grid')) {
+    document.getElementById('method-grid').innerHTML = t.methods.map(m => `
+      <div class="method-card">
+        <div class="method-name">${m.name}</div>
+        <div class="method-en">${m.en}</div>
+        <div class="method-desc">${m.desc}</div>
+      </div>
+    `).join('');
+  }
+}
+renderAboutLists();
+injectLangSwitch();
+// 切换语言时刷新镜子列表 + 网格(applyLang 已在 i18n.js 中处理 data-i18n 元素,
+// 此处只需重渲动态拼出的 DOM)
+document.addEventListener('mm:lang-changed', () => {
+  renderAboutLists();
+});
 </script>
 </body>
 </html>

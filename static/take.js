@@ -9,18 +9,14 @@ let lastType = null;
 const answers = [];
 let timerInterval = null;
 
-// 题型中文名 + 分段标题
-const TYPE_META = {
-  scale:        { name: '量表题',   section: '人格底色',   hint: '凭第一直觉选择最贴近你的选项' },
-  dilemma:      { name: '困境题',   section: '抉择时刻',   hint: '设想自己身处此境,会如何抉择' },
-  slider:       { name: '强度滑块', section: '程度光谱',   hint: '拖动滑块,标记你的倾向强度' },
-  forced_choice:{ name: '强迫抉择', section: '二选其一',   hint: '必须选一个,没有中间地带' },
-  matrix:       { name: '同意度',   section: '信念矩阵',   hint: '对每条陈述选择同意程度' },
-  auction:      { name: '价值拍卖', section: '人生竞拍',   hint: '分配金币,可保留预算' },
-  allocation:   { name: '资源分配', section: '价值天平',   hint: '分配总额须等于给定数值' },
-  sort:         { name: '排序题',   section: '优先序列',   hint: '拖拽排序,1 = 最重要' },
-  iat:          { name: '联想测验', section: '内隐联想',   hint: '凭直觉,越快越好' },
-};
+// 题型展示信息 —— 从 i18n 资源动态取
+function typeMeta(type) {
+  return {
+    name: mmI18n.t(`take.type_label.${type}`) || type,
+    section: mmI18n.t(`take.type_label.${type}`) || type,
+    hint: mmI18n.t('take.section_intro_default'),
+  };
+}
 
 // 预计算:每种题型的题号分布 {type: [globalIdx, ...]} 与计数
 function buildTypeIndex(questions) {
@@ -39,7 +35,7 @@ async function init() {
     api.get(`/api/assessments/${type}/questions`),
     api.post(`/api/sessions?assessment_type=${type}`),
   ]);
-  document.getElementById('title').textContent = bank.title;
+  document.getElementById('title').textContent = mmI18n.t(`take.title_${type}`) || bank.title;
   // 恢复草稿(含行为数据)
   if (session.draft_answers) {
     const beh = session.behavior_log || {};
@@ -71,17 +67,19 @@ function renderQuestion() {
   const pct = (currentIdx / bank.questions.length) * 100;
   document.getElementById('progress').style.width = pct + '%';
 
+  // 顶部 i18n 提示(非中文时显示)
+  updateI18nNotice();
+
   // 题型内进度:当前题型中第几题 / 该题型总数
   const ti = bank._typeIndex;
   const typeList = ti.idx[q.type] || [];
   const posInType = typeList.indexOf(currentIdx) + 1;
   const typeCount = ti.count[q.type] || 0;
-  const meta = TYPE_META[q.type] || { name: q.type, section: '', hint: '' };
+  const meta = typeMeta(q.type);
 
   document.getElementById('progress-text').innerHTML =
     `<span class="num">${currentIdx + 1}</span> / ${bank.questions.length}`
     + ` <span class="type-badge">${meta.name} ${posInType}/${typeCount}</span>`;
-
   const area = document.getElementById('question-area');
 
   // 题型切换 → 显示分段过渡卡(此时不启动计时与轨迹)
@@ -91,10 +89,10 @@ function renderQuestion() {
     document.getElementById('timer').style.display = 'none';
     area.innerHTML = `
       <div class="section-intro">
-        <div class="section-eyebrow">第 ${phaseNumber(q.type, ti)} 部分</div>
+        <div class="section-eyebrow">${mmI18n.t('take.section_label', { n: phaseNumber(q.type, ti) })}</div>
         <h2 class="section-title">${meta.section}</h2>
         <p class="section-hint">${meta.hint}</p>
-        <button class="btn-primary section-start" type="button">开 始</button>
+        <button class="btn-primary section-start" type="button" data-i18n="common.start">开 始</button>
       </div>`;
     lastType = q.type;
     document.querySelector('.section-start').addEventListener('click', () => {
@@ -106,10 +104,50 @@ function renderQuestion() {
   }
 }
 
+// i18n 提示显示控制
+function updateI18nNotice() {
+  const notice = document.getElementById('i18n-notice');
+  if (!notice) return;
+  if (mmI18n.lang !== 'zh') {
+    notice.textContent = mmI18n.t('common.notice_i18n_partial');
+    notice.style.display = '';
+  } else {
+    notice.style.display = 'none';
+  }
+}
+
 // 当前题型的"第几部分"(按题型出现顺序)
 function phaseNumber(type, ti) {
   const order = Object.keys(ti.idx);
   return order.indexOf(type) + 1;
+}
+
+// 局部刷新:仅更新进度/题型徽章(不重渲染题目,避免丢失答案)
+function refreshI18n() {
+  if (!bank) return;
+  const q = bank.questions[currentIdx];
+  if (!q) return;
+  const ti = bank._typeIndex;
+  const typeList = ti.idx[q.type] || [];
+  const posInType = typeList.indexOf(currentIdx) + 1;
+  const typeCount = ti.count[q.type] || 0;
+  const meta = typeMeta(q.type);
+
+  // 顶部 i18n 提示(非中文时显示)
+  updateI18nNotice();
+
+  document.getElementById('progress-text').innerHTML =
+    `<span class="num">${currentIdx + 1}</span> / ${bank.questions.length}`
+    + ` <span class="type-badge">${meta.name} ${posInType}/${typeCount}</span>`;
+  // 如果当前在分段过渡卡,也更新
+  const introEyebrow = document.querySelector('.section-eyebrow');
+  const introTitle = document.querySelector('.section-title');
+  const introHint = document.querySelector('.section-hint');
+  const introStart = document.querySelector('.section-start');
+  if (introEyebrow) introEyebrow.textContent = mmI18n.t('take.section_label', { n: phaseNumber(q.type, ti) });
+  if (introTitle) introTitle.textContent = meta.section;
+  if (introHint) introHint.textContent = meta.hint;
+  if (introStart) introStart.textContent = mmI18n.t('common.start');
 }
 
 function renderCurrent(q) {

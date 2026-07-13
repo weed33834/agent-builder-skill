@@ -566,10 +566,10 @@ questions:
     dimensions: [justice, empathy, duty, honesty, altruism, discipline]
     scale_max: 7
     statements:
-      - {id: s1, text: 规则面前不应有例外,哪怕对弱者, scores: {justice: 2, empathy: -1}}
-      - {id: s2, text: 承诺一旦作出,无论如何都要兑现, scores: {duty: 2, honesty: 1}}
-      - {id: s3, text: 看到他人受苦,我比自己受苦还难受, scores: {empathy: 2, altruism: 1}}
-      - {id: s4, text: 自律不是束缚,而是通向自由的阶梯, scores: {discipline: 2}}
+      - {id: s1, text: "规则面前不应有例外,哪怕对弱者", scores: {justice: 2, empathy: -1}}
+      - {id: s2, text: "承诺一旦作出,无论如何都要兑现", scores: {duty: 2, honesty: 1}}
+      - {id: s3, text: "看到他人受苦,我比自己受苦还难受", scores: {empathy: 2, altruism: 1}}
+      - {id: s4, text: "自律不是束缚,而是通向自由的阶梯", scores: {discipline: 2}}
 
   # ===== 价值观拍卖(测绝对价值强度) =====
   - id: v_au1

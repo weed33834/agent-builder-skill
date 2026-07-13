@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>测评中 — 心镜 MindMirror</title>
+<title data-i18n="common.your_mirror">测评中 — 心镜 MindMirror</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/styles.css">
 </head>
@@ -11,7 +11,7 @@
 <div class="ripple-bg"></div>
 <div class="container">
   <div class="take-header">
-    <a href="/" class="back-link">← 退 出</a>
+    <a href="/" class="back-link" data-i18n="common.exit">← 退 出</a>
     <span id="title" class="title-label"></span>
   </div>
   <div class="progress-track"><div id="progress" class="progress-fill" style="width:0"></div></div>
@@ -26,10 +26,29 @@
     <div class="num">15</div>
   </div>
 
+  <div id="i18n-notice" class="i18n-notice" style="display:none"></div>
   <div id="question-area"></div>
 </div>
 
+<script src="/vendor/i18next.min.js"></script>
+<script src="/i18n.js"></script>
 <script src="/app.js"></script>
 <script src="/take.js"></script>
+<script>
+  // 在答题页就注入语言切换器,这样用户在答题中也能切换
+  injectLangSwitch();
+  // 监听语言变化 —— 局部刷新(题目内容保持不丢答案)
+  document.addEventListener('mm:lang-changed', () => {
+    // 标题
+    const type = new URLSearchParams(location.search).get('type');
+    const titleEl = document.getElementById('title');
+    if (titleEl && type) titleEl.textContent = mmI18n.t(`take.title_${type}`);
+    // 题型徽章 / 进度文字(只在题目区显示时刷新)
+    if (typeof refreshI18n === 'function') refreshI18n();
+    // 返回链接
+    const back = document.querySelector('.back-link');
+    if (back) back.textContent = mmI18n.t('common.exit');
+  });
+</script>
 </body>
 </html>

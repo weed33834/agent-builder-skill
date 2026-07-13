@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>你的心镜 — MindMirror</title>
+<title data-i18n="common.your_mirror">你的心镜 — MindMirror</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="stylesheet" href="/styles.css">
 <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
@@ -11,12 +11,21 @@
 <body>
 <div class="container">
   <div class="take-header">
-    <a href="/" class="back-link">← 返回</a>
+    <a href="/" class="back-link" data-i18n="report.back">← 返回</a>
   </div>
   <div id="report"></div>
 </div>
 
+<script src="/vendor/i18next.min.js"></script>
+<script src="/i18n.js"></script>
 <script src="/app.js"></script>
 <script src="/report.js"></script>
+<script>
+  injectLangSwitch();
+  // 报告页:语言切换时重新渲染
+  document.addEventListener('mm:lang-changed', () => {
+    if (typeof window.__mmRerender === 'function') window.__mmRerender();
+  });
+</script>
 </body>
 </html>

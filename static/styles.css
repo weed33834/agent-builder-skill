@@ -494,6 +494,19 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; letter-spacing: 0
   vertical-align: middle;
 }
 
+/* 三语切换提示(非中文时显示) */
+.i18n-notice {
+  margin: 0 0 24px;
+  padding: 10px 16px;
+  border: 1px solid rgba(208, 73, 64, 0.4);
+  background: rgba(208, 73, 64, 0.06);
+  color: var(--mercury-light);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-align: center;
+  border-radius: 2px;
+}
+
 /* 分段过渡卡 —— 题型切换时的节奏停顿 */
 .section-intro {
   text-align: center;
@@ -1243,12 +1256,16 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; letter-spacing: 0
   font-size: 16px;
   color: var(--paper);
   line-height: 1.7;
+  min-width: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 .matrix-scale {
   display: flex;
   gap: 6px;
   min-width: 280px;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 .matrix-dot {
   width: 38px;
@@ -2049,6 +2066,76 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; letter-spacing: 0
   .mirror-list-title { font-size: 17px; }
   /* 九种方法网格单列 */
   .method-grid { grid-template-columns: 1fr; }
+
+  /* === 移动端:matrix 题型 —— 文字+刻度垂直堆叠 === */
+  .matrix-header {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .matrix-anchors,
+  .matrix-scale-labels,
+  .matrix-scale {
+    min-width: 0;
+    width: 100%;
+  }
+  .matrix-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 18px 0;
+  }
+  .matrix-text { font-size: 15px; line-height: 1.65; }
+  .matrix-scale { justify-content: space-between; gap: 4px; }
+  .matrix-scale-labels { display: none; }
+  .matrix-dot { width: 36px; height: 36px; font-size: 11px; }
+
+  /* === 移动端:报告页匹配项 —— 取消负边距溢出,改用内描边 === */
+  .match-item {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 20px 0;
+  }
+  .match-item.top {
+    margin: 0;
+    padding: 24px 0 24px 16px;
+    background: linear-gradient(90deg, var(--cinnabar-soft) 0%, transparent 100%);
+  }
+  .match-item .match-name { font-size: 18px; }
+  .match-item.top .match-name { font-size: 20px; }
+  .match-item .match-blurb { width: 100%; }
+  .match-pct { font-size: 28px; margin-left: auto; }
+
+  /* === 移动端:语言切换器 tap 区域 === */
+  .lang-btn {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 8px 12px;
+  }
+  .lang-switch { top: 16px; right: 16px; }
+
+  /* === 移动端:头部留出语言切换器位置,避免重叠 === */
+  .take-header { padding-right: 120px; }
+  .take-header .title-label {
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  /* === 移动端:返回链接 tap 区域 === */
+  .back-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    margin: -8px -12px;
+  }
+
+  /* === 移动端:量表 5 列变紧凑 === */
+  .scale-options { gap: 6px; }
+  .scale-option { padding: 18px 6px; min-height: 64px; }
+  .scale-option .scale-text { font-size: 11px; line-height: 1.3; }
 }
 @media (max-width: 960px) and (min-width: 601px) {
   .method-grid { grid-template-columns: repeat(2, 1fr); }

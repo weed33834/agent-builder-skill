@@ -3,43 +3,26 @@
 const params = new URLSearchParams(location.search);
 const resultId = params.get('id');
 
-const DIM_LABELS = {
-  openness: '开放性', conscientiousness: '尽责性', extraversion: '外向性',
-  agreeableness: '宜人性', neuroticism: '神经质', risk_taking: '风险偏好', idealism: '理想主义',
-  honesty: '诚实', altruism: '利他', justice: '公正', duty: '责任', empathy: '共情', discipline: '自律',
-  econ_left: '经济左', econ_right: '经济右', authority: '权威', liberty: '自由',
-  tradition: '传统', progress: '进步', nationalist: '民族', globalist: '全球',
-};
-const INSIGHT_LABELS = {
-  decision_style: '决策风格',
-  time_pressure_effect: '时间压力',
-  consistency: '一致性',
-  iat_bias: '内隐偏向',
-  courage_index: '勇气指数',
-  ambivalence: '纠结度',
-};
+let _lastResult = null;
+let _radarChart = null;
+
 const INSIGHT_ORDER = ['decision_style', 'consistency', 'ambivalence', 'courage_index', 'time_pressure_effect', 'iat_bias'];
-const CONFLICT_TYPE_LABELS = {
-  high_hesitation: '犹豫',
-  frequent_change: '反复',
-  timeout_instinct: '本能',
-  dimension_contradiction: '矛盾',
-  iat_implicit_explicit: '分裂',
-  iat_hesitation: '潜犹豫',
-};
-const ASSESSMENT_TITLES = {
-  celebrity: { eyebrow: 'C E L E B R I T Y', title: '名 镜 · 灵魂对望' },
-  value:     { eyebrow: 'V A L U E',         title: '义 镜 · 价值坐标' },
-  ideology:  { eyebrow: 'I D E O L O G Y',   title: '意 识 镜 · 光谱定位' },
-};
 
 async function render() {
   if (!resultId) { location.href = '/'; return; }
   const r = await api.get(`/api/results/${resultId}`);
-  const dimEntries = Object.entries(r.dimensions);
+  _lastResult = r;
+  doRender();
+}
+
+function doRender() {
+  const r = _lastResult;
+  if (!r) return;
+  const dimEntries = Object.entries(r.dimensions || {});
   const tags = (r.profile && r.profile.tags) || [];
   const pcts = r.percentiles || {};
-  const titleInfo = ASSESSMENT_TITLES[r.assessment_type] || { eyebrow: r.assessment_type.toUpperCase(), title: '心 镜 报 告' };
+  const t = mmI18n.t(`report.titles.${r.assessment_type}`);
+  const titleInfo = t || { eyebrow: r.assessment_type.toUpperCase(), title: mmI18n.t('common.your_mirror') };
 
   const html = `
     <div class="report-hero">
@@ -50,20 +33,20 @@ async function render() {
       ${tags.length ? `
       <div class="profile-tags">
         ${tags.map(t => `<span class="profile-tag">${t}</span>`).join('')}
-      </div>` : `<p class="profile-empty">— 数据尚不足以生成画像标签 —</p>`}
+      </div>` : `<p class="profile-empty">${mmI18n.t('report.tags_empty')}</p>`}
       <p class="report-summary">${r.summary || ''}</p>
     </div>
 
     <div class="report-section">
-      <h3>核 心 匹 配</h3>
+      <h3>${mmI18n.t('report.sec_matches')}</h3>
       <div class="match-list">
         ${(r.matches || []).map((m, i) => `
           <div class="match-item ${i === 0 ? 'top' : ''}">
             <div>
-              <div class="match-name">${m.name}</div>
-              <div class="match-blurb">${m.blurb}</div>
+              <div class="match-name">${m.name || ''}</div>
+              <div class="match-blurb">${m.blurb || ''}</div>
             </div>
-            <div class="match-pct">${m.match_pct || ''}<span style="font-size:14px;opacity:0.6">%</span></div>
+            <div class="match-pct">${m.match_pct != null ? m.match_pct : ''}<span style="font-size:14px;opacity:0.6">%</span></div>
           </div>
         `).join('')}
       </div>
@@ -71,20 +54,23 @@ async function render() {
 
     ${dimEntries.length ? `
     <div class="report-section">
-      <h3>维 度 详 解</h3>
+      <h3>${mmI18n.t('report.sec_dimensions')}</h3>
       <div class="chart-container" id="radar"></div>
       <div class="dim-grid">
         ${dimEntries.map(([k, v]) => {
           const pct = pcts[k];
-          const pctText = (pct !== undefined && pct !== null) ? `高于 ${Math.round(pct)}%` : '';
+          const pctText = (pct !== undefined && pct !== null)
+            ? mmI18n.t('report.higher_than', { pct: Math.round(pct) })
+            : '';
+          const dimLabel = mmI18n.t(`report.dim_labels.${k}`) || k;
           return `
           <div class="dim-item">
             <div class="dim-head">
-              <div class="dim-name">${DIM_LABELS[k] || k}</div>
+              <div class="dim-name">${dimLabel}</div>
               ${pctText ? `<div class="dim-pct">${pctText}</div>` : ''}
             </div>
-            <div class="dim-score">${v ?? ''}</div>
-            <div class="dim-bar"><div class="dim-bar-fill" style="width:0" data-w="${Math.min(100, Math.max(0, v))}"></div></div>
+            <div class="dim-score">${v != null ? v : ''}</div>
+            <div class="dim-bar"><div class="dim-bar-fill" style="width:0" data-w="${Math.min(100, Math.max(0, v || 0))}"></div></div>
           </div>`;
         }).join('')}
       </div>
@@ -92,25 +78,25 @@ async function render() {
 
     ${(r.conflicts && r.conflicts.length) ? `
     <div class="report-section">
-      <h3>内 在 冲 突</h3>
+      <h3>${mmI18n.t('report.sec_conflicts')}</h3>
       <div class="conflict-list">
         ${r.conflicts.map(c => {
           const sev = Math.min(3, Math.max(1, +c.severity || 1));
-          const typeLabel = CONFLICT_TYPE_LABELS[c.conflict_type] || c.conflict_type;
+          const typeLabel = mmI18n.t(`report.conflict_labels.${c.conflict_type}`) || c.conflict_type;
           return `
           <div class="conflict-item sev-${sev}">
             <div class="conflict-meta">
               <span class="conflict-type">${typeLabel}</span>
               <span class="conflict-dots">${'●'.repeat(sev)}${'○'.repeat(3 - sev)}</span>
             </div>
-            <div class="conflict-desc">${c.description}</div>
+            <div class="conflict-desc">${c.description || ''}</div>
           </div>`;
         }).join('')}
       </div>
     </div>` : ''}
 
     <div class="report-section">
-      <h3>行 为 洞 察</h3>
+      <h3>${mmI18n.t('report.sec_insights')}</h3>
       <div class="insight-list">
         ${INSIGHT_ORDER.filter(k => r.insights && r.insights[k]).map(k => {
           const v = r.insights[k];
@@ -126,10 +112,10 @@ async function render() {
           return `
           <div class="insight-item">
             <div class="insight-head">
-              <span class="insight-label">${INSIGHT_LABELS[k] || k}</span>
-              <span class="insight-value">${v.label}</span>
+              <span class="insight-label">${mmI18n.t(`report.insight_labels.${k}`) || k}</span>
+              <span class="insight-value">${v.label || ''}</span>
             </div>
-            <div class="insight-desc">${v.desc}</div>
+            <div class="insight-desc">${v.desc || ''}</div>
             ${extra}
           </div>`;
         }).join('')}
@@ -137,13 +123,29 @@ async function render() {
     </div>
 
     <div class="actions">
-      <a href="/" class="btn-secondary">回到首页</a>
-      <a href="/history.html" class="btn-secondary">我的报告</a>
+      <a href="/" class="btn-secondary" data-i18n="report.back_home">回到首页</a>
+      <a href="/history.html" class="btn-secondary" data-i18n="report.my_reports">我的报告</a>
     </div>
   `;
   document.getElementById('report').innerHTML = html;
 
-  // 维度条 + 洞察条动画 —— 延迟触发宽度过渡
+  // 重新应用 i18n 到本次注入的 data-i18n 元素 —— 直接调 I18n.t 而不再走 applyLang,
+  // 避免 mm:lang-changed 事件在递归中触发再次渲染.
+  document.querySelectorAll('#report [data-i18n]').forEach(el => {
+    const v = mmI18n.t(el.dataset.i18n);
+    if (v !== el.dataset.i18n) el.textContent = v;
+  });
+  document.querySelectorAll('#report [data-i18n-html]').forEach(el => {
+    const v = mmI18n.t(el.dataset.i18nHtml);
+    if (v !== el.dataset.i18nHtml) el.innerHTML = v;
+  });
+  // 同步顶部 lang 按钮的激活态
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === mmI18n.lang);
+  });
+  document.documentElement.lang = mmI18n.lang === 'zh' ? 'zh-CN' : mmI18n.lang;
+
+  // 维度条 + 洞察条动画
   setTimeout(() => {
     document.querySelectorAll('.dim-bar-fill, .insight-bar-fill').forEach(el => {
       el.style.width = el.dataset.w + '%';
@@ -154,13 +156,17 @@ async function render() {
 }
 
 function drawRadar(entries) {
-  const chart = echarts.init(document.getElementById('radar'), null, { renderer: 'canvas' });
-  // 维度多时缩小半径,避免标签拥挤
+  // 销毁旧实例,避免重复 canvas
+  if (_radarChart) { try { _radarChart.dispose(); } catch (e) {} _radarChart = null; }
+  const el = document.getElementById('radar');
+  if (!el) return;
+  const chart = echarts.init(el, null, { renderer: 'canvas' });
+  _radarChart = chart;
   const radius = entries.length >= 10 ? '52%' : (entries.length >= 7 ? '58%' : '68%');
   chart.setOption({
     backgroundColor: 'transparent',
     radar: {
-      indicator: entries.map(([k, v]) => ({ name: DIM_LABELS[k] || k, max: 100 })),
+      indicator: entries.map(([k, v]) => ({ name: mmI18n.t(`report.dim_labels.${k}`) || k, max: 100 })),
       center: ['50%', '52%'],
       radius: radius,
       axisName: {
@@ -185,7 +191,9 @@ function drawRadar(entries) {
       }],
     }],
   });
-  window.addEventListener('resize', () => chart.resize());
+  window.addEventListener('resize', () => { try { chart.resize(); } catch (e) {} });
 }
 
 render();
+// 暴露给语言切换使用
+window.__mmRerender = () => { if (_lastResult) doRender(); };
