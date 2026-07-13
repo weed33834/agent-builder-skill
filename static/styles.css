@@ -1325,7 +1325,6 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; letter-spacing: 0
   border-bottom: 1px solid var(--line);
 }
 .auction-row:last-of-type { border-bottom: none; }
-.auction-row.peak .auction-bar-fill { background: linear-gradient(90deg, var(--cinnabar), #e86058); }
 .auction-head {
   display: flex;
   justify-content: space-between;
@@ -1354,6 +1353,20 @@ h1, h2, h3 { font-family: var(--font-serif); font-weight: 400; letter-spacing: 0
   transition: width 0.3s var(--ease-out);
   border-radius: 3px;
 }
+/* auction 数值显示 —— 复用 alloc 的 .val 但作用域独立,确保样式命中 */
+.auction-row .val {
+  min-width: 56px;
+  text-align: center;
+  font-family: var(--font-num);
+  font-size: 32px;
+  color: var(--paper);
+  font-variation-settings: 'opsz' 144, 'SOFT' 50;
+  line-height: 1;
+  margin: 0 10px;
+  transition: color 0.2s;
+}
+.auction-row.peak .val { color: var(--cinnabar); text-shadow: 0 0 16px var(--cinnabar-glow); }
+.auction-row.peak .auction-bar-fill { background: linear-gradient(90deg, var(--cinnabar), #e86058); }
 
 /* ============================================================
    报告页
