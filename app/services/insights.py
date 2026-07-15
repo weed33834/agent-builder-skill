@@ -45,7 +45,7 @@ def derive_insights(assessment_type: str, answers, behavior: dict) -> dict:
             continue
         if a.duration_ms <= 0:
             continue
-        if getattr(q, "time_limit_sec", None):
+        if getattr(q, "time_limit_sec", None) and q.type != "iat":
             timed_durations.append(a.duration_ms)
         else:
             untimed_durations.append(a.duration_ms)
@@ -169,11 +169,11 @@ def _derive_ambivalence(answers, durations, changes) -> dict:
         return {"label": "无数据", "desc": "无行为数据", "score": 0}
 
     median = sorted(durations)[len(durations) // 2]
-    # 高犹豫题比例
-    long_count = sum(1 for d in durations if d > median * 1.8)
+    # 高犹豫题比例(与 conflicts.py 保持一致:2.5× 中位数)
+    long_count = sum(1 for d in durations if d > median * 2.5)
     long_pct = long_count / len(durations) * 100
-    # 改主意题比例
-    change_count = sum(1 for c in changes if c >= 2)
+    # 改主意题比例(与 conflicts.py 保持一致:改 3 次以上)
+    change_count = sum(1 for c in changes if c >= 3)
     change_pct = change_count / len(changes) * 100 if changes else 0
 
     # 综合(0-100)

@@ -12,13 +12,14 @@ from app.data import load_bank
 
 
 def detect_conflicts(assessment_type: str, answers, behavior: dict) -> list[dict]:
-    """四类冲突源 + 严重度评分,最多 7 条。
+    """四类冲突源 + 严重度评分,最多 5 条。
 
     阈值收紧 v2:解决随机作答也撞顶 7/7 的问题。
     - 高犹豫阈值 1.8× → 2.5×(且只取严重度≥2 的,过滤掉 severity=1 噪音)
     - 反复改阈值 2 → 3(改 2 次属正常斟酌)
     - dimension_contradiction 阈值 15% → 35%
     - 同一题最多触发 1 条冲突(取严重度最高)
+    - 上限 7 → 5(避免刷屏)
     """
     conflicts: list[dict] = []
     bank = load_bank(assessment_type)
@@ -57,8 +58,8 @@ def detect_conflicts(assessment_type: str, answers, behavior: dict) -> list[dict
             }
             if q.id not in per_q_best or cand["severity"] > per_q_best[q.id]["severity"]:
                 per_q_best[q.id] = cand
-        # 冲突3:限时题超时(本能答案)
-        if getattr(q, "time_limit_sec", None) and ans.duration_ms > q.time_limit_sec * 1000:
+        # 冲突3:限时题超时(本能答案)—— IAT 虽设 time_limit_sec 但前端不限时,排除
+        if getattr(q, "time_limit_sec", None) and q.type != "iat" and ans.duration_ms > q.time_limit_sec * 1000:
             cand = {
                 "question_id": q.id,
                 "description": f"限时题超时作答,本能反应可能与理性判断分裂",

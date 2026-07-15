@@ -90,14 +90,25 @@ def match_value(dimensions: dict, answers, behavior) -> list[dict]:
     ]
 
 
+def ideology_axes(dimensions: dict) -> tuple[float, float]:
+    """意识镜政治坐标 —— 经济轴 + 社会轴。
+
+    经济轴:econ_right - econ_left(正值偏右)
+    社会轴:(authority-liberty 轴 + nationalist-globalist 轴) / 2(修正)
+
+    注意:三处(matchers/summary/scoring)必须共用此函数,避免同一报告内
+    匹配结果与文字结论/标签用不同坐标而自相矛盾。
+    """
+    econ = 50 + (dimensions.get("econ_right", 50) - dimensions.get("econ_left", 50)) / 2
+    social_auth = 50 + (dimensions.get("authority", 50) - dimensions.get("liberty", 50)) / 2
+    social_nat = 50 + (dimensions.get("nationalist", 50) - dimensions.get("globalist", 50)) / 2
+    social = (social_auth + social_nat) / 2
+    return econ, social
+
+
 def match_ideology(dimensions: dict, answers, behavior) -> list[dict]:
     """意识镜匹配 —— 经济轴+社会轴二维定位 → 最近 Top3。"""
-    # 经济轴:econ_right - econ_left(正值偏右)
-    econ = 50 + (dimensions.get("econ_right", 50) - dimensions.get("econ_left", 50)) / 2
-    # 社会轴:authority - liberty(正值偏权威)
-    social = 50 + (dimensions.get("authority", 50) - dimensions.get("liberty", 50)) / 2
-    # 修正:globalist/nationalist 也算社会轴
-    social = (social + 50 + (dimensions.get("nationalist", 50) - dimensions.get("globalist", 50)) / 2) / 2
+    econ, social = ideology_axes(dimensions)
 
     ideologies = _load_ideologies()
     if not ideologies:

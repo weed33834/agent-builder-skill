@@ -52,7 +52,7 @@
 - id: mother_teresa
   name: 特蕾莎修女
   blurb: 无私利他,侍奉最贫者,信仰坚定
-  dims: {altruism: 98, agreeableness: 95, conscientiousness: 88, idealism: 90, openness: 50, extraversion: 60, risk_taking: 60, neuroticism: 45}
+  dims: {agreeableness: 98, conscientiousness: 88, idealism: 90, openness: 50, extraversion: 60, risk_taking: 60, neuroticism: 45}
 - id: napoleon
   name: 拿破仑
   blurb: 雄心勃勃,掌控欲强,风险偏好极高,重塑秩序

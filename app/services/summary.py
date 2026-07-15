@@ -1,5 +1,7 @@
 """结论生成 v3 —— 有作者腔的短句,去模板化。"""
 
+from app.services.matchers import ideology_axes
+
 
 def build_summary(assessment_type: str, dimensions: dict, matches: list[dict]) -> str:
     """生成 1-2 句结论,克制且有辨识度。"""
@@ -44,8 +46,7 @@ def _ideology_summary(dimensions: dict, matches: list[dict]) -> str:
     if not matches:
         return "你的政治坐标落在一片无人标记的空地。"
     top = matches[0]
-    econ = 50 + (dimensions.get("econ_right", 50) - dimensions.get("econ_left", 50)) / 2
-    social = 50 + (dimensions.get("authority", 50) - dimensions.get("liberty", 50)) / 2
+    econ, social = ideology_axes(dimensions)
     econ_label = "经济上偏左" if econ < 40 else "经济上偏右" if econ > 60 else "经济上居中"
     social_label = "社会议题偏自由" if social < 40 else "社会议题偏权威" if social > 60 else "社会议题居中"
     return f"你的坐标:{econ_label},{social_label}。最接近{top['name']}。{top['blurb']}"

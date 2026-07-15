@@ -17,7 +17,7 @@ from app.models.session import AssessmentSession
 from app.schemas.session import SubmitAnswersIn
 from app.services.conflicts import detect_conflicts
 from app.services.insights import derive_insights
-from app.services.matchers import match_celebrity, match_ideology, match_value
+from app.services.matchers import ideology_axes, match_celebrity, match_ideology, match_value
 from app.services.percentiles import estimate_percentiles
 from app.services.summary import build_summary
 
@@ -53,7 +53,6 @@ def _score_answers(assessment_type: str, answers: SubmitAnswersIn) -> dict[str, 
     """
     bank = load_bank(assessment_type)
     raw: dict[str, float] = defaultdict(float)
-    weight_sum: dict[str, float] = defaultdict(float)
     q_by_id = {q.id: q for q in bank.questions}
 
     for ans in answers.answers:
@@ -61,7 +60,7 @@ def _score_answers(assessment_type: str, answers: SubmitAnswersIn) -> dict[str, 
         if q is None:
             continue
         w = _answer_weight(ans)
-        _accumulate(q, ans.answer, raw, weight_sum, w)
+        _accumulate(q, ans.answer, raw, w)
 
     # 排序题:位置越靠前权重越大,递减系数 0.15
     # 注意:auction 题也有 items 属性,必须用 type 明确判断,不能用 getattr(q,"items")
@@ -75,12 +74,11 @@ def _score_answers(assessment_type: str, answers: SubmitAnswersIn) -> dict[str, 
                 if item:
                     for dim, v in item.scores.items():
                         raw[dim] += v * weight
-                        weight_sum[dim] += abs(v) * weight
 
     # 计算每个维度的理论上下限(用题库静态结构,与作答无关)
     dim_bounds = _compute_dim_bounds(bank)
     dims = bank.dimensions
-    return {d: _normalize(raw.get(d, 0.0), dim_bounds.get(d, (-1.0, 1.0))) for d in dims}
+    return {d: _normalize(raw.get(d, 0.0), dim_bounds[d]) for d in dims}
 
 
 def _compute_dim_bounds(bank) -> dict[str, tuple[float, float]]:
@@ -98,13 +96,25 @@ def _compute_dim_bounds(bank) -> dict[str, tuple[float, float]]:
         qtype = q.type
 
         if qtype == "scale":
+            # 量表:用户可选无分选项(贡献 0)或任一有分选项
+            scale_dims: set[str] = set()
             for p in q.points:
-                for dim, v in p.scores.items():
-                    contribs_by_dim[dim].append(v * 1.0)
+                scale_dims.update(p.scores.keys())
+            for dim in scale_dims:
+                contribs_by_dim[dim].append(0.0)  # 无分选项
+                for p in q.points:
+                    if dim in p.scores:
+                        contribs_by_dim[dim].append(p.scores[dim] * 1.0)
         elif qtype == "dilemma":
+            # 困境:同 scale,可选无分选项
+            dilem_dims: set[str] = set()
             for opt in q.options:
-                for dim, v in opt.scores.items():
-                    contribs_by_dim[dim].append(v * 1.0)
+                dilem_dims.update(opt.scores.keys())
+            for dim in dilem_dims:
+                contribs_by_dim[dim].append(0.0)  # 无分选项
+                for opt in q.options:
+                    if dim in opt.scores:
+                        contribs_by_dim[dim].append(opt.scores[dim] * 1.0)
         elif qtype == "allocation":
             # 分配题:每个 target 可分配 0-100% → 贡献 = score × (pct/100) × 2
             # 单 target 最大贡献 = score × 2;最小 = 0
@@ -118,9 +128,15 @@ def _compute_dim_bounds(bank) -> dict[str, tuple[float, float]]:
                 high = bounds.get("high", 0.0)
                 contribs_by_dim[dim].extend([low, high])
         elif qtype == "forced_choice":
+            # 强迫选择:必选其一,但可选无该 dim 分的一侧
+            fc_dims: set[str] = set()
             for side in q.sides:
-                for dim, v in side.scores.items():
-                    contribs_by_dim[dim].append(v * 1.5)  # 强迫选择 ×1.5
+                fc_dims.update(side.scores.keys())
+            for dim in fc_dims:
+                contribs_by_dim[dim].append(0.0)  # 选了无该 dim 分的一侧
+                for side in q.sides:
+                    if dim in side.scores:
+                        contribs_by_dim[dim].append(side.scores[dim] * 1.5)  # 强迫选择 ×1.5
         elif qtype == "matrix":
             for stmt in q.statements:
                 for dim, factor in stmt.scores.items():
@@ -135,25 +151,26 @@ def _compute_dim_bounds(bank) -> dict[str, tuple[float, float]]:
         elif qtype == "sort":
             # 排序题:每道 sort 题对某维度的总贡献 = Σ(item.score × pos_weight)
             # 理论最大 = 把高分 item 排最前;理论最小 = 反过来排
-            # 这里简化:对每个 dim,收集所有 item 的 (score, weight_i) 组合,
             # 最大贡献 = sort by score desc × sort by weight desc (rearrangement inequality)
             # 最小贡献 = sort by score asc × sort by weight desc
+            # 注意:items 常为异构维度(每 item 各测一 dim),缺失该 dim 的 item 按 0 计,
+            # 否则该 dim 会被静默跳过 → bounds 缺失 → 归一化偏差。
             items = getattr(q, "items", [])
             n = len(items)
             weights = [(1.0 - i * 0.15) * 2.0 for i in range(n)]
-            # 按 dim 聚合 items
-            dim_items: dict[str, list[float]] = defaultdict(list)
+            # 收集所有出现的维度(全集)
+            all_sort_dims: set[str] = set()
             for item in items:
-                for dim, v in item.scores.items():
-                    dim_items[dim].append(v)
-            for dim, scores in dim_items.items():
-                if len(scores) == len(weights):
-                    # 排序不等式:同序乘积和最大,反序最小
-                    s_sorted = sorted(scores, reverse=True)
-                    w_sorted = sorted(weights, reverse=True)
-                    mx = sum(s * w for s, w in zip(s_sorted, w_sorted))
-                    mn = sum(s * w for s, w in zip(reversed(s_sorted), w_sorted))
-                    contribs_by_dim[dim].extend([mn, mx])
+                all_sort_dims.update(item.scores.keys())
+            for dim in all_sort_dims:
+                # 缺失该 dim 的 item 按 0 填充,使 len(scores) == len(weights) 恒成立
+                scores = [item.scores.get(dim, 0.0) for item in items]
+                # 排序不等式:同序乘积和最大,反序最小
+                s_sorted = sorted(scores, reverse=True)
+                w_sorted = sorted(weights, reverse=True)
+                mx = sum(s * w for s, w in zip(s_sorted, w_sorted))
+                mn = sum(s * w for s, w in zip(reversed(s_sorted), w_sorted))
+                contribs_by_dim[dim].extend([mn, mx])
 
         # 累加到全题库的 min/max
         for dim, vals in contribs_by_dim.items():
@@ -173,28 +190,29 @@ def _compute_dim_bounds(bank) -> dict[str, tuple[float, float]]:
     return out
 
 
-def _accumulate(q, answer: dict, raw: dict[str, float], weight_sum: dict[str, float], w: float) -> None:
-    """各题型分数累加(带行为权重)。"""
+def _accumulate(q, answer: dict, raw: dict[str, float], w: float) -> None:
+    """各题型分数累加(带行为权重 w)。
+
+    注:旧的 weight_sum(行为加权绝对值和)已删除——v3 改用 _compute_dim_bounds
+    算理论上下限作归一化基准后,该变量从未被读取。
+    """
     qtype = q.type
     if qtype == "scale" and "option_id" in answer:
         for p in q.points:
             if p.id == answer["option_id"]:
                 for k, v in p.scores.items():
                     raw[k] += v * w
-                    weight_sum[k] += abs(v) * w
     elif qtype == "dilemma" and "option_id" in answer:
         for opt in q.options:
             if opt.id == answer["option_id"]:
                 for k, v in opt.scores.items():
                     raw[k] += v * w
-                    weight_sum[k] += abs(v) * w
     elif qtype == "allocation":
         alloc = answer.get("allocation", {})
         for tgt in q.targets:
             pct = alloc.get(tgt.id, 0) / 100.0
             for dim, v in tgt.scores.items():
                 raw[dim] += v * pct * 2 * w
-                weight_sum[dim] += abs(v) * pct * 2 * w
     elif qtype == "slider" and "position" in answer:
         # 连续滑块:position 0-100 线性插值 low→high
         pos = max(0.0, min(100.0, float(answer["position"]))) / 100.0
@@ -203,14 +221,12 @@ def _accumulate(q, answer: dict, raw: dict[str, float], weight_sum: dict[str, fl
             high = bounds.get("high", 0.0)
             v = low + (high - low) * pos
             raw[dim] += v * w
-            weight_sum[dim] += max(abs(low), abs(high)) * w
     elif qtype == "forced_choice" and "choice" in answer:
         # 强迫二选一:选中侧全分(无妥协)
         for side in q.sides:
             if side.id == answer["choice"]:
                 for k, v in side.scores.items():
                     raw[k] += v * w * 1.5  # 强迫选择信号强,加权 1.5
-                    weight_sum[k] += abs(v) * w * 1.5
     elif qtype == "matrix" and "ratings" in answer:
         # 同意度矩阵:rating 1-7 映射到 -3..+3,乘以陈述的权重因子
         ratings = answer["ratings"]
@@ -225,7 +241,6 @@ def _accumulate(q, answer: dict, raw: dict[str, float], weight_sum: dict[str, fl
             for dim, factor in stmt.scores.items():
                 v = norm * factor
                 raw[dim] += v * w
-                weight_sum[dim] += abs(factor) * w
     elif qtype == "auction" and "bids" in answer:
         # 价值观拍卖:出价比例映射(预算可省,测绝对价值)
         budget = q.budget
@@ -235,7 +250,6 @@ def _accumulate(q, answer: dict, raw: dict[str, float], weight_sum: dict[str, fl
             ratio = max(0.0, bid) / budget  # 0..1
             for dim, v in item.scores.items():
                 raw[dim] += v * ratio * 2 * w
-                weight_sum[dim] += abs(v) * ratio * 2 * w
 
 
 def _normalize(raw_score: float, bounds: tuple[float, float]) -> float:
@@ -360,9 +374,8 @@ def _build_profile(assessment_type: str, dimensions: dict, insights: dict) -> di
         profile.append(type_map.get(top, top))
 
     elif assessment_type == "ideology":
-        # 政治坐标标签
-        econ = 50 + (dimensions.get("econ_right", 50) - dimensions.get("econ_left", 50)) / 2
-        social = 50 + (dimensions.get("authority", 50) - dimensions.get("liberty", 50)) / 2
+        # 政治坐标标签(与 matchers/summary 共用 ideology_axes,避免三套公式不一致)
+        econ, social = ideology_axes(dimensions)
         if econ < 35:
             profile.append("经济左倾")
         elif econ > 65:
