@@ -87,18 +87,26 @@ async def submit_responses(
         await db.commit()
         return {"status": "draft_saved", "current_index": session.current_index}
 
-    # 完整提交 → 计分
+    # 完整提交 → 计分(事务保护:计分失败则回滚 session 状态,避免永久卡死)
+    prev_status = session.status
     session.status = SessionStatus.completed
     session.finished_at = pendulum.now()
-    result_data = compute_result(session, payload)
-
-    result = Result(
-        session_id=session.id,
-        user_id=user.id,
-        assessment_type=session.assessment_type,
-        **result_data,
-    )
-    db.add(result)
-    await db.commit()
-    await db.refresh(result)
-    return {"status": "completed", "result_id": result.id}
+    try:
+        result_data = compute_result(session, payload)
+        result = Result(
+            session_id=session.id,
+            user_id=user.id,
+            assessment_type=session.assessment_type,
+            **result_data,
+        )
+        db.add(result)
+        await db.commit()
+        await db.refresh(result)
+        return {"status": "completed", "result_id": result.id}
+    except Exception:
+        await db.rollback()
+        session = await db.get(AssessmentSession, session_id)
+        session.status = prev_status
+        session.finished_at = None
+        await db.commit()
+        raise

@@ -8,10 +8,9 @@
 <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<div class="ripple-bg"></div>
 <div class="container">
   <div class="take-header">
-    <a href="/" class="back-link" data-i18n="common.exit">← 退 出</a>
+    <a href="/" class="back-link" data-i18n="common.exit">← 退出</a>
     <span id="title" class="title-label"></span>
   </div>
   <div class="progress-track"><div id="progress" class="progress-fill" style="width:0"></div></div>
@@ -26,11 +25,16 @@
     <div class="num">15</div>
   </div>
 
+  <div id="rhythm-bar" class="rhythm-bar" style="display:none">
+    <span class="rhythm-label" data-i18n="take.rhythm">节奏</span>
+    <span class="rhythm-time" id="rhythm-time">0s</span>
+    <span class="rhythm-changes" id="rhythm-changes"></span>
+  </div>
+
   <div id="i18n-notice" class="i18n-notice" style="display:none"></div>
   <div id="question-area"></div>
 </div>
 
-<script src="/vendor/i18next.min.js"></script>
 <script src="/i18n.js"></script>
 <script src="/app.js"></script>
 <script src="/take.js"></script>

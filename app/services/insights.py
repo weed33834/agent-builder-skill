@@ -2,14 +2,16 @@
 
 新增:
 - iat_bias: IAT 反应时左右差异(内隐偏向强度)
-- courage_index: 困境题中选择"承担代价"选项的比例
+- courage_index: 困境题中选择"承担代价"选项的比例(基于 Option.tag,非硬编码 id)
 - ambivalence: 纠结度(高犹豫+反复改的综合指标)
 """
 
 import statistics
 
+from app.data import load_bank
 
-def derive_insights(answers, behavior: dict) -> dict:
+
+def derive_insights(assessment_type: str, answers, behavior: dict) -> dict:
     """六类行为洞察。"""
     durations = [a.duration_ms for a in answers.answers if a.duration_ms > 0]
     changes = [a.change_count for a in answers.answers]
@@ -51,8 +53,8 @@ def derive_insights(answers, behavior: dict) -> dict:
     # 4. IAT 偏差(新增)—— 左右反应时差异
     iat_insight = _derive_iat_bias(answers)
 
-    # 5. 勇气指数(新增)—— 困境题中选择"承担代价"选项的比例
-    courage = _derive_courage(answers)
+    # 5. 勇气指数(新增)—— 困境题中选择 tag=courage 的选项比例
+    courage = _derive_courage(assessment_type, answers)
 
     # 6. 纠结度(新增)—— 高犹豫+反复改的综合
     ambivalence = _derive_ambivalence(answers, durations, changes)
@@ -103,25 +105,36 @@ def _derive_iat_bias(answers) -> dict:
     return {"label": label, "desc": desc, "bias": round(diff), "left_avg_ms": round(left_avg), "right_avg_ms": round(right_avg)}
 
 
-def _derive_courage(answers) -> dict:
-    """勇气指数 —— 困境题中选择"承担代价"选项(a 选项通常是理想/承担)的比例。
+def _derive_courage(assessment_type: str, answers) -> dict:
+    """勇气指数 —— 困境题中选择 tag=courage 选项的比例。
 
-    简化:a 选项 = 承担代价(勇气),c 选项 = 回避(保身),b 选项 = 折中。
+    基于 Option.tag 字段(非硬编码 option_id),由题库 YAML 显式标注。
     """
+    bank = load_bank(assessment_type)
+    q_by_id = {q.id: q for q in bank.questions}
+
     courage_count = 0
     avoid_count = 0
     total = 0
     for a in answers.answers:
         if "option_id" not in a.answer:
             continue
-        opt = a.answer["option_id"]
-        # 仅困境题算:option_id 为单字母(dilemma 常用 a/b/c/d),排除 scale 的数字 id
-        if not (isinstance(opt, str) and len(opt) == 1 and opt.isalpha()):
+        q = q_by_id.get(a.question_id)
+        if not q or q.type != "dilemma":
+            continue
+        opt_id = a.answer["option_id"]
+        # 在 dilemma 的 options 中找 tag
+        tag = None
+        for opt in getattr(q, "options", []):
+            if opt.id == opt_id:
+                tag = opt.tag
+                break
+        if tag is None:
             continue
         total += 1
-        if opt == "a":
+        if tag == "courage":
             courage_count += 1
-        elif opt == "c":
+        elif tag == "avoidance":
             avoid_count += 1
 
     if total == 0:

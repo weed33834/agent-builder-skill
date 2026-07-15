@@ -105,9 +105,9 @@ questions:
     time_limit_sec: 15
     scenario: 你在财务岗,发现一笔异常转账指向上司。ta 三年前在你母亲重病时借款救急。举报意味着你失业,且对方可能反咬。
     options:
-      - {id: a, text: 匿名举报,承担失业风险, scores: {idealism: 2, risk_taking: 2}}
-      - {id: b, text: 私下劝退,给对方退路, scores: {idealism: 1, risk_taking: 0}}
-      - {id: c, text: 装作没看见,保住工作, scores: {idealism: -2, risk_taking: -1}}
+      - {id: a, text: 匿名举报,承担失业风险, scores: {idealism: 2, risk_taking: 2}, tag: courage}
+      - {id: b, text: 私下劝退,给对方退路, scores: {idealism: 1, risk_taking: 0}, tag: pragmatic}
+      - {id: c, text: 装作没看见,保住工作, scores: {idealism: -2, risk_taking: -1}, tag: avoidance}
     historical_figure: 林肯
     historical_choice: a
   - id: c_d2
@@ -117,9 +117,9 @@ questions:
     time_limit_sec: 15
     scenario: 你的发明能解决能源危机,但公开后你公司核心业务将归零,数千员工失业。
     options:
-      - {id: a, text: 公开发明,接受公司破产, scores: {idealism: 2, openness: 2}}
-      - {id: b, text: 内部转型,缓慢过渡, scores: {idealism: 0, openness: 1}}
-      - {id: c, text: 封存专利,保住公司, scores: {idealism: -2, openness: -1}}
+      - {id: a, text: 公开发明,接受公司破产, scores: {idealism: 2, openness: 2}, tag: courage}
+      - {id: b, text: 内部转型,缓慢过渡, scores: {idealism: 0, openness: 1}, tag: pragmatic}
+      - {id: c, text: 封存专利,保住公司, scores: {idealism: -2, openness: -1}, tag: avoidance}
     historical_figure: 居里夫人
     historical_choice: a
   - id: c_d3
@@ -129,9 +129,9 @@ questions:
     time_limit_sec: 15
     scenario: 你是卧底。一个村庄即将被屠,你出手能救 200 人,但身份暴露后 5000 人计划失败。
     options:
-      - {id: a, text: 出手救眼前 200 人, scores: {idealism: 1, risk_taking: 2}}
-      - {id: b, text: 隐忍,保 5000 人计划, scores: {idealism: 0, risk_taking: -1}}
-      - {id: c, text: 试图两全,冒险传递情报, scores: {idealism: 2, risk_taking: 1}}
+      - {id: a, text: 出手救眼前 200 人, scores: {idealism: 1, risk_taking: 2}, tag: courage}
+      - {id: b, text: 隐忍,保 5000 人计划, scores: {idealism: 0, risk_taking: -1}, tag: avoidance}
+      - {id: c, text: 试图两全,冒险传递情报, scores: {idealism: 2, risk_taking: 1}, tag: pragmatic}
     historical_figure: 辛德勒
     historical_choice: a
   - id: c_d4
@@ -141,9 +141,9 @@ questions:
     time_limit_sec: 15
     scenario: 你发现一个颠覆性事实,但公开会触怒权威机构,可能被审判、软禁。沉默则安稳一生。
     options:
-      - {id: a, text: 公开发表,承担一切, scores: {openness: 2, idealism: 2, risk_taking: 2}}
-      - {id: b, text: 私下流通,等待时机, scores: {openness: 1, idealism: 1, risk_taking: 0}}
-      - {id: c, text: 永不发表,保全自身, scores: {openness: -1, idealism: -1, risk_taking: -2}}
+      - {id: a, text: 公开发表,承担一切, scores: {openness: 2, idealism: 2, risk_taking: 2}, tag: courage}
+      - {id: b, text: 私下流通,等待时机, scores: {openness: 1, idealism: 1, risk_taking: 0}, tag: pragmatic}
+      - {id: c, text: 永不发表,保全自身, scores: {openness: -1, idealism: -1, risk_taking: -2}, tag: avoidance}
     historical_figure: 达尔文
     historical_choice: a
   - id: c_d5
@@ -153,9 +153,9 @@ questions:
     time_limit_sec: 15
     scenario: 机遇出现:算计盟友可独揽大权,实现你的宏大蓝图。但盟友曾为你两肋插刀。
     options:
-      - {id: a, text: 算计盟友,实现蓝图, scores: {agreeableness: -2, idealism: 1, risk_taking: 2}}
-      - {id: b, text: 放弃机遇,守盟约, scores: {agreeableness: 2, idealism: 1, risk_taking: -1}}
-      - {id: c, text: 试图兼顾,风险最大, scores: {agreeableness: 1, idealism: 0, risk_taking: 1}}
+      - {id: a, text: 算计盟友,实现蓝图, scores: {agreeableness: -2, idealism: 1, risk_taking: 2}, tag: courage}
+      - {id: b, text: 放弃机遇,守盟约, scores: {agreeableness: 2, idealism: 1, risk_taking: -1}, tag: courage}
+      - {id: c, text: 试图兼顾,风险最大, scores: {agreeableness: 1, idealism: 0, risk_taking: 1}, tag: pragmatic}
     historical_figure: 拿破仑
     historical_choice: a
   - id: c_d6
@@ -165,9 +165,9 @@ questions:
     time_limit_sec: 15
     scenario: 朋友买通狱卒安排你出逃。逃则生,但你毕生宣讲"守法即美德",逃跑将让信念崩塌。
     options:
-      - {id: a, text: 拒绝逃跑,从容赴死, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}}
-      - {id: b, text: 出逃后继续传播思想, scores: {idealism: 1, conscientiousness: -1, risk_taking: 2}}
-      - {id: c, text: 服从判决但留辩词, scores: {idealism: 1, conscientiousness: 1, risk_taking: 0}}
+      - {id: a, text: 拒绝逃跑,从容赴死, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}, tag: courage}
+      - {id: b, text: 出逃后继续传播思想, scores: {idealism: 1, conscientiousness: -1, risk_taking: 2}, tag: courage}
+      - {id: c, text: 服从判决但留辩词, scores: {idealism: 1, conscientiousness: 1, risk_taking: 0}, tag: pragmatic}
     historical_figure: 苏格拉底
     historical_choice: a
 
@@ -243,9 +243,9 @@ questions:
     time_limit_sec: 15
     scenario: 一项古老技艺即将失传,只有你愿意学。学成需二十年,无市场、无传承资金,只有内心的回响。
     options:
-      - {id: a, text: 投入毕生,任其寂寞, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}}
-      - {id: b, text: 记录保存,不亲自传承, scores: {idealism: 1, conscientiousness: 1}}
-      - {id: c, text: 让它安息,专注现实, scores: {idealism: -2, conscientiousness: 0}}
+      - {id: a, text: 投入毕生,任其寂寞, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}, tag: courage}
+      - {id: b, text: 记录保存,不亲自传承, scores: {idealism: 1, conscientiousness: 1}, tag: pragmatic}
+      - {id: c, text: 让它安息,专注现实, scores: {idealism: -2, conscientiousness: 0}, tag: avoidance}
     historical_figure: 樊锦诗
     historical_choice: a
   - id: c_d8
@@ -255,9 +255,9 @@ questions:
     time_limit_sec: 15
     scenario: 你们曾无话不谈。如今在巅峰对决,曝光 ta 的旧错就能赢,但 ta 将万劫不复。
     options:
-      - {id: a, text: 公平较量,不用旧事, scores: {agreeableness: 2, idealism: 2, risk_taking: 1}}
-      - {id: b, text: 暗示警告,逼 ta 退让, scores: {agreeableness: -1, risk_taking: 0}}
-      - {id: c, text: 曝光旧事,确保胜利, scores: {agreeableness: -2, idealism: -2, risk_taking: 2}}
+      - {id: a, text: 公平较量,不用旧事, scores: {agreeableness: 2, idealism: 2, risk_taking: 1}, tag: courage}
+      - {id: b, text: 暗示警告,逼 ta 退让, scores: {agreeableness: -1, risk_taking: 0}, tag: pragmatic}
+      - {id: c, text: 曝光旧事,确保胜利, scores: {agreeableness: -2, idealism: -2, risk_taking: 2}, tag: avoidance}
     historical_figure: 苏轼
     historical_choice: a
 
@@ -415,9 +415,9 @@ questions:
     time_limit_sec: 15
     scenario: 你的望远镜看清了天体运行真相,与教义相悖。悔过可保命、私下继续研究;坚持则可能被处死或终身监禁,学说或随你湮灭。
     options:
-      - {id: a, text: 公开悔过,私下续研, scores: {idealism: 1, risk_taking: 0, openness: 1}}
-      - {id: b, text: 坚持不改,坦然受刑, scores: {idealism: 2, risk_taking: 2, openness: 2}}
-      - {id: c, text: 彻底放弃,安度余生, scores: {idealism: -2, risk_taking: -2, openness: -1}}
+      - {id: a, text: 公开悔过,私下续研, scores: {idealism: 1, risk_taking: 0, openness: 1}, tag: pragmatic}
+      - {id: b, text: 坚持不改,坦然受刑, scores: {idealism: 2, risk_taking: 2, openness: 2}, tag: courage}
+      - {id: c, text: 彻底放弃,安度余生, scores: {idealism: -2, risk_taking: -2, openness: -1}, tag: avoidance}
     historical_figure: 伽利略
     historical_choice: a
   - id: c_d10
@@ -427,9 +427,9 @@ questions:
     time_limit_sec: 15
     scenario: 你正撰写一部空前史书,功亏一篑。赎命则倾家荡产,宫刑则奇耻大辱,宁死则毕生心血湮灭。
     options:
-      - {id: a, text: 忍辱受刑,完成史书, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}}
-      - {id: b, text: 倾家赎命,保全体面, scores: {idealism: 0, conscientiousness: 1}}
-      - {id: c, text: 宁死不受辱, scores: {idealism: 1, conscientiousness: -1, risk_taking: 2}}
+      - {id: a, text: 忍辱受刑,完成史书, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}, tag: courage}
+      - {id: b, text: 倾家赎命,保全体面, scores: {idealism: 0, conscientiousness: 1}, tag: pragmatic}
+      - {id: c, text: 宁死不受辱, scores: {idealism: 1, conscientiousness: -1, risk_taking: 2}, tag: courage}
     historical_figure: 司马迁
     historical_choice: a
   - id: c_d11
@@ -439,9 +439,9 @@ questions:
     time_limit_sec: 15
     scenario: 新政利在长远,却触犯既得利益、短期阵痛剧烈。坚持恐乱国,退让则功亏一篑。
     options:
-      - {id: a, text: 力排众议,坚持变法, scores: {idealism: 2, risk_taking: 2, agreeableness: -1}}
-      - {id: b, text: 暂缓推进,先求共识, scores: {idealism: 1, risk_taking: 0, agreeableness: 1}}
-      - {id: c, text: 顺从众议,放弃新政, scores: {idealism: -2, risk_taking: -2, agreeableness: 1}}
+      - {id: a, text: 力排众议,坚持变法, scores: {idealism: 2, risk_taking: 2, agreeableness: -1}, tag: courage}
+      - {id: b, text: 暂缓推进,先求共识, scores: {idealism: 1, risk_taking: 0, agreeableness: 1}, tag: pragmatic}
+      - {id: c, text: 顺从众议,放弃新政, scores: {idealism: -2, risk_taking: -2, agreeableness: 1}, tag: avoidance}
     historical_figure: 王安石
     historical_choice: a
   - id: c_d12
@@ -451,9 +451,9 @@ questions:
     time_limit_sec: 15
     scenario: 降则荣华富贵、与故旧同列;拒则必死,但气节留名青史。你的家人也在敌营,生死系你一念。
     options:
-      - {id: a, text: 拒降赴死, scores: {idealism: 2, conscientiousness: 2, risk_taking: 2}}
-      - {id: b, text: 假降图谋复国, scores: {idealism: 0, risk_taking: 1}}
-      - {id: c, text: 降顺求存, scores: {idealism: -2, conscientiousness: -2, risk_taking: -2}}
+      - {id: a, text: 拒降赴死, scores: {idealism: 2, conscientiousness: 2, risk_taking: 2}, tag: courage}
+      - {id: b, text: 假降图谋复国, scores: {idealism: 0, risk_taking: 1}, tag: pragmatic}
+      - {id: c, text: 降顺求存, scores: {idealism: -2, conscientiousness: -2, risk_taking: -2}, tag: avoidance}
     historical_figure: 文天祥
     historical_choice: a
   - id: c_d13
@@ -463,9 +463,9 @@ questions:
     time_limit_sec: 15
     scenario: 毒品祸国殃民,你手握禁令。雷厉风行可能招致坚船利炮、让你沦为替罪羊;放任则国民沉沦。
     options:
-      - {id: a, text: 雷厉风行禁毒,承担战端, scores: {idealism: 2, risk_taking: 2, conscientiousness: 2}}
-      - {id: b, text: 缓禁设限,周旋各方, scores: {idealism: 1, risk_taking: 0}}
-      - {id: c, text: 阳奉阴违,保身为主, scores: {idealism: -2, risk_taking: -2}}
+      - {id: a, text: 雷厉风行禁毒,承担战端, scores: {idealism: 2, risk_taking: 2, conscientiousness: 2}, tag: courage}
+      - {id: b, text: 缓禁设限,周旋各方, scores: {idealism: 1, risk_taking: 0}, tag: pragmatic}
+      - {id: c, text: 阳奉阴违,保身为主, scores: {idealism: -2, risk_taking: -2}, tag: avoidance}
     historical_figure: 林则徐
     historical_choice: a
   - id: c_d14
@@ -475,9 +475,9 @@ questions:
     time_limit_sec: 15
     scenario: 你深知非暴力需以肉身抗暴、牺牲巨大,且殖民者不会轻易让步。武装起义或能复仇,却与你信念相悖。
     options:
-      - {id: a, text: 坚持非暴力,以肉身抗暴, scores: {idealism: 2, agreeableness: 2, risk_taking: 1}}
-      - {id: b, text: 武装起义,以暴制暴, scores: {idealism: 1, agreeableness: -2, risk_taking: 2}}
-      - {id: c, text: 妥协谈判,求得自治, scores: {idealism: -1, agreeableness: 1, risk_taking: -1}}
+      - {id: a, text: 坚持非暴力,以肉身抗暴, scores: {idealism: 2, agreeableness: 2, risk_taking: 1}, tag: courage}
+      - {id: b, text: 武装起义,以暴制暴, scores: {idealism: 1, agreeableness: -2, risk_taking: 2}, tag: courage}
+      - {id: c, text: 妥协谈判,求得自治, scores: {idealism: -1, agreeableness: 1, risk_taking: -1}, tag: pragmatic}
     historical_figure: 甘地
     historical_choice: a
 
@@ -556,9 +556,9 @@ questions:
     time_limit_sec: 15
     scenario: 你以理性确信日心说,但教会定性为异端。认错可活,但意味着背叛真理;坚持则被烧死。
     options:
-      - {id: a, text: 坚持真理,从容赴火, scores: {idealism: 2, openness: 2, risk_taking: 2}}
-      - {id: b, text: 表面认错,内心坚守, scores: {idealism: 1, openness: 1, risk_taking: 0}}
-      - {id: c, text: 公开认错,保命要紧, scores: {idealism: -2, openness: -1, risk_taking: -2}}
+      - {id: a, text: 坚持真理,从容赴火, scores: {idealism: 2, openness: 2, risk_taking: 2}, tag: courage}
+      - {id: b, text: 表面认错,内心坚守, scores: {idealism: 1, openness: 1, risk_taking: 0}, tag: pragmatic}
+      - {id: c, text: 公开认错,保命要紧, scores: {idealism: -2, openness: -1, risk_taking: -2}, tag: avoidance}
     historical_figure: 布鲁诺
     historical_choice: a
   - id: c_d16
@@ -568,9 +568,9 @@ questions:
     time_limit_sec: 15
     scenario: 变法使国富兵强,却也树敌无数。新君态度暧昧,旧势力卷土重来。逃则前功尽弃,留则性命堪忧——你的下场可能是车裂。
     options:
-      - {id: a, text: 以身殉法,留守到底, scores: {idealism: 2, risk_taking: 2, conscientiousness: 2}}
-      - {id: b, text: 据理力争,寻求转机, scores: {idealism: 1, risk_taking: 1, conscientiousness: 2}}
-      - {id: c, text: 出奔他国,留待时机, scores: {idealism: -1, risk_taking: -1, conscientiousness: 0}}
+      - {id: a, text: 以身殉法,留守到底, scores: {idealism: 2, risk_taking: 2, conscientiousness: 2}, tag: courage}
+      - {id: b, text: 据理力争,寻求转机, scores: {idealism: 1, risk_taking: 1, conscientiousness: 2}, tag: pragmatic}
+      - {id: c, text: 出奔他国,留待时机, scores: {idealism: -1, risk_taking: -1, conscientiousness: 0}, tag: avoidance}
     historical_figure: 商鞅
     historical_choice: a
 

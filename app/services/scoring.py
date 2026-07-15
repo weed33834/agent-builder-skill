@@ -144,10 +144,11 @@ def _accumulate(q, answer: dict, raw: dict[str, float], weight_sum: dict[str, fl
 def _normalize(raw_score: float, total_weight: float) -> float:
     """归一化到 0-100。
 
-    动态 span:累计权重的 1/3 作为半幅(约对应中等强度答题)。
-    这样题量多/少都能合理映射,不会因题量翻倍而全部接近 0/100。
+    用各维度自身的累计权重作为 span(而非全局 total/3),
+    避免题量多时所有维度被压缩到 50 附近(趋中 bug)。
+    span 下限 8.0,防低参与度维度过度敏感。
     """
-    span = max(8.0, total_weight / 3.0)  # 至少 8,避免过度敏感
+    span = max(8.0, total_weight)
     score = 50.0 + (raw_score / span) * 50.0
     return round(max(0.0, min(100.0, score)), 1)
 
@@ -177,7 +178,7 @@ def compute_result(session: AssessmentSession, answers: SubmitAnswersIn) -> dict
     matches = matchers[assessment_type](dimensions, answers, behavior)
 
     conflicts = detect_conflicts(assessment_type, answers, behavior)
-    insights = derive_insights(answers, behavior)
+    insights = derive_insights(assessment_type, answers, behavior)
     percentiles = estimate_percentiles(assessment_type, dimensions)
     summary = build_summary(assessment_type, dimensions, matches)
     profile = _build_profile(assessment_type, dimensions, insights)

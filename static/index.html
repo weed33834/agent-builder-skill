@@ -10,23 +10,22 @@
 <body>
 <div class="container">
   <header class="hero">
-    <div class="mirror-disc"></div>
-    <h1 data-i18n="home.brand">心 镜</h1>
-    <p class="subtitle" data-i18n="home.subtitle">M I N D &nbsp; M I R R O R</p>
+    <div class="mirror-disc" id="hero-mirror"></div>
+    <h1 data-i18n="home.brand">心镜</h1>
+    <p class="subtitle" data-i18n="home.subtitle">MindMirror</p>
     <div class="hero-divider"><span></span></div>
-    <p class="disclaimer" data-i18n="home.disclaimer">非 心 理 诊 断 · 仅 供 参 考</p>
+    <p class="disclaimer" data-i18n="home.disclaimer">非心理诊断 · 仅供参考</p>
   </header>
 
   <main>
     <div id="mirrors" class="mirrors-grid"></div>
     <div class="actions">
-      <a href="/history.html" class="btn-primary" data-i18n="common.my_reports">我 的 报 告</a>
-      <a href="/about.html" class="btn-link" data-i18n="common.about">关 于</a>
+      <a href="/history.html" class="btn-primary" data-i18n="common.my_reports">我的报告</a>
+      <a href="/about.html" class="btn-link" data-i18n="common.about">关于</a>
     </div>
   </main>
 </div>
 
-<script src="/vendor/i18next.min.js"></script>
 <script src="/i18n.js"></script>
 <script src="/app.js"></script>
 <script>
@@ -35,7 +34,7 @@
     const order = ['celebrity', 'value', 'ideology'];
     const list = order.map(t => mirrors.find(m => m.type === t)).filter(Boolean);
     document.getElementById('mirrors').innerHTML = list.map(m => `
-      <a href="/take.html?type=${m.type}" class="mirror-card">
+      <a href="/take.html?type=${m.type}" class="mirror-card" data-type="${m.type}">
         <div class="card-icon" data-i18n="home.mirrors.${m.type}.icon">${mmI18n.t(`home.mirrors.${m.type}.icon`)}</div>
         <h2 data-i18n="home.mirrors.${m.type}.title">${mmI18n.t(`home.mirrors.${m.type}.title`)}</h2>
         <p class="tagline" data-i18n="home.mirrors.${m.type}.tagline">${mmI18n.t(`home.mirrors.${m.type}.tagline`)}</p>
@@ -44,7 +43,7 @@
           <span><span class="num">${m.question_count}</span> <span data-i18n="common.questions">题</span></span>
           <span><span class="num">${m.estimated_minutes}</span> <span data-i18n="common.minutes">分钟</span></span>
         </div>
-        <div class="start-hint" data-i18n="home.enter">入 镜 →</div>
+        <div class="start-hint" data-i18n="home.enter">入镜 →</div>
       </a>
     `).join('');
     applyLang(mmI18n.lang);

@@ -23,6 +23,9 @@ class Option(BaseModel):
     text: str
     # {dimension: delta_score} 此选项对每个维度的贡献
     scores: dict[str, float] = Field(default_factory=dict)
+    # 行为标签:courage=承担代价, avoidance=回避/保身, pragmatic=折中。
+    # 用于勇气指数等行为洞察,避免硬编码 option_id。
+    tag: str | None = None
 
 
 class BaseQuestion(BaseModel):

@@ -8,6 +8,7 @@ let currentIdx = 0;
 let lastType = null;
 const answers = [];
 let timerInterval = null;
+let rhythmInterval = null;
 
 // 题型展示信息 —— 从 i18n 资源动态取
 function typeMeta(type) {
@@ -35,27 +36,66 @@ async function init() {
     api.get(`/api/assessments/${type}/questions`),
     api.post(`/api/sessions?assessment_type=${type}`),
   ]);
+  // 设置三镜主题色
+  document.body.dataset.mirror = type;
   document.getElementById('title').textContent = mmI18n.t(`take.title_${type}`) || bank.title;
-  // 恢复草稿(含行为数据)
-  if (session.draft_answers) {
-    const beh = session.behavior_log || {};
-    for (const q of bank.questions) {
-      if (session.draft_answers[q.id]) {
-        const b = beh[q.id] || {};
-        answers.push({
-          question_id: q.id,
-          answer: session.draft_answers[q.id],
-          duration_ms: b.duration_ms || 0,
-          change_count: b.change_count || 0,
-          trajectory: b.trajectory || null,
-        });
-        currentIdx++;
-      }
-    }
-  }
   bank._typeIndex = buildTypeIndex(bank.questions);
   tracker = new BehaviorTracker();
-  renderQuestion();
+
+  // 有草稿 → 先弹确认页,再决定恢复或重开
+  const draftCount = session.draft_answers ? Object.keys(session.draft_answers).length : 0;
+  if (draftCount > 0) {
+    showDraftResume(draftCount);
+  } else {
+    renderQuestion();
+  }
+}
+
+// 草稿恢复确认覆盖层 —— 告知进度,让用户选择继续或重开
+function showDraftResume(draftCount) {
+  const overlay = document.createElement('div');
+  overlay.className = 'loading-overlay draft-resume';
+  overlay.innerHTML = `
+    <div class="mirror-disc" data-clarity="low"></div>
+    <p>${mmI18n.t('take.draft_resume_title', { n: draftCount })}</p>
+    <p class="loading-sub">${mmI18n.t('take.draft_resume_sub')}</p>
+    <div class="draft-actions">
+      <button class="btn-primary" id="draft-continue" type="button">${mmI18n.t('take.draft_continue')}</button>
+      <button class="btn-link" id="draft-restart" type="button">${mmI18n.t('take.draft_restart')}</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('#draft-continue').addEventListener('click', () => {
+    restoreDraft();
+    overlay.remove();
+    renderQuestion();
+  });
+  overlay.querySelector('#draft-restart').addEventListener('click', async () => {
+    overlay.querySelector('.draft-actions').style.display = 'none';
+    // 调后端放弃草稿 + 新建会话
+    session = await api.post(`/api/sessions?assessment_type=${type}&restart=true`);
+    overlay.remove();
+    renderQuestion();
+  });
+}
+
+// 从 session.draft_answers 恢复答案 + 行为轨迹
+function restoreDraft() {
+  if (!session.draft_answers) return;
+  const beh = session.behavior_log || {};
+  for (const q of bank.questions) {
+    if (session.draft_answers[q.id]) {
+      const b = beh[q.id] || {};
+      answers.push({
+        question_id: q.id,
+        answer: session.draft_answers[q.id],
+        duration_ms: b.duration_ms || 0,
+        change_count: b.change_count || 0,
+        trajectory: b.trajectory || null,
+      });
+      currentIdx++;
+    }
+  }
 }
 
 function renderQuestion() {
@@ -92,7 +132,7 @@ function renderQuestion() {
         <div class="section-eyebrow">${mmI18n.t('take.section_label', { n: phaseNumber(q.type, ti) })}</div>
         <h2 class="section-title">${meta.section}</h2>
         <p class="section-hint">${meta.hint}</p>
-        <button class="btn-primary section-start" type="button" data-i18n="common.start">开 始</button>
+        <button class="btn-primary section-start" type="button" data-i18n="common.start">开始</button>
       </div>`;
     lastType = q.type;
     document.querySelector('.section-start').addEventListener('click', () => {
@@ -160,7 +200,33 @@ function renderCurrent(q) {
   area.innerHTML = renderers[q.type](q);
   setupTimer(q);
   tracker.start();
+  startRhythmBar();
   bindEvents(q);
+}
+
+function startRhythmBar() {
+  const bar = document.getElementById('rhythm-bar');
+  const timeEl = document.getElementById('rhythm-time');
+  const changeEl = document.getElementById('rhythm-changes');
+  if (!bar) return;
+  bar.style.display = '';
+  bar.classList.remove('peak');
+  clearInterval(rhythmInterval);
+  const tick = () => {
+    const snap = tracker.snapshot();
+    const sec = Math.round(snap.duration_ms / 1000);
+    timeEl.textContent = sec + 's';
+    changeEl.textContent = snap.change_count > 0 ? '×' + snap.change_count : '';
+    bar.classList.toggle('peak', sec >= 8);
+  };
+  tick();
+  rhythmInterval = setInterval(tick, 200);
+}
+
+function stopRhythmBar() {
+  clearInterval(rhythmInterval);
+  const bar = document.getElementById('rhythm-bar');
+  if (bar) bar.style.display = 'none';
 }
 
 function setupTimer(q) {
@@ -241,14 +307,14 @@ function renderAllocation(q) {
           </div>
         `).join('')}
         <div class="alloc-total">
-          <span>总 计</span>
+          <span>${mmI18n.t('take.total_label')}</span>
           <span class="num">0</span>
           <span class="sep">/</span>
           <span class="target">${q.total}</span>
-          <button class="alloc-balance" id="alloc-balance" type="button">自 动 配 平</button>
+          <button class="alloc-balance" id="alloc-balance" type="button">${mmI18n.t('take.auto_balance')}</button>
         </div>
       </div>
-      <button class="btn-primary" id="alloc-confirm" style="margin-top:40px;display:block;width:100%">确 认</button>
+      <button class="btn-primary" id="alloc-confirm" style="margin-top:40px;display:block;width:100%">${mmI18n.t('common.confirm')}</button>
     </div>`;
 }
 
@@ -257,11 +323,11 @@ function renderSort(q) {
   return `
     <div class="question-card">
       <div class="question-prompt">${q.prompt}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">拖拽排序,1 = 最重要</p>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">拖拽或点击箭头排序,1 = 最重要</p>
       <div class="sort-list" data-q="${q.id}">
-        ${shuffled.map((it, i) => `<div class="sort-item" data-id="${it.id}" draggable="true"><span class="order">${i+1}</span>${it.text}</div>`).join('')}
+        ${shuffled.map((it, i) => `<div class="sort-item" data-id="${it.id}" draggable="true"><div class="sort-controls"><button class="sort-move" data-dir="up" aria-label="上移">▲</button><button class="sort-move" data-dir="down" aria-label="下移">▼</button></div><span class="order">${i+1}</span><span class="sort-text">${it.text}</span></div>`).join('')}
       </div>
-      <button class="btn-primary" id="sort-confirm" style="margin-top:40px;display:block;width:100%">确 认 排 序</button>
+      <button class="btn-primary" id="sort-confirm" style="margin-top:40px;display:block;width:100%">${mmI18n.t('common.confirm')}</button>
     </div>`;
 }
 
@@ -269,13 +335,13 @@ function renderIAT(q) {
   return `
     <div class="question-card">
       <div class="question-prompt">${q.prompt}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;text-align:center;letter-spacing:0.15em;margin-bottom:20px">凭直觉,越快越好</p>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--ink-faint);font-size:13px;text-align:center;letter-spacing:0.15em;margin-bottom:20px">凭直觉,越快越好</p>
       <div class="iat-area" data-q="${q.id}">
         <div class="iat-labels">
           <span>← ${q.left_label}</span>
           <span>${q.right_label} →</span>
         </div>
-        <div class="iat-word" id="iat-word">准备</div>
+        <div class="iat-word" id="iat-word"><span class="iat-fixation">+</span></div>
         <div class="iat-buttons">
           <button class="iat-btn" id="iat-left">${q.left_label}</button>
           <button class="iat-btn" id="iat-right">${q.right_label}</button>
@@ -300,7 +366,7 @@ function renderSlider(q) {
           <span>${q.left_label}</span>
           <span>${q.right_label}</span>
         </div>
-        <button class="btn-primary" id="slider-confirm" style="margin-top:40px;display:block;width:100%">确 认</button>
+        <button class="btn-primary" id="slider-confirm" style="margin-top:40px;display:block;width:100%">${mmI18n.t('common.confirm')}</button>
       </div>
     </div>`;
 }
@@ -354,7 +420,7 @@ function renderMatrix(q) {
             </div>
           </div>
         `).join('')}
-        <button class="btn-primary" id="matrix-confirm" style="margin-top:40px;display:block;width:100%">确 认</button>
+        <button class="btn-primary" id="matrix-confirm" style="margin-top:40px;display:block;width:100%">${mmI18n.t('common.confirm')}</button>
       </div>
     </div>`;
 }
@@ -385,7 +451,7 @@ function renderAuction(q) {
           </div>
         `).join('')}
         <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:13px;margin-top:24px;letter-spacing:0.1em;text-align:center">可保留预算,出价反映你对每项的真实价值评估</p>
-        <button class="btn-primary" id="auction-confirm" style="margin-top:32px;display:block;width:100%">确 认 出 价</button>
+        <button class="btn-primary" id="auction-confirm" style="margin-top:32px;display:block;width:100%">${mmI18n.t('common.confirm')}</button>
       </div>
     </div>`;
 }
@@ -489,6 +555,20 @@ function bindEvents(q) {
         const after = getDragAfter(list, e.clientY);
         if (after == null) list.appendChild(dragEl);
         else list.insertBefore(dragEl, after);
+      });
+    });
+    // 触屏 fallback:上/下移动按钮
+    list.querySelectorAll('.sort-move').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const item = btn.closest('.sort-item');
+        if (btn.dataset.dir === 'up' && item.previousElementSibling) {
+          list.insertBefore(item, item.previousElementSibling);
+        } else if (btn.dataset.dir === 'down' && item.nextElementSibling) {
+          list.insertBefore(item, item.nextElementSibling.nextElementSibling);
+        }
+        reorder(list);
+        tracker.recordChange([...list.children].map(c => c.dataset.id));
       });
     });
     document.getElementById('sort-confirm').addEventListener('click', () => {
@@ -622,37 +702,71 @@ function reorder(list) {
 function runIAT(q) {
   let idx = 0;
   let wordStart = 0;
+  let canRespond = false;
   const reactions = [];
   const area = document.querySelector(`[data-q="${q.id}"]`);
   const wordEl = document.getElementById('iat-word');
   const progEl = document.getElementById('iat-progress');
-  // 挂到 DOM 上,供 getCurrentAnswer 超时场景读取
+  const leftBtn = document.getElementById('iat-left');
+  const rightBtn = document.getElementById('iat-right');
   if (area) area._iatReactions = reactions;
+
+  function showFixation() {
+    canRespond = false;
+    wordEl.innerHTML = '<span class="iat-fixation">+</span>';
+  }
+
+  function showWord(w) {
+    wordEl.textContent = w.word;
+    wordEl.style.animation = 'none';
+    void wordEl.offsetWidth;
+    wordEl.style.animation = '';
+    wordStart = performance.now();
+    canRespond = true;
+  }
 
   function next() {
     if (idx >= q.words.length) { recordAnswer(q, { iat: reactions }); return; }
     const w = q.words[idx];
-    wordEl.textContent = w.word;
-    wordEl.style.animation = 'none';
-    void wordEl.offsetWidth; // reflow 重置动画
-    wordEl.style.animation = '';
-    wordStart = performance.now();
     progEl.textContent = `${idx + 1} / ${q.words.length}`;
+    // 注视点 → 词汇(标准 IAT 流程)
+    showFixation();
+    setTimeout(() => showWord(w), 350);
   }
+
+  function flashError(btn) {
+    btn.classList.add('error');
+    setTimeout(() => btn.classList.remove('error'), 400);
+  }
+
   function classify(side) {
-    if (idx >= q.words.length) return;
+    if (!canRespond || idx >= q.words.length) return;
     const w = q.words[idx];
     const rt = performance.now() - wordStart;
-    reactions.push({ word: w.word, category: w.category, response: side, rt: Math.round(rt), correct: w.category === side });
+    const correct = w.category === side;
+    if (!correct) {
+      // 错答:闪烁纠错,不推进,反应时计入惩罚
+      flashError(side === 'left' ? leftBtn : rightBtn);
+      reactions.push({ word: w.word, category: w.category, response: side, rt: Math.round(rt), correct: false });
+      return;
+    }
+    reactions.push({ word: w.word, category: w.category, response: side, rt: Math.round(rt), correct: true });
     idx++;
     next();
   }
-  document.getElementById('iat-left').onclick = () => classify('left');
-  document.getElementById('iat-right').onclick = () => classify('right');
-  document.onkeydown = e => {
-    if (e.key === 'ArrowLeft') classify('left');
-    if (e.key === 'ArrowRight') classify('right');
+
+  leftBtn.onclick = () => classify('left');
+  rightBtn.onclick = () => classify('right');
+
+  // 键盘:用 addEventListener 便于精确移除
+  const keyHandler = e => {
+    if (e.key === 'ArrowLeft') { e.preventDefault(); classify('left'); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); classify('right'); }
   };
+  document.addEventListener('keydown', keyHandler);
+  // 挂到 area 上供 recordAnswer 清理
+  if (area) area._iatKeyHandler = keyHandler;
+
   next();
 }
 
@@ -717,6 +831,13 @@ function getCurrentAnswer(q) {
 
 function recordAnswer(q, answer, timeout = false) {
   clearInterval(timerInterval);
+  stopRhythmBar();
+  // 清理 IAT 键盘监听(如果存在)
+  const area = document.querySelector(`[data-q="${q.id}"]`);
+  if (area && area._iatKeyHandler) {
+    document.removeEventListener('keydown', area._iatKeyHandler);
+    area._iatKeyHandler = null;
+  }
   document.onkeydown = null;
   const snap = tracker.snapshot();
   if (timeout) snap.duration_ms = q.time_limit_sec * 1000 + 100;
@@ -739,11 +860,26 @@ async function submitAll(complete) {
   const valid = answers.filter(a => a && (Object.keys(a.answer || {}).length > 0 || a._timeout));
   // 去掉内部标记字段,不传后端
   const payload = valid.map(({ _timeout, ...rest }) => rest);
-  const res = await api.post(`/api/sessions/${session.id}/responses`, { answers: payload, complete: true });
-  if (res && res.result_id) {
-    location.href = `/report.html?id=${res.result_id}`;
-  } else {
-    alert('提交失败,请重试');
+  // loading 覆盖层
+  const overlay = document.createElement('div');
+  overlay.className = 'loading-overlay';
+  overlay.innerHTML = `
+    <div class="mirror-disc" data-clarity="high"></div>
+    <p>${mmI18n.t('common.processing') || '镜面正在成像...'}</p>
+    <p class="loading-sub">${mmI18n.t('common.processing_sub') || '分析你的行为轨迹与价值倾向'}</p>
+  `;
+  document.body.appendChild(overlay);
+  try {
+    const res = await api.post(`/api/sessions/${session.id}/responses`, { answers: payload, complete: true });
+    if (res && res.result_id) {
+      location.href = `/report.html?id=${res.result_id}`;
+    } else {
+      overlay.remove();
+      alert(mmI18n.t('common.submit_failed') || '提交失败,请重试');
+    }
+  } catch (e) {
+    overlay.remove();
+    alert(mmI18n.t('common.submit_failed') || '提交失败,请重试');
   }
 }
 

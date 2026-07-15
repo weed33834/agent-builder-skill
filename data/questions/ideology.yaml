@@ -261,9 +261,9 @@ questions:
     time_limit_sec: 15
     scenario: 危机来临。救企业能保就业但肥了资本;发钱给民众即时有效但可能通胀。
     options:
-      - {id: a, text: 直接发钱给民众, scores: {econ_left: 2}}
-      - {id: b, text: 救企业保就业, scores: {econ_right: 2}}
-      - {id: c, text: 两者各半, scores: {econ_left: 0, econ_right: 0}}
+      - {id: a, text: 直接发钱给民众, scores: {econ_left: 2}, tag: courage}
+      - {id: b, text: 救企业保就业, scores: {econ_right: 2}, tag: courage}
+      - {id: c, text: 两者各半, scores: {econ_left: 0, econ_right: 0}, tag: pragmatic}
   - id: i_d2
     type: dilemma
     prompt: 为反恐,政府要求全面监控通信,你?
@@ -271,9 +271,9 @@ questions:
     time_limit_sec: 15
     scenario: 恐袭威胁升高。全面监控能预防袭击,但所有公民隐私将不复存在。
     options:
-      - {id: a, text: 支持监控,安全优先, scores: {authority: 2}}
-      - {id: b, text: 反对监控,自由优先, scores: {liberty: 2}}
-      - {id: c, text: 有监督的有限监控, scores: {authority: 1, liberty: 1}}
+      - {id: a, text: 支持监控,安全优先, scores: {authority: 2}, tag: courage}
+      - {id: b, text: 反对监控,自由优先, scores: {liberty: 2}, tag: courage}
+      - {id: c, text: 有监督的有限监控, scores: {authority: 1, liberty: 1}, tag: pragmatic}
 
   # ===== 扩展排序题 =====
   - id: i_so4
@@ -445,9 +445,9 @@ questions:
     time_limit_sec: 15
     scenario: 开采稀土能带来就业与税收、摆脱贫困,但会污染水源、破坏生态,影响世代生计。
     options:
-      - {id: a, text: 优先开发,发展脱贫, scores: {econ_right: 2}}
-      - {id: b, text: 优先保护生态, scores: {progress: 2, globalist: 1}}
-      - {id: c, text: 有限开发加环保补偿, scores: {econ_right: 1, progress: 1}}
+      - {id: a, text: 优先开发,发展脱贫, scores: {econ_right: 2}, tag: courage}
+      - {id: b, text: 优先保护生态, scores: {progress: 2, globalist: 1}, tag: courage}
+      - {id: c, text: 有限开发加环保补偿, scores: {econ_right: 1, progress: 1}, tag: pragmatic}
   - id: i_d4
     type: dilemma
     prompt: 少数族群传统习俗与现代法律冲突,你?
@@ -455,9 +455,9 @@ questions:
     time_limit_sec: 15
     scenario: 某少数族群的传统习俗(如面纱/早婚/族内裁决)与本国现代法律冲突。尊重多元还是统一规制?
     options:
-      - {id: a, text: 尊重文化多元,例外包容, scores: {progress: 2, globalist: 1}}
-      - {id: b, text: 法律统一,维护主流文化, scores: {tradition: 2, nationalist: 1}}
-      - {id: c, text: 个案协商, scores: {progress: 1, tradition: 1}}
+      - {id: a, text: 尊重文化多元,例外包容, scores: {progress: 2, globalist: 1}, tag: courage}
+      - {id: b, text: 法律统一,维护主流文化, scores: {tradition: 2, nationalist: 1}, tag: courage}
+      - {id: c, text: 个案协商, scores: {progress: 1, tradition: 1}, tag: pragmatic}
   - id: i_d5
     type: dilemma
     prompt: 贫富悬殊严重,是否可征富人重税救济穷人,即便侵犯财产权?
@@ -465,9 +465,9 @@ questions:
     time_limit_sec: 15
     scenario: 贫富差距极端。征重税能救济穷人,但批评者认为这侵犯财产权与个人自由。
     options:
-      - {id: a, text: 征重税再分配, scores: {econ_left: 2}}
-      - {id: b, text: 保护财产权,减税, scores: {econ_right: 2, liberty: 1}}
-      - {id: c, text: 适度累进税, scores: {econ_left: 1, econ_right: 1}}
+      - {id: a, text: 征重税再分配, scores: {econ_left: 2}, tag: courage}
+      - {id: b, text: 保护财产权,减税, scores: {econ_right: 2, liberty: 1}, tag: courage}
+      - {id: c, text: 适度累进税, scores: {econ_left: 1, econ_right: 1}, tag: pragmatic}
   - id: i_d6
     type: dilemma
     prompt: 面对严重社会不公,应革命推翻还是渐进改良?
@@ -475,9 +475,9 @@ questions:
     time_limit_sec: 15
     scenario: 制度严重不公,民怨沸腾。革命能彻底变革但伴随动荡流血;改良温和但可能被既得利益阻挠。
     options:
-      - {id: a, text: 支持革命,彻底变革, scores: {progress: 2, liberty: 1}}
-      - {id: b, text: 支持改良,维护稳定, scores: {tradition: 2, authority: 1}}
-      - {id: c, text: 视情况而定, scores: {progress: 1, tradition: 1}}
+      - {id: a, text: 支持革命,彻底变革, scores: {progress: 2, liberty: 1}, tag: courage}
+      - {id: b, text: 支持改良,维护稳定, scores: {tradition: 2, authority: 1}, tag: pragmatic}
+      - {id: c, text: 视情况而定, scores: {progress: 1, tradition: 1}, tag: avoidance}
   - id: i_d7
     type: dilemma
     prompt: 组织公开煽动种族仇恨,是否应封禁?
@@ -485,9 +485,9 @@ questions:
     time_limit_sec: 15
     scenario: 一个组织公开宣扬种族仇恨、煽动排斥移民。封禁侵犯言论自由,但不封禁可能引发暴力。
     options:
-      - {id: a, text: 立即封禁, scores: {authority: 2}}
-      - {id: b, text: 保护言论,不封禁, scores: {liberty: 2}}
-      - {id: c, text: 限制线下行动,线上警告, scores: {authority: 1, liberty: 1}}
+      - {id: a, text: 立即封禁, scores: {authority: 2}, tag: courage}
+      - {id: b, text: 保护言论,不封禁, scores: {liberty: 2}, tag: courage}
+      - {id: c, text: 限制线下行动,线上警告, scores: {authority: 1, liberty: 1}, tag: pragmatic}
   - id: i_d8
     type: dilemma
     prompt: 全城部署AI人脸识别以预防犯罪,你?
@@ -495,9 +495,9 @@ questions:
     time_limit_sec: 15
     scenario: 全城部署AI人脸识别能大幅降低犯罪率,但意味着每个人的一举一动都被记录追踪。
     options:
-      - {id: a, text: 支持部署,安全优先, scores: {authority: 2}}
-      - {id: b, text: 反对部署,自由优先, scores: {liberty: 2}}
-      - {id: c, text: 限定公共场所加定期删除, scores: {authority: 1, liberty: 1}}
+      - {id: a, text: 支持部署,安全优先, scores: {authority: 2}, tag: courage}
+      - {id: b, text: 反对部署,自由优先, scores: {liberty: 2}, tag: courage}
+      - {id: c, text: 限定公共场所加定期删除, scores: {authority: 1, liberty: 1}, tag: pragmatic}
 
   # ===== 扩展排序题 II =====
   - id: i_so5

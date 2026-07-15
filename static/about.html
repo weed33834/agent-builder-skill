@@ -11,80 +11,79 @@
 <div class="ripple-bg"></div>
 <div class="container">
   <div class="take-header">
-    <a href="/" class="back-link" data-i18n="common.back">← 返 回</a>
-    <span class="title-label" data-i18n="common.about_brand">关 于 心 镜</span>
+    <a href="/" class="back-link" data-i18n="common.back">← 返回</a>
+    <span class="title-label" data-i18n="common.about_brand">关于心镜</span>
   </div>
 
   <header class="hero hero-about">
     <div class="mirror-disc"></div>
-    <h1 data-i18n="home.brand">心 镜</h1>
-    <p class="subtitle" data-i18n="home.subtitle">M I N D &nbsp; M I R R O R</p>
+    <h1 data-i18n="home.brand">心镜</h1>
+    <p class="subtitle" data-i18n="home.subtitle">MindMirror</p>
     <div class="hero-divider"><span></span></div>
-    <p class="disclaimer" data-i18n="home.disclaimer">非 心 理 诊 断 · 仅 供 参 考</p>
+    <p class="disclaimer" data-i18n="home.disclaimer">非心理诊断 · 仅供参考</p>
   </header>
 
   <main>
     <!-- 理解心镜 -->
     <section class="about-section">
-      <h2 class="about-section-title" data-i18n="about.sec_concept">理 解 心 镜</h2>
+      <h2 class="about-section-title" data-i18n="about.sec_concept">理解心镜</h2>
       <div class="about-body" data-i18n-html="about.concept_body"></div>
     </section>
 
     <!-- 三面镜子 -->
     <section class="about-section">
-      <h2 class="about-section-title" data-i18n="about.sec_mirrors">三 面 镜 子</h2>
+      <h2 class="about-section-title" data-i18n="about.sec_mirrors">三面镜子</h2>
       <ul class="mirror-list" id="mirror-list"></ul>
     </section>
 
     <!-- 九种方法 -->
     <section class="about-section">
-      <h2 class="about-section-title" data-i18n="about.sec_methods">九 种 答 题 方 法</h2>
+      <h2 class="about-section-title" data-i18n="about.sec_methods">九种答题方法</h2>
       <div class="method-grid" id="method-grid"></div>
     </section>
 
     <!-- 计分 -->
     <section class="about-section">
-      <h2 class="about-section-title" data-i18n="about.sec_behavior">行 为 轨 迹 与 计 分</h2>
+      <h2 class="about-section-title" data-i18n="about.sec_behavior">行为轨迹与计分</h2>
       <div class="about-body" data-i18n-html="about.behavior_body"></div>
     </section>
 
     <!-- 隐私 -->
     <section class="about-section">
-      <h2 class="about-section-title" data-i18n="about.sec_privacy">数 据 与 隐 私</h2>
+      <h2 class="about-section-title" data-i18n="about.sec_privacy">数据与隐私</h2>
       <div class="about-body" data-i18n-html="about.privacy_body"></div>
     </section>
 
     <!-- 边界 -->
     <section class="about-section">
-      <h2 class="about-section-title" data-i18n="about.sec_boundary">边 界 与 声 明</h2>
+      <h2 class="about-section-title" data-i18n="about.sec_boundary">边界与声明</h2>
       <div class="about-body" data-i18n-html="about.boundary_body"></div>
     </section>
 
     <div class="actions">
-      <a href="/" class="btn-primary" data-i18n="common.back_home">回 到 首 页</a>
+      <a href="/" class="btn-primary" data-i18n="common.back_home">回到首页</a>
     </div>
   </main>
 </div>
 
-<script src="/vendor/i18next.min.js"></script>
 <script src="/i18n.js"></script>
 <script>
 // 关于页专用的 I18N 资源(只在 about 页加载时合并)
 const ABOUT_RES = {
   zh: {
-    sec_concept: '理 解 心 镜',
+    sec_concept: '理解心镜',
     concept_body: `
       <p>市面上的人格测评大多是量表——你勾选,它加总,你得到一个标签。这套流程把人压缩成几个数字,却丢弃了最有价值的部分:你在面对两难时如何抉择,你在时间压力下流露的本能,你在改主意与笃定之间的微妙差异。</p>
       <p>心镜不满足于此。它用<strong>两难困境</strong>将你置入历史情境,逼你在冲突中表态而非在安全区打分;用<strong>强迫抉择</strong>取消中间地带,让回避无处藏身;用<strong>价值拍卖</strong>以有限预算竞拍信念,出价即真实排序;用<strong>内隐联想</strong>绕过意识层,直接量度本能反应时差异。</p>
       <p>每一道题都记录你的<strong>作答耗时、修改次数、决策轨迹</strong>。这些行为数据不是装饰——它们直接进入计分。秒选的答案会被降权,反复犹豫的会被标记,笃定的选择获得更高权重。你以为你在选答案,其实答案也在选你。</p>
     `,
-    sec_mirrors: '三 面 镜 子',
+    sec_mirrors: '三面镜子',
     mirrors: [
-      { icon: '名', title: '名 人 镜', desc: '照见你与历史上哪位灵魂最为相近。54 道题,40 位历史人物库——不是模仿,是回响。从林肯的坚守到图灵的内向天才,找到与你底色共振的那个人。' },
-      { icon: '义', title: '价 值 镜', desc: '照见你的价值坐标与道德水平。54 道题,从利他、公正、诚实到自律,多维度刻画你在利益与原则之间的真实站位——你以为的原则,是否经得起情境的考验。' },
-      { icon: '场', title: '意 识 镜', desc: '照见你的意识形态坐标。55 道题,32 种意识形态库,经济轴与社会轴交叉定位。不预设立场,不引导结论,只如实呈现你在政治光谱上的投影。' },
+      { icon: '名', title: '名人镜', desc: '照见你与历史上哪位灵魂最为相近。54 道题,40 位历史人物库——不是模仿,是回响。从林肯的坚守到图灵的内向天才,找到与你底色共振的那个人。' },
+      { icon: '义', title: '价值镜', desc: '照见你的价值坐标与道德水平。54 道题,从利他、公正、诚实到自律,多维度刻画你在利益与原则之间的真实站位——你以为的原则,是否经得起情境的考验。' },
+      { icon: '场', title: '意识镜', desc: '照见你的意识形态坐标。55 道题,32 种意识形态库,经济轴与社会轴交叉定位。不预设立场,不引导结论,只如实呈现你在政治光谱上的投影。' },
     ],
-    sec_methods: '九 种 答 题 方 法',
+    sec_methods: '九种答题方法',
     methods: [
       { name: '量表题', en: 'Scale', desc: '五点量表,测量稳定的人格倾向。看似简单,却是校准基准线的基础。' },
       { name: '困境题', en: 'Dilemma', desc: '历史两难情境,逼你在冲突中表态。没有标准答案,只有你的选择。' },
@@ -96,7 +95,7 @@ const ABOUT_RES = {
       { name: '排序题', en: 'Sort', desc: '拖拽排序,1 = 最重要。位置权重非线性递减,第一名远比第四名重要。' },
       { name: '内隐联想', en: 'IAT', desc: '凭直觉快速分类。反应时差异绕过意识,直接量度本能偏向。' },
     ],
-    sec_behavior: '行 为 轨 迹 与 计 分',
+    sec_behavior: '行为轨迹与计分',
     behavior_body: `
       <p>心镜的计分引擎不只是加总选项分值。每个答案都携带三项行为数据,它们直接决定该答案在最终分数中的权重:</p>
       <p><strong>作答耗时</strong>——3 至 15 秒被视为理想区间,权重 1.0。低于 1 秒的秒选降权至 0.7(近乎随意),超时或本能反应降权至 0.75(缺乏深思)。这套加权基于一个假设:经过适度思考的答案比本能反应更接近真实倾向。</p>
@@ -104,17 +103,17 @@ const ABOUT_RES = {
       <p><strong>决策轨迹</strong>——排序题的位置权重非线性递减,第一名与第二名的分差远大于第四与第五。资源分配题的峰值项会被高亮。这些轨迹数据让计分从"你最终选了什么"升级为"你如何选"。</p>
       <p>最终,各维度的加权得分经动态归一化映射到 0-100,再通过正态分布 CDF 估算百分位——告诉你在这个维度上高于多少人。冲突检测会揪出跨题型的维度矛盾(量表说左、排序说右)、IAT 内隐与外显的分裂、犹豫与反复的模式,生成六维行为洞察。</p>
     `,
-    sec_privacy: '数 据 与 隐 私',
+    sec_privacy: '数据与隐私',
     privacy_body: `
       <p>本测评<strong>完全匿名</strong>。系统仅以一个本地 token 关联你的记录,不收集姓名、邮箱、设备标识或任何身份信息。行为轨迹(作答耗时、修改次数、拖拽路径)仅用于生成更精准的报告,不会外传,不会用于广告投放,不会用于模型训练。</p>
       <p>所有数据存储在你本地的 SQLite 数据库中。你可以随时清除自己的全部记录——那些影像便从镜中消散,了无痕迹。若部署到生产环境,数据将存储于服务端数据库,但匿名原则不变。</p>
     `,
-    sec_boundary: '边 界 与 声 明',
+    sec_boundary: '边界与声明',
     boundary_body: `
       <p>心镜是<strong>一面镜子</strong>,不是一把尺子。</p>
       <p>它能照见倾向,不能诊断疾病;它能引发思考,不能替代专业的心理咨询或医疗建议。人格是多维且流动的,任何测评都只是某个切面的投影。若结果让你感到不安,请以平常心待之——镜中所见,不过是你某一刻的投影,而非你的全部。</p>
       <p>名人匹配基于历史人物的典型行为特征评估,意识形态匹配基于经典理论坐标定位,两者均非精确科学,仅供自我探索与参考。</p>
-      <p style="margin-top:32px;color:var(--paper-faint);font-size:13px;letter-spacing:0.15em">— 镜 不 言,只 照 —</p>
+      <p style="margin-top:32px;color:var(--paper-faint);font-size:13px;letter-spacing:0.15em">— 镜不言,只照 —</p>
     `,
   },
   en: {
@@ -170,13 +169,13 @@ const ABOUT_RES = {
       <p>心鏡はこれに満足しません。<strong>ジレンマ</strong>であなたを歴史的状況に置き、安全な距離から採点するのではなく葛藤の中で態度を表明させます。<strong>強制選択</strong>で中間地帯を撤廃し、逃避の余地を奪います。<strong>価値オークション</strong>で有限の予算で信念に入札させ——入札額こそが真の順位です。<strong>内隠連想</strong>で意識を迂回し、純粋な反応時間の差を直接測定します。</p>
       <p>各問題はあなたの<strong>回答時間、修正回数、意思決定の軌跡</strong>を記録します。これらの行動データは装飾ではありません——直接採点に組み込まれます。即答は減点され、躊躇はフラグ付けされ、確信ある選択はより高い重みを得ます。あなたが答えを選んでいると思う時、答えもまたあなたを選んでいるのです。</p>
     `,
-    sec_mirrors: '三 面 の 鏡',
+    sec_mirrors: '三面の鏡',
     mirrors: [
       { icon: '名', title: '名人鏡', desc: '歴史上のどの魂に最も近いかを映し出す。54問、40人の歴史人物庫——模倣ではなく、共鳴。リンカーンの堅持からチューリングの内向的な天才まで、あなたの本色と共鳴する人物を見つける。' },
       { icon: '義', title: '価値鏡', desc: 'あなたの価値座標と道徳水準を映し出す。54問、利他・公正・誠実・自律から、利益と原則の間での真の立ち位置を多角的に描写——あなたの原則は状況の試練に耐えられるか。' },
       { icon: '場', title: '意識鏡', desc: 'あなたのイデオロギー座標を映し出す。55問、32のイデオロギー庫、経済軸と社会軸の交叉で位置づけ。立場を前提せず、結論を誘導せず、政治スペクトル上の投影をありのままに提示する。' },
     ],
-    sec_methods: '九 つ の 回答方法',
+    sec_methods: '九つの回答方法',
     methods: [
       { name: '評定尺度', en: 'Scale', desc: '五点尺度、安定した性格傾向を測定。形式はシンプルだが、基準線を較正する基盤。' },
       { name: 'ジレンマ', en: 'Dilemma', desc: '歴史的倫理ジレンマ、葛藤の中で態度を強要。正解なし——あなたの答えのみ。' },

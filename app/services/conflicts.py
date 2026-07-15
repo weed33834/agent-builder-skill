@@ -129,13 +129,21 @@ def _collect_directions(q, answer: dict, dim_directions: dict) -> None:
 
 
 def _detect_dimension_conflicts(dim_directions: dict, q_by_id: dict) -> list[dict]:
-    """检测同维度方向相反的题对。"""
+    """检测同维度方向相反的题对。
+
+    用相对阈值过滤连续题型的中性值:只取方向强度 > 15% 最大值的,
+    避免 slider/allocation 在中位附近被误判为"方向"。
+    """
     out = []
     for dim, items in dim_directions.items():
         if len(items) < 2:
             continue
-        positives = [(qid, v) for qid, v in items if v > 0]
-        negatives = [(qid, v) for qid, v in items if v < 0]
+        max_abs = max(abs(v) for _, v in items) if items else 0
+        if max_abs == 0:
+            continue
+        threshold = max_abs * 0.15
+        positives = [(qid, v) for qid, v in items if v > threshold]
+        negatives = [(qid, v) for qid, v in items if v < -threshold]
         if positives and negatives:
             # 取差异最大的一对
             pos_q, pos_v = max(positives, key=lambda x: x[1])

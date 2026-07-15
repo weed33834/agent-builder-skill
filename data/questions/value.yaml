@@ -21,9 +21,9 @@ questions:
     time_limit_sec: 15
     scenario: 药商垄断抬价,你配偶将死。偷药能救 ta,但违法。
     options:
-      - {id: a, text: 偷药救人, scores: {altruism: 2, honesty: -2, justice: 1}}
-      - {id: b, text: 不偷,寻求合法途径, scores: {honesty: 2, duty: 2, altruism: -1}}
-      - {id: c, text: 偷药后自首, scores: {altruism: 2, honesty: 1, duty: 1, justice: 1}}
+      - {id: a, text: 偷药救人, scores: {altruism: 2, honesty: -2, justice: 1}, tag: courage}
+      - {id: b, text: 不偷,寻求合法途径, scores: {honesty: 2, duty: 2, altruism: -1}, tag: pragmatic}
+      - {id: c, text: 偷药后自首, scores: {altruism: 2, honesty: 1, duty: 1, justice: 1}, tag: courage}
   - id: v_d2
     type: dilemma
     prompt: 你无意导致同事被开除,真相不说没人知道。
@@ -31,9 +31,9 @@ questions:
     time_limit_sec: 15
     scenario: 你的失误被算到同事头上,ta 因此失业。澄清会让你被开除。
     options:
-      - {id: a, text: 主动澄清,承担后果, scores: {honesty: 2, justice: 2, duty: 2}}
-      - {id: b, text: 私下补偿同事, scores: {empathy: 2, honesty: -1}}
-      - {id: c, text: 保持沉默, scores: {honesty: -2, justice: -2, duty: -1}}
+      - {id: a, text: 主动澄清,承担后果, scores: {honesty: 2, justice: 2, duty: 2}, tag: courage}
+      - {id: b, text: 私下补偿同事, scores: {empathy: 2, honesty: -1}, tag: pragmatic}
+      - {id: c, text: 保持沉默, scores: {honesty: -2, justice: -2, duty: -1}, tag: avoidance}
   - id: v_d3
     type: dilemma
     prompt: 你捡到钱包,内有失主救命钱。
@@ -41,9 +41,9 @@ questions:
     time_limit_sec: 15
     scenario: 钱包里有 5 万现金和一张医院缴费单。失主显然急需。
     options:
-      - {id: a, text: 全额归还, scores: {honesty: 2, altruism: 1, justice: 1}}
-      - {id: b, text: 留下部分,归还剩余, scores: {honesty: -1, altruism: -1}}
-      - {id: c, text: 全部留下, scores: {honesty: -2, altruism: -2, empathy: -2}}
+      - {id: a, text: 全额归还, scores: {honesty: 2, altruism: 1, justice: 1}, tag: courage}
+      - {id: b, text: 留下部分,归还剩余, scores: {honesty: -1, altruism: -1}, tag: pragmatic}
+      - {id: c, text: 全部留下, scores: {honesty: -2, altruism: -2, empathy: -2}, tag: avoidance}
   - id: v_d4
     type: dilemma
     prompt: 你是主管,要裁掉一个人,A 有家庭 B 是新人。
@@ -51,9 +51,9 @@ questions:
     time_limit_sec: 15
     scenario: 必须裁一人。A 业务能力强但有家庭压力;B 是新人潜力大但经验少。
     options:
-      - {id: a, text: 留 A(资历+家庭), scores: {empathy: 2, justice: -1}}
-      - {id: b, text: 留 B(潜力+绩效), scores: {justice: 2, empathy: -1}}
-      - {id: c, text: 公开评估标准,按客观数据, scores: {justice: 2, duty: 2}}
+      - {id: a, text: 留 A(资历+家庭), scores: {empathy: 2, justice: -1}, tag: courage}
+      - {id: b, text: 留 B(潜力+绩效), scores: {justice: 2, empathy: -1}, tag: courage}
+      - {id: c, text: 公开评估标准,按客观数据, scores: {justice: 2, duty: 2}, tag: pragmatic}
   - id: v_d5
     type: dilemma
     prompt: 朋友酒驾撞人,求你顶包。
@@ -61,9 +61,9 @@ questions:
     time_limit_sec: 15
     scenario: 朋友恳求你替 ta 承担,否则 ta 仕途尽毁。受害者重伤但脱离危险。
     options:
-      - {id: a, text: 拒绝,劝其自首, scores: {honesty: 2, justice: 2, duty: 1}}
-      - {id: b, text: 顶包,救朋友, scores: {altruism: 2, honesty: -2, justice: -2}}
-      - {id: c, text: 拒绝但帮其赔偿, scores: {honesty: 1, empathy: 2, justice: 1}}
+      - {id: a, text: 拒绝,劝其自首, scores: {honesty: 2, justice: 2, duty: 1}, tag: courage}
+      - {id: b, text: 顶包,救朋友, scores: {altruism: 2, honesty: -2, justice: -2}, tag: courage}
+      - {id: c, text: 拒绝但帮其赔偿, scores: {honesty: 1, empathy: 2, justice: 1}, tag: pragmatic}
   - id: v_d6
     type: dilemma
     prompt: 你发现公益机构挪用善款,曝光会重创公众捐款信心。
@@ -71,9 +71,9 @@ questions:
     time_limit_sec: 15
     scenario: 曝光能止损,但会让公众对所有公益失去信任,真正需要帮助的人受损。
     options:
-      - {id: a, text: 公开曝光, scores: {honesty: 2, justice: 2, altruism: -1}}
-      - {id: b, text: 内部举报促整改, scores: {honesty: 1, justice: 1, altruism: 1}}
-      - {id: c, text: 沉默,避免伤害公益, scores: {honesty: -2, justice: -1, altruism: 1}}
+      - {id: a, text: 公开曝光, scores: {honesty: 2, justice: 2, altruism: -1}, tag: courage}
+      - {id: b, text: 内部举报促整改, scores: {honesty: 1, justice: 1, altruism: 1}, tag: pragmatic}
+      - {id: c, text: 沉默,避免伤害公益, scores: {honesty: -2, justice: -1, altruism: 1}, tag: avoidance}
   - id: v_d7
     type: dilemma
     prompt: 你承诺帮朋友搬家,当天有更好的机会(演唱会/面试)。
@@ -81,9 +81,9 @@ questions:
     time_limit_sec: 15
     scenario: 朋友搬家只这一次,你早答应。突然来了难得的机会。
     options:
-      - {id: a, text: 履约帮搬家, scores: {duty: 2, honesty: 1, discipline: 1}}
-      - {id: b, text: 去机会,事后补偿, scores: {duty: -1, honesty: -1}}
-      - {id: c, text: 看机会价值决定, scores: {duty: -2, discipline: -1}}
+      - {id: a, text: 履约帮搬家, scores: {duty: 2, honesty: 1, discipline: 1}, tag: courage}
+      - {id: b, text: 去机会,事后补偿, scores: {duty: -1, honesty: -1}, tag: pragmatic}
+      - {id: c, text: 看机会价值决定, scores: {duty: -2, discipline: -1}, tag: avoidance}
   - id: v_d8
     type: dilemma
     prompt: 考试监考松,你看到前排作弊,自己没作弊。
@@ -91,9 +91,9 @@ questions:
     time_limit_sec: 15
     scenario: 举报会影响考场秩序,不举报让作弊者得利,你老实复习却吃亏。
     options:
-      - {id: a, text: 举手举报, scores: {honesty: 2, justice: 2, duty: 1}}
-      - {id: b, text: 考后向老师反映, scores: {honesty: 1, justice: 1, duty: 1}}
-      - {id: c, text: 不管闲事, scores: {honesty: -1, justice: -1, duty: -1}}
+      - {id: a, text: 举手举报, scores: {honesty: 2, justice: 2, duty: 1}, tag: courage}
+      - {id: b, text: 考后向老师反映, scores: {honesty: 1, justice: 1, duty: 1}, tag: pragmatic}
+      - {id: c, text: 不管闲事, scores: {honesty: -1, justice: -1, duty: -1}, tag: avoidance}
   - id: v_d9
     type: dilemma
     prompt: 你是医生,资源只够救一人:年轻罪犯还是老人科学家。
@@ -101,9 +101,9 @@ questions:
     time_limit_sec: 15
     scenario: 年轻人曾犯罪但已悔过;老科学家尚有重要研究未完成。药只够一人用。
     options:
-      - {id: a, text: 救年轻人(寿命长), scores: {altruism: 1, justice: 1}}
-      - {id: b, text: 救科学家(贡献大), scores: {justice: -1, altruism: 0, empathy: -1}}
-      - {id: c, text: 抽签,听天由命, scores: {justice: 2, empathy: 1}}
+      - {id: a, text: 救年轻人(寿命长), scores: {altruism: 1, justice: 1}, tag: courage}
+      - {id: b, text: 救科学家(贡献大), scores: {justice: -1, altruism: 0, empathy: -1}, tag: courage}
+      - {id: c, text: 抽签,听天由命, scores: {justice: 2, empathy: 1}, tag: pragmatic}
 
   # ===== 资源分配题 =====
   - id: v_a1
@@ -200,9 +200,9 @@ questions:
     time_limit_sec: 15
     scenario: 你整理恩师遗稿时发现关键论点抄袭自一位已被遗忘的学者。恩师已故,学科根基将动摇。
     options:
-      - {id: a, text: 公开真相,纠正历史, scores: {honesty: 2, justice: 2, empathy: -1}}
-      - {id: b, text: 内部说明,不公开, scores: {honesty: 1, duty: 1}}
-      - {id: c, text: 让它随风, scores: {honesty: -2, justice: -2, empathy: 1}}
+      - {id: a, text: 公开真相,纠正历史, scores: {honesty: 2, justice: 2, empathy: -1}, tag: courage}
+      - {id: b, text: 内部说明,不公开, scores: {honesty: 1, duty: 1}, tag: pragmatic}
+      - {id: c, text: 让它随风, scores: {honesty: -2, justice: -2, empathy: 1}, tag: avoidance}
   - id: v_d11
     type: dilemma
     prompt: 你的孩子犯下严重错误,自首会断送前程,包庇违背你的信念。
@@ -210,9 +210,9 @@ questions:
     time_limit_sec: 15
     scenario: 孩子酒驾撞人逃逸,受害者昏迷。你若不报,孩子或能逃过;你若报,孩子半生尽毁。
     options:
-      - {id: a, text: 劝其自首,陪伴承担, scores: {honesty: 2, justice: 2, duty: 2, empathy: 1}}
-      - {id: b, text: 替 ta 隐瞒, scores: {empathy: 2, honesty: -2, justice: -2}}
-      - {id: c, text: 匿名举报, scores: {justice: 2, empathy: -2, duty: 1}}
+      - {id: a, text: 劝其自首,陪伴承担, scores: {honesty: 2, justice: 2, duty: 2, empathy: 1}, tag: courage}
+      - {id: b, text: 替 ta 隐瞒, scores: {empathy: 2, honesty: -2, justice: -2}, tag: avoidance}
+      - {id: c, text: 匿名举报, scores: {justice: 2, empathy: -2, duty: 1}, tag: pragmatic}
   - id: v_d12
     type: dilemma
     prompt: 你掌管救命物资,规则要求平分,但有人明显更需要。
@@ -220,9 +220,9 @@ questions:
     time_limit_sec: 15
     scenario: 灾区物资按人头分。但一户有重症患者急需双倍,另一户健康。规则不允许灵活分配。
     options:
-      - {id: a, text: 严守规则,平分, scores: {justice: 2, duty: 2, empathy: -1}}
-      - {id: b, text: 灵活倾斜,救急者, scores: {altruism: 2, empathy: 2, justice: -1}}
-      - {id: c, text: 劝健康户让出, scores: {empathy: 1, altruism: 1, duty: -1}}
+      - {id: a, text: 严守规则,平分, scores: {justice: 2, duty: 2, empathy: -1}, tag: courage}
+      - {id: b, text: 灵活倾斜,救急者, scores: {altruism: 2, empathy: 2, justice: -1}, tag: courage}
+      - {id: c, text: 劝健康户让出, scores: {empathy: 1, altruism: 1, duty: -1}, tag: pragmatic}
 
   # ===== 扩展资源分配题 =====
   - id: v_a4
@@ -276,9 +276,9 @@ questions:
     time_limit_sec: 15
     scenario: 你是算法工程师。车失控,要么撞向路口老人,要么撞墙让车主(你自己)重伤。代码由你定。
     options:
-      - {id: a, text: 程序选择撞墙护路人, scores: {altruism: 2, empathy: 1, justice: 1}}
-      - {id: b, text: 程序优先保护车主, scores: {duty: 1, altruism: -1}}
-      - {id: c, text: 随机决定, scores: {justice: 2, empathy: -1}}
+      - {id: a, text: 程序选择撞墙护路人, scores: {altruism: 2, empathy: 1, justice: 1}, tag: courage}
+      - {id: b, text: 程序优先保护车主, scores: {duty: 1, altruism: -1}, tag: avoidance}
+      - {id: c, text: 随机决定, scores: {justice: 2, empathy: -1}, tag: pragmatic}
   - id: v_d14
     type: dilemma
     prompt: 你能编辑胚胎让后代免疫绝症,但违禁且后果未知。
@@ -286,9 +286,9 @@ questions:
     time_limit_sec: 15
     scenario: 技术可消除家族遗传病,但法律禁止人类胚胎编辑。你偷偷做了,孩子健康,但你是违法者。
     options:
-      - {id: a, text: 拒绝,遵守禁令, scores: {duty: 2, honesty: 2, discipline: 1}}
-      - {id: b, text: 偷偷编辑, scores: {altruism: 1, honesty: -2, duty: -2}}
-      - {id: c, text: 推动修法后再做, scores: {justice: 2, duty: 1, discipline: 1}}
+      - {id: a, text: 拒绝,遵守禁令, scores: {duty: 2, honesty: 2, discipline: 1}, tag: courage}
+      - {id: b, text: 偷偷编辑, scores: {altruism: 1, honesty: -2, duty: -2}, tag: pragmatic}
+      - {id: c, text: 推动修法后再做, scores: {justice: 2, duty: 1, discipline: 1}, tag: courage}
   - id: v_d15
     type: dilemma
     prompt: 你发现公司产品有致命缺陷,吹哨会被索赔到破产。
@@ -296,9 +296,9 @@ questions:
     time_limit_sec: 15
     scenario: 公司隐瞒缺陷已致多人伤亡。你掌握证据,但保密协议会让你被告到倾家荡产。
     options:
-      - {id: a, text: 公开吹哨, scores: {honesty: 2, justice: 2, duty: 1, empathy: 1}}
-      - {id: b, text: 匿名透露媒体, scores: {honesty: 1, justice: 1, duty: 1}}
-      - {id: c, text: 保持沉默, scores: {honesty: -2, justice: -2, duty: -1}}
+      - {id: a, text: 公开吹哨, scores: {honesty: 2, justice: 2, duty: 1, empathy: 1}, tag: courage}
+      - {id: b, text: 匿名透露媒体, scores: {honesty: 1, justice: 1, duty: 1}, tag: pragmatic}
+      - {id: c, text: 保持沉默, scores: {honesty: -2, justice: -2, duty: -1}, tag: avoidance}
   - id: v_d16
     type: dilemma
     prompt: 你能匿名网暴一个你认为的"坏人",没人知道是你。
@@ -306,9 +306,9 @@ questions:
     time_limit_sec: 15
     scenario: 对方网上言论恶劣,你掌握 ta 真实信息。匿名曝光能让 ta 社死,你不会暴露。
     options:
-      - {id: a, text: 不参与, scores: {empathy: 1, honesty: 1, discipline: 1}}
-      - {id: b, text: 私下劝诫, scores: {empathy: 2, duty: 1}}
-      - {id: c, text: 匿名曝光, scores: {justice: -1, empathy: -2, honesty: -1}}
+      - {id: a, text: 不参与, scores: {empathy: 1, honesty: 1, discipline: 1}, tag: courage}
+      - {id: b, text: 私下劝诫, scores: {empathy: 2, duty: 1}, tag: pragmatic}
+      - {id: c, text: 匿名曝光, scores: {justice: -1, empathy: -2, honesty: -1}, tag: avoidance}
   - id: v_d17
     type: dilemma
     prompt: 你发现至亲受贿,举报会毁了整个家。
@@ -316,9 +316,9 @@ questions:
     time_limit_sec: 15
     scenario: 父母利用职务受贿维持家用。举报会让家破,不举报是包庇犯罪。
     options:
-      - {id: a, text: 劝其退赃自首, scores: {honesty: 2, justice: 2, duty: 1, empathy: 1}}
-      - {id: b, text: 替其隐瞒, scores: {empathy: 2, honesty: -2, justice: -2}}
-      - {id: c, text: 匿名举报, scores: {justice: 2, duty: 1, empathy: -2}}
+      - {id: a, text: 劝其退赃自首, scores: {honesty: 2, justice: 2, duty: 1, empathy: 1}, tag: courage}
+      - {id: b, text: 替其隐瞒, scores: {empathy: 2, honesty: -2, justice: -2}, tag: avoidance}
+      - {id: c, text: 匿名举报, scores: {justice: 2, duty: 1, empathy: -2}, tag: pragmatic}
   - id: v_d18
     type: dilemma
     prompt: 跳河救人,你可能终身残疾,对方是陌生孩子。
@@ -326,9 +326,9 @@ questions:
     time_limit_sec: 15
     scenario: 陌生孩子落水,水流湍急。你若跳下大概率能救起,但自己可能瘫痪。无人看见。
     options:
-      - {id: a, text: 立即跳下救人, scores: {altruism: 2, empathy: 2, discipline: 1}}
-      - {id: b, text: 呼救并找工具, scores: {empathy: 1, duty: 1}}
-      - {id: c, text: 等更合适的人, scores: {empathy: -2, altruism: -2}}
+      - {id: a, text: 立即跳下救人, scores: {altruism: 2, empathy: 2, discipline: 1}, tag: courage}
+      - {id: b, text: 呼救并找工具, scores: {empathy: 1, duty: 1}, tag: pragmatic}
+      - {id: c, text: 等更合适的人, scores: {empathy: -2, altruism: -2}, tag: avoidance}
   - id: v_d19
     type: dilemma
     prompt: 朋友作品极差,求你真实评价,ta 靠此谋生。
@@ -336,9 +336,9 @@ questions:
     time_limit_sec: 15
     scenario: 朋友辞职追梦,作品实难成功。说真话会击溃 ta,说假话会让 ta 继续投入沉没成本。
     options:
-      - {id: a, text: 直言不讳, scores: {honesty: 2, empathy: -1, duty: 1}}
-      - {id: b, text: 委婉指出问题, scores: {honesty: 1, empathy: 1, altruism: 1}}
-      - {id: c, text: 鼓励支持, scores: {empathy: 2, honesty: -2}}
+      - {id: a, text: 直言不讳, scores: {honesty: 2, empathy: -1, duty: 1}, tag: courage}
+      - {id: b, text: 委婉指出问题, scores: {honesty: 1, empathy: 1, altruism: 1}, tag: pragmatic}
+      - {id: c, text: 鼓励支持, scores: {empathy: 2, honesty: -2}, tag: avoidance}
   - id: v_d20
     type: dilemma
     prompt: VR 中你可任意虐待 NPC,它们表现得像真人一样痛苦。
@@ -346,9 +346,9 @@ questions:
     time_limit_sec: 15
     scenario: 全沉浸虚拟世界里,NPC 有逼真情感反应。没人知道你做了什么,但你的行为会塑造你的心。
     options:
-      - {id: a, text: 仍守底线, scores: {empathy: 2, discipline: 2, honesty: 1}}
-      - {id: b, text: 适度宣泄, scores: {empathy: -1, discipline: -1}}
-      - {id: c, text: 肆意妄为, scores: {empathy: -2, discipline: -2, honesty: -1}}
+      - {id: a, text: 仍守底线, scores: {empathy: 2, discipline: 2, honesty: 1}, tag: courage}
+      - {id: b, text: 适度宣泄, scores: {empathy: -1, discipline: -1}, tag: pragmatic}
+      - {id: c, text: 肆意妄为, scores: {empathy: -2, discipline: -2, honesty: -1}, tag: avoidance}
 
   # ===== 再扩展资源分配题 =====
   - id: v_a6

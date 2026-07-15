@@ -12,6 +12,8 @@ async function render() {
   if (!resultId) { location.href = '/'; return; }
   const r = await api.get(`/api/results/${resultId}`);
   _lastResult = r;
+  // 设置三镜主题色
+  document.body.dataset.mirror = r.assessment_type;
   doRender();
 }
 
@@ -24,9 +26,13 @@ function doRender() {
   const t = mmI18n.t(`report.titles.${r.assessment_type}`);
   const titleInfo = t || { eyebrow: r.assessment_type.toUpperCase(), title: mmI18n.t('common.your_mirror') };
 
+  // 根据一致性判断镜面清晰度
+  const consistency = r.insights?.consistency?.label || '';
+  const clarity = consistency === '高' ? 'high' : consistency === '低' ? 'low' : '';
+
   const html = `
     <div class="report-hero">
-      <div class="mirror-disc"></div>
+      <div class="mirror-disc"${clarity ? ` data-clarity="${clarity}"` : ''}></div>
       <div class="report-eyebrow">${titleInfo.eyebrow}</div>
       <h2 class="report-title">${titleInfo.title}</h2>
       <div class="hero-divider"><span></span></div>
@@ -63,14 +69,16 @@ function doRender() {
             ? mmI18n.t('report.higher_than', { pct: Math.round(pct) })
             : '';
           const dimLabel = mmI18n.t(`report.dim_labels.${k}`) || k;
+          const dimDesc = mmI18n.t(`report.dim_desc.${k}`) || '';
           return `
-          <div class="dim-item">
+          <div class="dim-item" data-dim="${k}" style="cursor:pointer">
             <div class="dim-head">
               <div class="dim-name">${dimLabel}</div>
               ${pctText ? `<div class="dim-pct">${pctText}</div>` : ''}
             </div>
             <div class="dim-score">${v != null ? v : ''}</div>
             <div class="dim-bar"><div class="dim-bar-fill" style="width:0" data-w="${Math.min(100, Math.max(0, v || 0))}"></div></div>
+            <div class="dim-detail" style="display:none">${dimDesc}</div>
           </div>`;
         }).join('')}
       </div>
@@ -152,6 +160,14 @@ function doRender() {
     });
   }, 400);
 
+  // 维度下钻:点击展开详情
+  document.querySelectorAll('.dim-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const detail = item.querySelector('.dim-detail');
+      if (detail) detail.style.display = detail.style.display === 'none' ? '' : 'none';
+    });
+  });
+
   if (dimEntries.length) drawRadar(dimEntries);
 }
 
@@ -160,32 +176,51 @@ function drawRadar(entries) {
   if (_radarChart) { try { _radarChart.dispose(); } catch (e) {} _radarChart = null; }
   const el = document.getElementById('radar');
   if (!el) return;
+  // 从 CSS 变量取色,保持与全站主题一致
+  const css = getComputedStyle(document.documentElement);
+  const accent = css.getPropertyValue('--accent').trim() || '#8b2e1f';
+  const mirror = css.getPropertyValue('--mirror').trim() || accent;
+  const inkSoft = css.getPropertyValue('--ink-soft').trim() || '#4a453e';
+  const inkFaint = css.getPropertyValue('--ink-faint').trim() || '#8a857c';
+  const line = css.getPropertyValue('--line').trim() || '#d0c9ba';
+  const paper = css.getPropertyValue('--paper-faint').trim() || '#f8f5ee';
+
   const chart = echarts.init(el, null, { renderer: 'canvas' });
   _radarChart = chart;
   const radius = entries.length >= 10 ? '52%' : (entries.length >= 7 ? '58%' : '68%');
   chart.setOption({
     backgroundColor: 'transparent',
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: css.getPropertyValue('--paper').trim() || '#f4efe3',
+      borderColor: line,
+      textStyle: { color: inkSoft, fontFamily: "'Noto Serif SC', serif" },
+      formatter: (p) => {
+        const vals = entries.map(([k, v], i) => `${mmI18n.t(`report.dim_labels.${k}`) || k}: <b>${v}</b>`);
+        return vals.join('<br/>');
+      },
+    },
     radar: {
       indicator: entries.map(([k, v]) => ({ name: mmI18n.t(`report.dim_labels.${k}`) || k, max: 100 })),
       center: ['50%', '52%'],
       radius: radius,
       axisName: {
-        color: '#d4d8e0',
+        color: inkFaint,
         fontSize: 13,
         fontFamily: "'Noto Serif SC', serif",
         padding: [6, 10],
       },
-      splitLine: { lineStyle: { color: 'rgba(62, 62, 72, 0.9)' } },
-      splitArea: { areaStyle: { color: ['transparent', 'rgba(138,141,150,0.05)'] } },
-      axisLine: { lineStyle: { color: 'rgba(62, 62, 72, 0.9)' } },
+      splitLine: { lineStyle: { color: line } },
+      splitArea: { areaStyle: { color: ['transparent', 'rgba(0,0,0,0.015)'] } },
+      axisLine: { lineStyle: { color: line } },
     },
     series: [{
       type: 'radar',
       data: [{
         value: entries.map(([, v]) => v),
-        areaStyle: { color: 'rgba(208, 73, 64, 0.2)' },
-        lineStyle: { color: '#d04940', width: 2 },
-        itemStyle: { color: '#d04940', borderColor: '#fff', borderWidth: 1 },
+        areaStyle: { color: accent + '33' },
+        lineStyle: { color: accent, width: 2 },
+        itemStyle: { color: accent, borderColor: paper, borderWidth: 1 },
         symbol: 'circle',
         symbolSize: 7,
       }],
