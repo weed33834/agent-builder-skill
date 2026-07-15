@@ -113,10 +113,6 @@
   name: 马丁·路德·金
   blurb: 以梦为旗,非暴力抗争,感召世代
   dims: {idealism: 95, risk_taking: 80, conscientiousness: 80, agreeableness: 80, openness: 75, extraversion: 85, neuroticism: 55}
-- id: marx
-  name: 马克思
-  blurb: 洞察资本逻辑,毕生为劳工立言
-  dims: {idealism: 92, risk_taking: 70, conscientiousness: 80, agreeableness: 50, openness: 95, extraversion: 60, neuroticism: 60}
 - id: adam_smith
   name: 亚当·斯密
   blurb: 冷静观察市场,道德情操与自利并论

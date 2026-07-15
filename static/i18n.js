@@ -38,7 +38,7 @@ const MM_I18N_RESOURCES = {
     home: {
       brand: '心镜',
       subtitle: 'MindMirror',
-      disclaimer: '非心理诊断 · 仅供参考',
+      disclaimer: '自我探索 · 仅供参考',
       mirrors: {
         celebrity: {
           icon: '名', title: '名人镜', tagline: '与历史灵魂对望',
@@ -178,7 +178,7 @@ const MM_I18N_RESOURCES = {
     home: {
       brand: 'MindMirror',
       subtitle: 'See Truly',
-      disclaimer: 'Not a Clinical Diagnosis · For Reference Only',
+      disclaimer: 'For Self-Exploration · For Reference Only',
       mirrors: {
         celebrity: {
           icon: 'C', title: 'Celebrity Mirror', tagline: 'Resonate with a historical soul',
@@ -306,7 +306,7 @@ const MM_I18N_RESOURCES = {
     home: {
       brand: '心鏡',
       subtitle: '真の自己を見る',
-      disclaimer: '心理診断ではありません · 参考のみ',
+      disclaimer: '自己探索 · 参考のみ',
       mirrors: {
         celebrity: {
           icon: '名', title: '名人鏡', tagline: '歴史の魂と共鳴する',

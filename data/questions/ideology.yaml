@@ -49,14 +49,14 @@ questions:
       - {id: "5", text: 完全不可, scores: {liberty: 2}}
   - id: i_s4
     type: scale
-    prompt: 同性婚姻与跨性别权利是否应受法律保障?
+    prompt: 多元家庭形式(如非传统伴侣关系)是否应被社会包容?
     dimensions: [progress, tradition]
     points:
-      - {id: "1", text: 充分保障, scores: {progress: 2}}
-      - {id: "2", text: 倾向保障, scores: {progress: 1}}
+      - {id: "1", text: 充分包容, scores: {progress: 2}}
+      - {id: "2", text: 倾向包容, scores: {progress: 1}}
       - {id: "3", text: 中立, scores: {}}
-      - {id: "4", text: 倾向限制, scores: {tradition: 1}}
-      - {id: "5", text: 严格限制, scores: {tradition: 2}}
+      - {id: "4", text: 倾向传统, scores: {tradition: 1}}
+      - {id: "5", text: 坚守传统, scores: {tradition: 2}}
   - id: i_s5
     type: scale
     prompt: 国家利益是否应高于国际合作?
@@ -161,11 +161,11 @@ questions:
     right_label: 进步/自由
     words:
       - {word: 家庭, category: left}
-      - {word: 革命, category: right}
+      - {word: 变革, category: right}
       - {word: 秩序, category: left}
       - {word: 创新, category: right}
-      - {word: 服从, category: left}
-      - {word: 反叛, category: right}
+      - {word: 礼仪, category: left}
+      - {word: 个性, category: right}
       - {word: 敬老, category: left}
       - {word: 平等, category: right}
   - id: i_iat2
@@ -196,7 +196,7 @@ questions:
       - {word: 普世, category: right}
       - {word: 边境, category: left}
       - {word: 无国界, category: right}
-      - {word: 本族, category: left}
+      - {word: 本土, category: left}
       - {word: 移民, category: right}
       - {word: 主权, category: left}
       - {word: 联合国, category: right}
@@ -266,14 +266,14 @@ questions:
       - {id: c, text: 两者各半, scores: {econ_left: 0, econ_right: 0}, tag: pragmatic}
   - id: i_d2
     type: dilemma
-    prompt: 为反恐,政府要求全面监控通信,你?
+    prompt: 公共场所安保升级要求登记身份信息,你?
     dimensions: [authority, liberty]
     time_limit_sec: 15
-    scenario: 恐袭威胁升高。全面监控能预防袭击,但所有公民隐私将不复存在。
+    scenario: 安保升级能降低犯罪率,但每次进入公共场所都需核验身份,存在隐私让渡。
     options:
-      - {id: a, text: 支持监控,安全优先, scores: {authority: 2}, tag: courage}
-      - {id: b, text: 反对监控,自由优先, scores: {liberty: 2}, tag: courage}
-      - {id: c, text: 有监督的有限监控, scores: {authority: 1, liberty: 1}, tag: pragmatic}
+      - {id: a, text: 支持登记,安全优先, scores: {authority: 2}, tag: courage}
+      - {id: b, text: 反对登记,隐私优先, scores: {liberty: 2}, tag: courage}
+      - {id: c, text: 有监督的有限登记, scores: {authority: 1, liberty: 1}, tag: pragmatic}
 
   # ===== 扩展排序题 =====
   - id: i_so4
@@ -297,12 +297,12 @@ questions:
     right_label: 自由/权利
     words:
       - {word: 法治, category: left}
-      - {word: 抗争, category: right}
+      - {word: 表达, category: right}
       - {word: 服从, category: left}
-      - {word: 反抗, category: right}
+      - {word: 维权, category: right}
       - {word: 稳定, category: left}
-      - {word: 异见, category: right}
-      - {word: 长官, category: left}
+      - {word: 多元, category: right}
+      - {word: 秩序, category: left}
       - {word: 公民, category: right}
 
   # ===== 扩展量表题 II(现代政策议题) =====
@@ -450,13 +450,13 @@ questions:
       - {id: c, text: 有限开发加环保补偿, scores: {econ_right: 1, progress: 1}, tag: pragmatic}
   - id: i_d4
     type: dilemma
-    prompt: 少数族群传统习俗与现代法律冲突,你?
+    prompt: 不同地区的传统风俗与现代治理冲突,你?
     dimensions: [progress, tradition, globalist, nationalist]
     time_limit_sec: 15
-    scenario: 某少数族群的传统习俗(如面纱/早婚/族内裁决)与本国现代法律冲突。尊重多元还是统一规制?
+    scenario: 某地保留的传统风俗(如宗族调解、乡土惯例)与现代法律存在张力。尊重地方习惯还是统一规范?
     options:
-      - {id: a, text: 尊重文化多元,例外包容, scores: {progress: 2, globalist: 1}, tag: courage}
-      - {id: b, text: 法律统一,维护主流文化, scores: {tradition: 2, nationalist: 1}, tag: courage}
+      - {id: a, text: 尊重多元,例外包容, scores: {progress: 2, globalist: 1}, tag: courage}
+      - {id: b, text: 法律统一,维护主流规范, scores: {tradition: 2, nationalist: 1}, tag: courage}
       - {id: c, text: 个案协商, scores: {progress: 1, tradition: 1}, tag: pragmatic}
   - id: i_d5
     type: dilemma
@@ -470,33 +470,33 @@ questions:
       - {id: c, text: 适度累进税, scores: {econ_left: 1, econ_right: 1}, tag: pragmatic}
   - id: i_d6
     type: dilemma
-    prompt: 面对严重社会不公,应革命推翻还是渐进改良?
+    prompt: 面对社会变革的呼声,应快速推进还是稳步调整?
     dimensions: [progress, tradition, authority, liberty]
     time_limit_sec: 15
-    scenario: 制度严重不公,民怨沸腾。革命能彻底变革但伴随动荡流血;改良温和但可能被既得利益阻挠。
+    scenario: 社会出现明显变革诉求。快速推进能彻底破旧立新,但伴随震荡;稳步调整温和但可能被既得利益阻挠。
     options:
-      - {id: a, text: 支持革命,彻底变革, scores: {progress: 2, liberty: 1}, tag: courage}
-      - {id: b, text: 支持改良,维护稳定, scores: {tradition: 2, authority: 1}, tag: pragmatic}
+      - {id: a, text: 快速推进,彻底变革, scores: {progress: 2, liberty: 1}, tag: courage}
+      - {id: b, text: 稳步调整,维护秩序, scores: {tradition: 2, authority: 1}, tag: pragmatic}
       - {id: c, text: 视情况而定, scores: {progress: 1, tradition: 1}, tag: avoidance}
   - id: i_d7
     type: dilemma
-    prompt: 组织公开煽动种族仇恨,是否应封禁?
+    prompt: 网络上出现极端仇视性言论,是否应平台封禁?
     dimensions: [authority, liberty]
     time_limit_sec: 15
-    scenario: 一个组织公开宣扬种族仇恨、煽动排斥移民。封禁侵犯言论自由,但不封禁可能引发暴力。
+    scenario: 某账号公开传播针对特定群体的仇视言论。封禁涉及言论边界,不封禁可能引发对立。
     options:
       - {id: a, text: 立即封禁, scores: {authority: 2}, tag: courage}
-      - {id: b, text: 保护言论,不封禁, scores: {liberty: 2}, tag: courage}
-      - {id: c, text: 限制线下行动,线上警告, scores: {authority: 1, liberty: 1}, tag: pragmatic}
+      - {id: b, text: 保护表达,不封禁, scores: {liberty: 2}, tag: courage}
+      - {id: c, text: 限制扩散,标记警示, scores: {authority: 1, liberty: 1}, tag: pragmatic}
   - id: i_d8
     type: dilemma
-    prompt: 全城部署AI人脸识别以预防犯罪,你?
+    prompt: 公共区域部署智能安防以降低犯罪率,你?
     dimensions: [authority, liberty]
     time_limit_sec: 15
-    scenario: 全城部署AI人脸识别能大幅降低犯罪率,但意味着每个人的一举一动都被记录追踪。
+    scenario: 公共区域智能安防能提升安全,但意味着在公共场所的活动会被记录。
     options:
       - {id: a, text: 支持部署,安全优先, scores: {authority: 2}, tag: courage}
-      - {id: b, text: 反对部署,自由优先, scores: {liberty: 2}, tag: courage}
+      - {id: b, text: 反对部署,隐私优先, scores: {liberty: 2}, tag: courage}
       - {id: c, text: 限定公共场所加定期删除, scores: {authority: 1, liberty: 1}, tag: pragmatic}
 
   # ===== 扩展排序题 II =====

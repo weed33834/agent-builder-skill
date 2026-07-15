@@ -41,42 +41,14 @@
   name: 生态社会主义
   blurb: 反资本主义+环保+去中心化
   coords: {econ: 18, social: 25}
-- id: theocratic_cons
-  name: 神权保守主义
-  blurb: 宗教权威+传统道德+律法秩序
-  coords: {econ: 45, social: 92}
-- id: anarcho_cap
-  name: 无政府资本主义
-  blurb: 废除国家,一切私有,完全自愿
-  coords: {econ: 95, social: 5}
-- id: maoism
-  name: 毛主义
-  blurb: 群众路线+持续革命+反官僚
-  coords: {econ: 8, social: 70}
 - id: social_liberal
   name: 社会自由主义
   blurb: 市场经济+积极自由+福利保障
   coords: {econ: 40, social: 22}
-- id: falangism
-  name: 长枪党主义
-  blurb: 民族工团主义+权威+传统
-  coords: {econ: 35, social: 88}
 - id: technocracy
   name: 技术官僚主义
   blurb: 专家治理+数据驱动+效率优先
   coords: {econ: 45, social: 60}
-- id: stalinism
-  name: 斯大林主义
-  blurb: 中央集权+计划经济+一国社会主义
-  coords: {econ: 5, social: 95}
-- id: trotskyism
-  name: 托洛茨基主义
-  blurb: 不断革命+国际主义+反官僚
-  coords: {econ: 10, social: 55}
-- id: anarcho_syndicalism
-  name: 无政府工团主义
-  blurb: 工会自治+直接行动+废除国家
-  coords: {econ: 12, social: 8}
 - id: libertarian_socialism
   name: 自由意志社会主义
   blurb: 反国家+反资本+工人自治
@@ -85,10 +57,6 @@
   name: 市场社会主义
   blurb: 公有制+市场机制+企业民主
   coords: {econ: 28, social: 38}
-- id: islamism
-  name: 伊斯兰主义
-  blurb: 伊斯兰法+政教合一+乌玛共同体
-  coords: {econ: 38, social: 90}
 - id: corporatism
   name: 社团主义
   blurb: 阶级协作+国家调和+有机整体
@@ -97,26 +65,14 @@
   name: 分配主义
   blurb: 生产资料广分配+家庭本位+反垄断
   coords: {econ: 48, social: 65}
-- id: christian_democracy
-  name: 基督教民主主义
-  blurb: 人格尊严+辅助性原则+社会市场
-  coords: {econ: 52, social: 50}
 - id: third_way
   name: 第三条道路
   blurb: 超越左右+市场机制+社会投资
   coords: {econ: 55, social: 30}
-- id: zionism
-  name: 锡安主义
-  blurb: 犹太民族自决+复国+民主
-  coords: {econ: 58, social: 55}
 - id: state_capitalism
   name: 国家资本主义
   blurb: 国家主导+市场工具+发展导向
   coords: {econ: 55, social: 88}
-- id: hindu_nationalism
-  name: 印度教民族主义
-  blurb: 印度教特性+文化复兴+民族优先
-  coords: {econ: 62, social: 78}
 - id: neoconservatism
   name: 新保守主义
   blurb: 强硬外交+民主推广+传统价值
