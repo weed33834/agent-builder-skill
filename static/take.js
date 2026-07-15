@@ -865,8 +865,8 @@ async function submitAll(complete) {
   overlay.className = 'loading-overlay';
   overlay.innerHTML = `
     <div class="mirror-disc" data-clarity="high"></div>
-    <p>${mmI18n.t('common.processing') || '镜面正在成像...'}</p>
-    <p class="loading-sub">${mmI18n.t('common.processing_sub') || '分析你的行为轨迹与价值倾向'}</p>
+    <p>${mmI18n.t('common.processing')}</p>
+    <p class="loading-sub">${mmI18n.t('common.processing_sub')}</p>
   `;
   document.body.appendChild(overlay);
   try {
@@ -875,11 +875,11 @@ async function submitAll(complete) {
       location.href = `/report.html?id=${res.result_id}`;
     } else {
       overlay.remove();
-      alert(mmI18n.t('common.submit_failed') || '提交失败,请重试');
+      alert(mmI18n.t('common.submit_failed'));
     }
   } catch (e) {
     overlay.remove();
-    alert(mmI18n.t('common.submit_failed') || '提交失败,请重试');
+    alert(mmI18n.t('common.submit_failed'));
   }
 }
 

@@ -34,9 +34,21 @@ def derive_insights(assessment_type: str, answers, behavior: dict) -> dict:
     else:
         consistency, consistency_desc = "低", "频繁改主意,价值尚未定型"
 
-    # 3. 时间压力效应
-    timed_durations = [d for d in durations if d < 2000]
-    untimed_durations = [d for d in durations if d >= 2000]
+    # 3. 时间压力效应 —— 用题目的 time_limit_sec 标记限时题,而非靠耗时猜测
+    bank = load_bank(assessment_type)
+    q_by_id = {q.id: q for q in bank.questions}
+    timed_durations = []
+    untimed_durations = []
+    for a in answers.answers:
+        q = q_by_id.get(a.question_id)
+        if not q:
+            continue
+        if a.duration_ms <= 0:
+            continue
+        if getattr(q, "time_limit_sec", None):
+            timed_durations.append(a.duration_ms)
+        else:
+            untimed_durations.append(a.duration_ms)
     if timed_durations and untimed_durations:
         timed_avg = statistics.mean(timed_durations)
         untimed_avg = statistics.mean(untimed_durations)
@@ -48,7 +60,7 @@ def derive_insights(assessment_type: str, answers, behavior: dict) -> dict:
         else:
             pressure, pressure_desc = "稳定", "时间压力影响小,决策风格一致"
     else:
-        pressure, pressure_desc = "数据不足", "题量不足以分析时间压力效应"
+        pressure, pressure_desc = "数据不足", "无限时题对比,无法分析时间压力效应"
 
     # 4. IAT 偏差(新增)—— 左右反应时差异
     iat_insight = _derive_iat_bias(answers)

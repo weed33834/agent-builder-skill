@@ -63,12 +63,18 @@ class SortQuestion(BaseQuestion):
     items: list[Option]  # 待排序项,排序位置决定权重
 
 
+class IATWord(BaseModel):
+    """IAT 词语 —— category 必须等于 left_label 或 right_label 的方向键(left/right)。"""
+    word: str
+    category: str  # 'left' 或 'right',决定正确侧
+
+
 class IATQuestion(BaseQuestion):
     type: Literal["iat"] = "iat"
     # 左右两类的标签 + 词语,反应时差反映潜意识偏好
     left_label: str
     right_label: str
-    words: list[dict]  # [{word, category}] category 决定正确侧
+    words: list[IATWord]  # 强类型,避免裸 dict 访问报错
 
 
 class SliderQuestion(BaseQuestion):

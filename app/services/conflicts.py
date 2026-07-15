@@ -12,7 +12,14 @@ from app.data import load_bank
 
 
 def detect_conflicts(assessment_type: str, answers, behavior: dict) -> list[dict]:
-    """四类冲突源 + 严重度评分,最多 7 条。"""
+    """四类冲突源 + 严重度评分,最多 7 条。
+
+    阈值收紧 v2:解决随机作答也撞顶 7/7 的问题。
+    - 高犹豫阈值 1.8× → 2.5×(且只取严重度≥2 的,过滤掉 severity=1 噪音)
+    - 反复改阈值 2 → 3(改 2 次属正常斟酌)
+    - dimension_contradiction 阈值 15% → 35%
+    - 同一题最多触发 1 条冲突(取严重度最高)
+    """
     conflicts: list[dict] = []
     bank = load_bank(assessment_type)
     q_by_id = {q.id: q for q in bank.questions}
@@ -20,42 +27,50 @@ def detect_conflicts(assessment_type: str, answers, behavior: dict) -> list[dict
     durations = [a.duration_ms for a in answers.answers if a.duration_ms > 0]
     median = sorted(durations)[len(durations) // 2] if durations else 0
 
-    # 按维度收集每题的"方向"(正/负),用于检测矛盾
-    dim_directions: dict[str, list[tuple[str, float]]] = defaultdict(list)  # dim -> [(qid, signed_score)]
+    # 每题最多保留 1 条冲突(取严重度最高),避免单题刷屏
+    per_q_best: dict[str, dict] = {}
+    dim_directions: dict[str, list[tuple[str, float]]] = defaultdict(list)
 
     for ans in answers.answers:
         q = q_by_id.get(ans.question_id)
         if not q:
             continue
 
-        # 冲突1:高犹豫(耗时 > 1.5×中位数)
-        if median > 0 and ans.duration_ms > median * 1.8:
-            severity = 2 if ans.duration_ms > median * 3 else 1
-            conflicts.append({
+        # 冲突1:高犹豫(收紧到 2.5×中位数,且需要 severity≥2)
+        if median > 0 and ans.duration_ms > median * 2.5:
+            sev = 3 if ans.duration_ms > median * 4 else 2
+            cand = {
                 "question_id": q.id,
                 "description": f"在「{q.prompt[:28]}...」上犹豫较久,此处存在内在张力",
                 "conflict_type": "high_hesitation",
-                "severity": severity,
-            })
-        # 冲突1b:反复改
-        if ans.change_count >= 2:
-            conflicts.append({
+                "severity": sev,
+            }
+            if q.id not in per_q_best or cand["severity"] > per_q_best[q.id]["severity"]:
+                per_q_best[q.id] = cand
+        # 冲突1b:反复改(改 3 次以上才算)
+        if ans.change_count >= 3:
+            cand = {
                 "question_id": q.id,
                 "description": f"在「{q.prompt[:28]}...」上多次改主意,价值未定型",
                 "conflict_type": "frequent_change",
-                "severity": 2 if ans.change_count >= 3 else 1,
-            })
+                "severity": 3 if ans.change_count >= 4 else 2,
+            }
+            if q.id not in per_q_best or cand["severity"] > per_q_best[q.id]["severity"]:
+                per_q_best[q.id] = cand
         # 冲突3:限时题超时(本能答案)
         if getattr(q, "time_limit_sec", None) and ans.duration_ms > q.time_limit_sec * 1000:
-            conflicts.append({
+            cand = {
                 "question_id": q.id,
                 "description": f"限时题超时作答,本能反应可能与理性判断分裂",
                 "conflict_type": "timeout_instinct",
                 "severity": 2,
-            })
+            }
+            if q.id not in per_q_best or cand["severity"] > per_q_best[q.id]["severity"]:
+                per_q_best[q.id] = cand
 
-        # 收集维度方向(用于冲突2)
         _collect_directions(q, ans.answer, dim_directions)
+
+    conflicts.extend(per_q_best.values())
 
     # 冲突2:同维度方向相反 —— 真正的"言行不一"
     conflicts.extend(_detect_dimension_conflicts(dim_directions, q_by_id))
@@ -63,9 +78,14 @@ def detect_conflicts(assessment_type: str, answers, behavior: dict) -> list[dict
     # 冲突4:IAT 与量表方向不一致(内隐vs外显分裂)
     conflicts.extend(_detect_iat_conflicts(answers, q_by_id))
 
-    # 按严重度排序,取前 7
-    conflicts.sort(key=lambda c: c.get("severity", 1), reverse=True)
-    return conflicts[:7]
+    # 去重(同 question_id 取最高严重度),按严重度排序,取前 5
+    seen: dict[str, dict] = {}
+    for c in conflicts:
+        qid = c.get("question_id", "")
+        if qid not in seen or c.get("severity", 1) > seen[qid].get("severity", 1):
+            seen[qid] = c
+    out = sorted(seen.values(), key=lambda c: c.get("severity", 1), reverse=True)
+    return out[:5]
 
 
 def _collect_directions(q, answer: dict, dim_directions: dict) -> None:
@@ -131,8 +151,9 @@ def _collect_directions(q, answer: dict, dim_directions: dict) -> None:
 def _detect_dimension_conflicts(dim_directions: dict, q_by_id: dict) -> list[dict]:
     """检测同维度方向相反的题对。
 
-    用相对阈值过滤连续题型的中性值:只取方向强度 > 15% 最大值的,
+    用相对阈值过滤连续题型的中性值:只取方向强度 > 35% 最大值的,
     避免 slider/allocation 在中位附近被误判为"方向"。
+    阈值从 15% → 35%:解决随机作答也大量触发的问题。
     """
     out = []
     for dim, items in dim_directions.items():
@@ -141,7 +162,7 @@ def _detect_dimension_conflicts(dim_directions: dict, q_by_id: dict) -> list[dic
         max_abs = max(abs(v) for _, v in items) if items else 0
         if max_abs == 0:
             continue
-        threshold = max_abs * 0.15
+        threshold = max_abs * 0.35
         positives = [(qid, v) for qid, v in items if v > threshold]
         negatives = [(qid, v) for qid, v in items if v < -threshold]
         if positives and negatives:
@@ -157,7 +178,7 @@ def _detect_dimension_conflicts(dim_directions: dict, q_by_id: dict) -> list[dic
                     "conflict_type": "dimension_contradiction",
                     "severity": 3,
                 })
-    return out[:3]  # 最多 3 条维度矛盾
+    return out[:2]  # 最多 2 条维度矛盾(从 3 降到 2)
 
 
 def _detect_iat_conflicts(answers, q_by_id: dict) -> list[dict]:
