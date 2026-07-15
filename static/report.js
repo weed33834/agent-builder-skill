@@ -195,8 +195,8 @@ function drawRadar(entries) {
       backgroundColor: css.getPropertyValue('--paper').trim() || '#f4efe3',
       borderColor: line,
       textStyle: { color: inkSoft, fontFamily: "'Noto Serif SC', serif" },
-      formatter: (p) => {
-        const vals = entries.map(([k, v], i) => `${mmI18n.t(`report.dim_labels.${k}`) || k}: <b>${v}</b>`);
+      formatter: () => {
+        const vals = entries.map(([k, v]) => `${mmI18n.t(`report.dim_labels.${k}`) || k}: <b>${v}</b>`);
         return vals.join('<br/>');
       },
     },
