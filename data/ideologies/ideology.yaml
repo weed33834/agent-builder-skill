@@ -81,4 +81,27 @@
   name: 新自由主义
   blurb: 自由市场+私有化+放松管制
   coords: {econ: 82, social: 42}
+# ===== 学术型补充条目(填补删除后的方向缺口) =====
+# 世俗主义:填补原"神权保守主义/基督教民主主义"等宗教政治方向删除后的理论空白
+- id: secularism
+  name: 世俗主义
+  blurb: 政教分离+公共领域去宗教化+信仰私人化
+  coords: {econ: 50, social: 25}
+# 宗教自由主义:填补宗教政治方向的自由侧
+- id: religious_liberalism
+  name: 宗教自由主义
+  blurb: 信仰宽容+多元共存+伦理导向公共生活
+  coords: {econ: 45, social: 28}
+# 互助主义:填补原"无政府资本主义/无政府工团主义"删除后的左翼无政府理论空白
+# (Proudhon 学派,学术纯词,非暴力主张)
+- id: mutualism
+  name: 互助主义
+  blurb: 自愿协作+小生产者联合+反集中化
+  coords: {econ: 28, social: 10}
+# 垄断资本主义:填补原"寡头资本主义"删除后的政治经济学方向空白
+# (马克思主义政治经济学标准术语)
+- id: monopoly_capitalism
+  name: 垄断资本主义
+  blurb: 资本集中+寡占市场+结构性壁垒
+  coords: {econ: 88, social: 65}
 
