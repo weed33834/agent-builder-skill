@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <defs>
+    <radialGradient id="bg-mozart" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#c08aaa" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#3a2a3a" stop-opacity="1"/>
+    </radialGradient>
+    <radialGradient id="face-mozart" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e8c8a0"/>
+      <stop offset="100%" stop-color="#a07858"/>
+    </radialGradient>
+    <filter id="paint-mozart">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3"/>
+      <feDisplacementMap in="SourceGraphic" scale="1.2"/>
+    </filter>
+  </defs>
+  <rect width="240" height="240" fill="url(#bg-mozart)"/>
+  <!-- 装饰圆环 -->
+  <circle cx="120" cy="100" r="85" fill="none" stroke="#e0b0d0" stroke-width="1" opacity="0.25"/>
+  <!-- 肩膀/服装 -->
+  <path d="M 30 240 L 50 165 L 80 170 L 120 200 L 160 170 L 190 165 L 210 240 Z" fill="#8a5a7a"/>
+  <!-- 脖子 -->
+  <rect x="105" y="160" width="30" height="25" fill="#a07858"/>
+  <!-- 头部 -->
+  <ellipse cx="120" cy="110" rx="38" ry="45" fill="url(#face-mozart)"/>
+  <!-- 头发 -->
+  <ellipse cx="120" cy="55" rx="45" ry="28" fill="#8a5a7a"/>
+  <!-- 眼睛 -->
+  <ellipse cx="108" cy="108" rx="3" ry="2" fill="#1a1a1a"/>
+  <ellipse cx="132" cy="108" rx="3" ry="2" fill="#1a1a1a"/>
+  <!-- 鼻 -->
+  <path d="M 120 115 L 117 128 L 123 128 Z" fill="#8a6040" opacity="0.4"/>
+  <!-- 胡须 -->
+  
+  <!-- 标志物 -->
+  <line x1="160" y1="170" x2="205" y2="120" stroke="#e0b0d0" stroke-width="2"/><path d="M 205 120 Q 215 105 210 90" stroke="#e0b0d0" stroke-width="2" fill="none"/>
+  <!-- 油画质感 filter 应用整体 -->
+  <rect width="240" height="240" fill="#8a5a7a" opacity="0.05" filter="url(#paint-mozart)"/>
+  <!-- 名字水印 -->
+  <rect x="0" y="218" width="240" height="22" fill="#3a2a3a" opacity="0.85"/>
+  <text x="120" y="234" text-anchor="middle" font-family="'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', 'Source Han Sans SC', 'WenQuanYi Micro Hei', 'Heiti SC', Georgia, serif" font-size="13" fill="#e0b0d0" font-weight="600" letter-spacing="2">莫扎特</text>
+</svg>

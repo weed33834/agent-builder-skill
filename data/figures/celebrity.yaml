@@ -6,298 +6,298 @@
   blurb: 坚定原则,愿为理想承担代价,在分裂中维系信念
   dims: {idealism: 90, risk_taking: 80, conscientiousness: 85, agreeableness: 60, openness: 60, extraversion: 50, neuroticism: 40}
   quote: "预测未来最好的方式,就是去创造它。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Abraham%20Lincoln%20with%20beard%20and%20top%20hat%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/lincoln.svg
 - id: curie
   name: 居里夫人
   blurb: 理想主义与执着并存,不谋私利,纯粹探索
   dims: {idealism: 90, openness: 95, conscientiousness: 90, agreeableness: 55, extraversion: 30, risk_taking: 60, neuroticism: 50}
   quote: "生活中没有什么可怕的东西,只有需要理解的东西。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Marie%20Curie%20with%20simple%20dark%20hair%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/curie.svg
 - id: schindler
   name: 辛德勒
   blurb: 关键时刻选择救人,愿冒险担责,从利己转向利他
   dims: {idealism: 85, risk_taking: 90, agreeableness: 75, conscientiousness: 60, openness: 60, extraversion: 70, neuroticism: 60}
   quote: "救人一命,即救全世界。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Oskar%20Schindler%20in%20business%20suit%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/schindler.svg
 - id: confucius
   name: 孔子
   blurb: 重责任与秩序,坚守道德准则,知其不可而为之
   dims: {idealism: 80, conscientiousness: 90, agreeableness: 70, openness: 60, extraversion: 60, risk_taking: 30, neuroticism: 40}
   quote: "己所不欲,勿施于人。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Confucius%20with%20long%20beard%20and%20traditional%20Chinese%20robes%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/confucius.svg
 - id: darwin
   name: 达尔文
   blurb: 开放探索,审慎求证,内向深思,颠覆而不张扬
   dims: {openness: 95, conscientiousness: 85, idealism: 50, agreeableness: 60, extraversion: 25, risk_taking: 40, neuroticism: 65}
   quote: "能够生存下来的,不是最强壮的,也不是最聪明的,而是最能适应变化的。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Charles%20Darwin%20with%20long%20white%20beard%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/darwin.svg
 - id: machiavelli
   name: 马基雅维利
   blurb: 务实冷峻,结果导向,不计理想,洞察人性
   dims: {idealism: 20, risk_taking: 70, conscientiousness: 70, agreeableness: 25, openness: 75, extraversion: 55, neuroticism: 50}
   quote: "目的证明手段的正当性。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Niccolo%20Machiavelli%20in%20Renaissance%20Florentine%20attire%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/machiavelli.svg
 - id: gandhi
   name: 甘地
   blurb: 极致利他+非暴力,理想至上,以信念撼动帝国
   dims: {idealism: 95, agreeableness: 90, conscientiousness: 85, openness: 65, extraversion: 65, risk_taking: 75, neuroticism: 45}
   quote: "如同明天就会死去那样去生活,如同永远活着那样去学习。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Mahatma%20Gandhi%20with%20glasses%20and%20loincloth%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/gandhi.svg
 - id: tesla
   name: 特斯拉
   blurb: 纯粹探索者,开放性极高,不善社交,为发明忘我
   dims: {openness: 98, conscientiousness: 80, idealism: 75, agreeableness: 50, extraversion: 15, risk_taking: 55, neuroticism: 70}
   quote: "现在属于他们,未来才真正属于我。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Nikola%20Tesla%20with%20mustache%20and%20formal%20Victorian%20suit%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/tesla.svg
 - id: churchill
   name: 丘吉尔
   blurb: 危机中的决断者,外向强势,风险偏好高,意志如铁
   dims: {extraversion: 90, risk_taking: 85, conscientiousness: 65, openness: 70, agreeableness: 40, idealism: 70, neuroticism: 60}
   quote: "永远,永远,永远不要放弃。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Winston%20Churchill%20with%20cigar%20and%20bowler%20hat%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/churchill.svg
 - id: einstein
   name: 爱因斯坦
   blurb: 开放叛逆,质疑权威,和平主义,以想象颠覆物理
   dims: {openness: 92, idealism: 80, agreeableness: 65, conscientiousness: 70, extraversion: 45, risk_taking: 50, neuroticism: 55}
   quote: "想象力比知识更重要。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Albert%20Einstein%20with%20wild%20gray%20hair%20and%20mustache%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/einstein.svg
 - id: joan_of_arc
   name: 圣女贞德
   blurb: 信念驱动,无畏赴死,理想主义的极致化身
   dims: {idealism: 98, risk_taking: 95, conscientiousness: 80, agreeableness: 60, openness: 50, extraversion: 65, neuroticism: 50}
   quote: "我不怕,因为上帝与我同在。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Joan%20of%20Arc%20in%20armor%20with%20banner%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/joan_of_arc.svg
 - id: sun_tzu
   name: 孙武
   blurb: 冷静谋略,以智取胜,不战而屈人之兵
   dims: {conscientiousness: 85, openness: 80, risk_taking: 50, agreeableness: 35, idealism: 40, extraversion: 45, neuroticism: 30}
   quote: "知己知彼,百战不殆。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Sun%20Tzu%20in%20ancient%20Chinese%20military%20attire%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/sun_tzu.svg
 - id: mother_teresa
   name: 特蕾莎修女
   blurb: 无私利他,侍奉最贫者,信仰坚定
   dims: {agreeableness: 98, conscientiousness: 88, idealism: 90, openness: 50, extraversion: 60, risk_taking: 60, neuroticism: 45}
   quote: "我们做不了伟大的事,只能用伟大的爱做小事。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Mother%20Teresa%20in%20white%20sari%20with%20blue%20border%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/mother_teresa.svg
 - id: napoleon
   name: 拿破仑
   blurb: 雄心勃勃,掌控欲强,风险偏好极高,重塑秩序
   dims: {extraversion: 85, risk_taking: 90, conscientiousness: 80, openness: 75, agreeableness: 30, idealism: 50, neuroticism: 55}
   quote: "不可能,只存在于愚人的字典里。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Napoleon%20Bonaparte%20in%20military%20uniform%20with%20bicorne%20hat%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/napoleon.svg
 - id: socrates
   name: 苏格拉底
   blurb: 质疑一切,坚守真理,从容赴死,开放与责任并存
   dims: {openness: 90, idealism: 88, conscientiousness: 75, agreeableness: 55, extraversion: 50, risk_taking: 60, neuroticism: 40}
   quote: "未经审视的人生不值得过。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Socrates%20with%20beard%20and%20Greek%20toga%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/socrates.svg
 - id: marie_antoinette
   name: 玛丽·安托瓦内特
   blurb: 享乐主义,脱离现实,危机中显现韧性
   dims: {extraversion: 80, openness: 55, conscientiousness: 30, agreeableness: 50, idealism: 25, risk_taking: 45, neuroticism: 70}
   quote: "对不起,先生,我不是故意的。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Marie%20Antoinette%20with%20powdered%20hair%20and%20royal%20gown%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/marie_antoinette.svg
 - id: wang_yangming
   name: 王阳明
   blurb: 知行合一,内向悟道,以心学重塑儒学
   dims: {idealism: 85, risk_taking: 60, conscientiousness: 85, agreeableness: 60, openness: 85, extraversion: 40, neuroticism: 45}
   quote: "知行合一。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Wang%20Yangming%20in%20Ming%20Dynasty%20scholar%20robes%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/wang_yangming.svg
 - id: lu_xun
   name: 鲁迅
   blurb: 犀利批判国民性,内向深思,以笔为刀
   dims: {idealism: 88, risk_taking: 70, conscientiousness: 80, agreeableness: 40, openness: 90, extraversion: 35, neuroticism: 65}
   quote: "横眉冷对千夫指,俯首甘为孺子牛。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Lu%20Xun%20with%20brush%20cut%20hair%20and%20Chinese%20long%20gown%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/lu_xun.svg
 - id: zhuge_liang
   name: 诸葛亮
   blurb: 鞠躬尽瘁,谨慎谋略,忠诚担当
   dims: {idealism: 80, risk_taking: 45, conscientiousness: 95, agreeableness: 65, openness: 80, extraversion: 50, neuroticism: 50}
   quote: "鞠躬尽瘁,死而后已。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Zhuge%20Liang%20with%20feather%20fan%20and%20Taoist%20robe%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/zhuge_liang.svg
 - id: zeng_guofan
   name: 曾国藩
   blurb: 慎独克己,坚忍务实,以笨功夫成大业
   dims: {idealism: 70, risk_taking: 50, conscientiousness: 95, agreeableness: 55, openness: 65, extraversion: 45, neuroticism: 70}
   quote: "不问收获,但问耕耘。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Zeng%20Guofan%20in%20Qing%20Dynasty%20official%20robes%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/zeng_guofan.svg
 - id: qin_shihuang
   name: 秦始皇
   blurb: 雄才铁腕,一统六合,功过两极
   dims: {idealism: 50, risk_taking: 90, conscientiousness: 80, agreeableness: 20, openness: 60, extraversion: 70, neuroticism: 55}
   quote: "一法度,衡石丈尺,车同轨,书同文字。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Qin%20Shi%20Huang%20in%20imperial%20dragon%20robe%20with%20crown%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/qin_shihuang.svg
 - id: wu_zetian
   name: 武则天
   blurb: 权谋果断,打破性别壁垒,用人不拘
   dims: {idealism: 50, risk_taking: 85, conscientiousness: 85, agreeableness: 35, openness: 75, extraversion: 75, neuroticism: 55}
   quote: "不信比来长下泪,开箱验取石榴裙。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Wu%20Zetian%20in%20Tang%20Dynasty%20empress%20regalia%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/wu_zetian.svg
 - id: lin_huiyin
   name: 林徽因
   blurb: 文理兼修,诗意建筑,沙龙女主
   dims: {idealism: 75, risk_taking: 55, conscientiousness: 75, agreeableness: 70, openness: 90, extraversion: 70, neuroticism: 50}
   quote: "你是人间的四月天。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Lin%20Huiyin%20in%201930s%20qipao%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/lin_huiyin.svg
 - id: yuan_longping
   name: 袁隆平
   blurb: 田野里的理想主义者,朴实专注
   dims: {idealism: 85, risk_taking: 50, conscientiousness: 90, agreeableness: 75, openness: 75, extraversion: 55, neuroticism: 35}
   quote: "我有两个梦:禾下乘凉梦,杂交水稻覆盖全球梦。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Yuan%20Longping%20with%20weathered%20face%20and%20straw%20hat%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/yuan_longping.svg
 - id: qian_xuesen
   name: 钱学森
   blurb: 归国报效,系统思维,严谨寡言
   dims: {idealism: 85, risk_taking: 65, conscientiousness: 90, agreeableness: 55, openness: 85, extraversion: 35, neuroticism: 45}
   quote: "我的事业在中国,我的归宿在中国。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Qian%20Xuesen%20in%201950s%20suit%20with%20glasses%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/qian_xuesen.svg
 - id: tu_youyou
   name: 屠呦呦
   blurb: 低调执着,从古籍寻药,挽救百万
   dims: {idealism: 80, risk_taking: 55, conscientiousness: 92, agreeableness: 60, openness: 80, extraversion: 25, neuroticism: 50}
   quote: "青蒿素是中医药给世界的一份礼物。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Tu%20Youyou%20with%20short%20hair%20and%20lab%20coat%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/tu_youyou.svg
 - id: mandela
   name: 曼德拉
   blurb: 二十七载不屈,以和解终结仇恨
   dims: {idealism: 92, risk_taking: 80, conscientiousness: 85, agreeableness: 75, openness: 75, extraversion: 60, neuroticism: 40}
   quote: "勇敢不是没有恐惧,而是战胜恐惧。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Nelson%20Mandela%20with%20gray%20hair%20and%20African%20patterned%20shirt%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/mandela.svg
 - id: mlk
   name: 马丁·路德·金
   blurb: 以梦为旗,非暴力抗争,感召世代
   dims: {idealism: 95, risk_taking: 80, conscientiousness: 80, agreeableness: 80, openness: 75, extraversion: 85, neuroticism: 55}
   quote: "我有一个梦想。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Martin%20Luther%20King%20Jr%20in%20formal%20suit%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/mlk.svg
 - id: adam_smith
   name: 亚当·斯密
   blurb: 冷静观察市场,道德情操与自利并论
   dims: {idealism: 60, risk_taking: 40, conscientiousness: 80, agreeableness: 65, openness: 90, extraversion: 40, neuroticism: 50}
   quote: "我们的晚餐并非来自屠夫的善心,而是源于他们对自身利益的关心。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Adam%20Smith%20in%2018th%20century%20Scottish%20attire%20with%20wig%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/adam_smith.svg
 - id: freud
   name: 弗洛伊德
   blurb: 深掘潜意识,理论大胆,争议与开创并存
   dims: {idealism: 60, risk_taking: 75, conscientiousness: 80, agreeableness: 45, openness: 95, extraversion: 50, neuroticism: 60}
   quote: "未被表达的情绪永远不会消亡。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Sigmund%20Freud%20with%20gray%20beard%20and%20glasses%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/freud.svg
 - id: nietzsche
   name: 尼采
   blurb: 颠覆偶像,孤独超人,激情与病痛交织
   dims: {idealism: 85, risk_taking: 80, conscientiousness: 60, agreeableness: 30, openness: 95, extraversion: 40, neuroticism: 80}
   quote: "那些杀不死我的,使我更强大。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Friedrich%20Nietzsche%20with%20large%20mustache%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/nietzsche.svg
 - id: kant
   name: 康德
   blurb: 律己如钟,理性立法,终身未离小城
   dims: {idealism: 80, risk_taking: 30, conscientiousness: 98, agreeableness: 55, openness: 85, extraversion: 25, neuroticism: 45}
   quote: "在我之上的星空和居我心中的道德法则。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Immanuel%20Kant%20in%2018th%20century%20Prussian%20coat%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/kant.svg
 - id: davinci
   name: 达·芬奇
   blurb: 文艺复兴全才,好奇无尽,留半成稿
   dims: {idealism: 70, risk_taking: 60, conscientiousness: 60, agreeableness: 60, openness: 98, extraversion: 45, neuroticism: 55}
   quote: "充实的一天带来安眠,充实的一生带来安息。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Leonardo%20da%20Vinci%20with%20long%20beard%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/davinci.svg
 - id: beethoven
   name: 贝多芬
   blurb: 扼住命运咽喉,孤傲暴躁,以音符抗争
   dims: {idealism: 80, risk_taking: 70, conscientiousness: 85, agreeableness: 35, openness: 90, extraversion: 40, neuroticism: 75}
   quote: "我要扼住命运的咽喉。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Ludwig%20van%20Beethoven%20with%20wild%20hair%20and%20intense%20expression%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/beethoven.svg
 - id: jobs
   name: 乔布斯
   blurb: 极致美学主导,偏执完美,重塑科技体验
   dims: {idealism: 75, risk_taking: 85, conscientiousness: 80, agreeableness: 30, openness: 90, extraversion: 70, neuroticism: 65}
   quote: "求知若饥,虚心若愚。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Steve%20Jobs%20with%20black%20turtleneck%20and%20glasses%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/jobs.svg
 - id: musk
   name: 马斯克
   blurb: 狂想工程师,风险嗜好者,多线颠覆
   dims: {idealism: 80, risk_taking: 95, conscientiousness: 75, agreeableness: 35, openness: 95, extraversion: 75, neuroticism: 70}
   quote: "我想死在火星上,只是别撞上去。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Elon%20Musk%20with%20modern%20business%20attire%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/musk.svg
 - id: turing
   name: 图灵
   blurb: 内向天才,奠定计算之基,悲剧收场
   dims: {idealism: 70, risk_taking: 60, conscientiousness: 75, agreeableness: 55, openness: 95, extraversion: 20, neuroticism: 70}
   quote: "有时正是没人想到的人,做出了没人想到的事。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Alan%20Turing%20with%201940s%20suit%20and%20tie%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/turing.svg
 - id: feynman
   name: 费曼
   blurb: 顽童式物理学家,挑战权威,热衷传播
   dims: {idealism: 60, risk_taking: 70, conscientiousness: 70, agreeableness: 65, openness: 95, extraversion: 80, neuroticism: 40}
   quote: "凡我不能创造的,我就还不理解。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Richard%20Feynman%20with%20smiling%20face%20and%20casual%20shirt%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/feynman.svg
 - id: hawking
   name: 霍金
   blurb: 身困轮椅心游宇宙,幽默坚韧
   dims: {idealism: 80, risk_taking: 55, conscientiousness: 85, agreeableness: 60, openness: 95, extraversion: 55, neuroticism: 45}
   quote: "记住要仰望星空,不要低头看脚下。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Stephen%20Hawking%20in%20wheelchair%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/hawking.svg
 - id: shakespeare
   name: 莎士比亚
   blurb: 洞悉人性的剧坛巨匠,以悲喜剧丈量世间万象
   dims: {openness: 95, conscientiousness: 75, extraversion: 55, agreeableness: 50, neuroticism: 60, risk_taking: 60, idealism: 65}
   quote: "生存还是毁灭,这是一个问题。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20William%20Shakespeare%20with%20receding%20hairline%20and%20Elizabethan%20collar%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/shakespeare.svg
 - id: tolstoy
   name: 托尔斯泰
   blurb: 道德苦修的文豪,在信仰与享乐间自我撕扯
   dims: {idealism: 90, openness: 90, conscientiousness: 80, agreeableness: 65, extraversion: 45, risk_taking: 50, neuroticism: 70}
   quote: "幸福的家庭都是相似的,不幸的家庭各有各的不幸。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Leo%20Tolstoy%20with%20long%20white%20beard%20and%20peasant%20blouse%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/tolstoy.svg
 - id: li_bai
   name: 李白
   blurb: 浪漫狂放的谪仙人,以诗酒啸傲山河
   dims: {openness: 95, extraversion: 85, risk_taking: 80, idealism: 75, agreeableness: 65, conscientiousness: 40, neuroticism: 55}
   quote: "天生我材必有用,千金散尽还复来。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Li%20Bai%20in%20Tang%20Dynasty%20robes%20with%20wine%20cup%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/li_bai.svg
 - id: marco_polo
   name: 马可·波罗
   blurb: 以脚步丈量东西方的威尼斯商人探险家
   dims: {risk_taking: 90, openness: 85, extraversion: 70, conscientiousness: 60, agreeableness: 55, idealism: 50, neuroticism: 40}
   quote: "我所讲述的,还不及我所见的一半。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Marco%20Polo%20in%20Venetian%20merchant%20attire%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/marco_polo.svg
 - id: xuanzang
   name: 玄奘
   blurb: 舍身求法,万里西行,以译经贯通中印
   dims: {idealism: 95, conscientiousness: 90, risk_taking: 85, openness: 75, agreeableness: 70, extraversion: 40, neuroticism: 35}
   quote: "宁可就西而死,岂归东而生。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Xuanzang%20in%20Buddhist%20monk%20robes%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/xuanzang.svg
 - id: van_gogh
   name: 梵高
   blurb: 用燃烧的色彩倾泻孤独,以疯狂书写热爱
   dims: {openness: 95, idealism: 85, neuroticism: 90, extraversion: 35, agreeableness: 55, conscientiousness: 65, risk_taking: 70}
   quote: "我梦想着绘画,我画着我的梦想。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Vincent%20van%20Gogh%20with%20red%20beard%20and%20bandaged%20ear%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/van_gogh.svg
 - id: picasso
   name: 毕加索
   blurb: 不断颠覆自我的艺术革命者,以变形重构视觉
   dims: {openness: 95, extraversion: 75, risk_taking: 80, conscientiousness: 70, agreeableness: 35, idealism: 55, neuroticism: 60}
   quote: "每个孩子都是艺术家,问题在于长大后如何仍是艺术家。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Pablo%20Picasso%20with%20bald%20head%20and%20intense%20gaze%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/picasso.svg
 - id: mozart
   name: 莫扎特
   blurb: 天真与天才并存,以纯净音符驾驭万象
   dims: {openness: 95, extraversion: 70, conscientiousness: 60, agreeableness: 60, neuroticism: 55, idealism: 60, risk_taking: 55}
   quote: "我既非诗人也非画家,只能用音符表达自己。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Wolfgang%20Amadeus%20Mozart%20in%2018th%20century%20wig%20and%20red%20coat%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/mozart.svg
 - id: nightingale
   name: 南丁格尔
   blurb: 以数据与仁心重塑护理,提灯照护伤兵
   dims: {idealism: 90, conscientiousness: 90, agreeableness: 80, openness: 80, extraversion: 50, risk_taking: 65, neuroticism: 45}
   quote: "我从不找借口,也从不接受借口。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Florence%20Nightingale%20in%20Victorian%20nursing%20uniform%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/nightingale.svg
 - id: helen_keller
   name: 海伦·凯勒
   blurb: 盲聋中开出的精神之花,以坚韧点燃希望
   dims: {idealism: 90, conscientiousness: 90, openness: 85, agreeableness: 75, extraversion: 55, risk_taking: 60, neuroticism: 40}
   quote: "面对阳光,你就不会看到阴影。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Helen%20Keller%20with%20serene%20expression%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/helen_keller.svg
 - id: muhammad_ali
   name: 穆罕默德·阿里
   blurb: 蝶飞蜂蜇的拳王,以骄傲为信仰抗争
   dims: {extraversion: 95, risk_taking: 85, idealism: 75, openness: 70, conscientiousness: 75, agreeableness: 55, neuroticism: 50}
   quote: "像蝴蝶一样飞舞,像蜜蜂一样蜇人。"
-  image: https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Portrait%20oil%20painting%20of%20Muhammad%20Ali%20in%20boxing%20robe%20with%20gloves%2C%20classical%20art%20style%2C%20museum%20quality%2C%20dignified%20expression%2C%20neutral%20background&image_size=square
+  image: /images/celebrities/muhammad_ali.svg
