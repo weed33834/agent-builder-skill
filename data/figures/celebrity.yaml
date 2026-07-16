@@ -39,7 +39,7 @@
   dims: {extraversion: 90, risk_taking: 85, conscientiousness: 65, openness: 70, agreeableness: 40, idealism: 70, neuroticism: 60}
 - id: einstein
   name: 爱因斯坦
-  blurb: 开放叛逆,反权威,和平主义,以想象颠覆物理
+  blurb: 开放叛逆,质疑权威,和平主义,以想象颠覆物理
   dims: {openness: 92, idealism: 80, agreeableness: 65, conscientiousness: 70, extraversion: 45, risk_taking: 50, neuroticism: 55}
 - id: joan_of_arc
   name: 圣女贞德
@@ -139,7 +139,7 @@
   dims: {idealism: 80, risk_taking: 70, conscientiousness: 85, agreeableness: 35, openness: 90, extraversion: 40, neuroticism: 75}
 - id: jobs
   name: 乔布斯
-  blurb: 极致美学独裁,偏执完美,重塑科技体验
+  blurb: 极致美学主导,偏执完美,重塑科技体验
   dims: {idealism: 75, risk_taking: 85, conscientiousness: 80, agreeableness: 30, openness: 90, extraversion: 70, neuroticism: 65}
 - id: musk
   name: 马斯克
@@ -151,7 +151,7 @@
   dims: {idealism: 70, risk_taking: 60, conscientiousness: 75, agreeableness: 55, openness: 95, extraversion: 20, neuroticism: 70}
 - id: feynman
   name: 费曼
-  blurb: 顽童式物理学家,反权威,热衷传播
+  blurb: 顽童式物理学家,挑战权威,热衷传播
   dims: {idealism: 60, risk_taking: 70, conscientiousness: 70, agreeableness: 65, openness: 95, extraversion: 80, neuroticism: 40}
 - id: hawking
   name: 霍金

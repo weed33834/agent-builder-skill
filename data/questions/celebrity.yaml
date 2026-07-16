@@ -136,10 +136,10 @@ questions:
     historical_choice: a
   - id: c_d4
     type: dilemma
-    prompt: 你的理论会被当时主流视为异端,发表可能身败名裂但真理在你这边。
+    prompt: 你的理论会被当时主流视为异说,发表可能身败名裂但真理在你这边。
     dimensions: [openness, idealism, risk_taking]
     time_limit_sec: 15
-    scenario: 你发现一个颠覆性事实,但公开会触怒权威机构,可能被审判、软禁。沉默则安稳一生。
+    scenario: 你发现一个颠覆性事实,但公开会触怒权威机构,可能被排挤、孤立。沉默则安稳一生。
     options:
       - {id: a, text: 公开发表,承担一切, scores: {openness: 2, idealism: 2, risk_taking: 2}, tag: courage}
       - {id: b, text: 私下流通,等待时机, scores: {openness: 1, idealism: 1, risk_taking: 0}, tag: pragmatic}
@@ -410,24 +410,24 @@ questions:
   # ===== 扩展困境题 II(全新历史名人困境) =====
   - id: c_d9
     type: dilemma
-    prompt: 你的观测证实颠覆性天文发现,宗教裁判所命你公开悔过、放弃学说。
+    prompt: 你的观测证实颠覆性天文发现,正统权威命你公开否认、放弃学说。
     dimensions: [idealism, risk_taking, openness]
     time_limit_sec: 15
-    scenario: 你的望远镜看清了天体运行真相,与教义相悖。悔过可保命、私下继续研究;坚持则可能被处死或终身监禁,学说或随你湮灭。
+    scenario: 你的望远镜看清了天体运行真相,与当时主流学说相悖。妥协可保命、私下继续研究;坚持则可能被严厉处置或终身监禁,学说或随你湮灭。
     options:
-      - {id: a, text: 公开悔过,私下续研, scores: {idealism: 1, risk_taking: 0, openness: 1}, tag: pragmatic}
+      - {id: a, text: 表面妥协,私下续研, scores: {idealism: 1, risk_taking: 0, openness: 1}, tag: pragmatic}
       - {id: b, text: 坚持不改,坦然受刑, scores: {idealism: 2, risk_taking: 2, openness: 2}, tag: courage}
       - {id: c, text: 彻底放弃,安度余生, scores: {idealism: -2, risk_taking: -2, openness: -1}, tag: avoidance}
     historical_figure: 伽利略
     historical_choice: a
   - id: c_d10
     type: dilemma
-    prompt: 你因直言触怒君主,死刑当前,可受宫刑免死,但史书未成。
+    prompt: 你因直言触怒君主,死刑当前,可受辱免死,但史书未成。
     dimensions: [idealism, conscientiousness, risk_taking]
     time_limit_sec: 15
-    scenario: 你正撰写一部空前史书,功亏一篑。赎命则倾家荡产,宫刑则奇耻大辱,宁死则毕生心血湮灭。
+    scenario: 你正撰写一部空前史书,功亏一篑。赎命则倾家荡产,受辱则奇耻大辱,宁死则毕生心血湮灭。
     options:
-      - {id: a, text: 忍辱受刑,完成史书, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}, tag: courage}
+      - {id: a, text: 忍辱负重,完成史书, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}, tag: courage}
       - {id: b, text: 倾家赎命,保全体面, scores: {idealism: 0, conscientiousness: 1}, tag: pragmatic}
       - {id: c, text: 宁死不受辱, scores: {idealism: 1, conscientiousness: -1, risk_taking: 2}, tag: courage}
     historical_figure: 司马迁
@@ -458,26 +458,26 @@ questions:
     historical_choice: a
   - id: c_d13
     type: dilemma
-    prompt: 上级命你禁绝泛滥的毒品贸易,毒贩背后是强大外敌,禁则可能引发战争。
+    prompt: 上级命你禁绝泛滥的有害贸易,幕后是强大对手,禁则可能引发冲突。
     dimensions: [idealism, risk_taking, conscientiousness]
     time_limit_sec: 15
-    scenario: 毒品祸国殃民,你手握禁令。雷厉风行可能招致坚船利炮、让你沦为替罪羊;放任则国民沉沦。
+    scenario: 有害贸易祸国殃民,你手握禁令。雷厉风行可能招致强力反扑、让你沦为替罪羊;放任则国民沉沦。
     options:
-      - {id: a, text: 雷厉风行禁毒,承担战端, scores: {idealism: 2, risk_taking: 2, conscientiousness: 2}, tag: courage}
+      - {id: a, text: 雷厉风行禁绝,承担冲突, scores: {idealism: 2, risk_taking: 2, conscientiousness: 2}, tag: courage}
       - {id: b, text: 缓禁设限,周旋各方, scores: {idealism: 1, risk_taking: 0}, tag: pragmatic}
       - {id: c, text: 阳奉阴违,保身为主, scores: {idealism: -2, risk_taking: -2}, tag: avoidance}
     historical_figure: 林则徐
     historical_choice: a
   - id: c_d14
     type: dilemma
-    prompt: 你的民族被殖民压迫,武力抗争或速胜但血流成河,非暴力见效慢且被讥软弱。
+    prompt: 你的群体面临不公对待,激烈对抗或速决但代价沉重,温和坚持见效慢且被讥软弱。
     dimensions: [idealism, agreeableness, risk_taking]
     time_limit_sec: 15
-    scenario: 你深知非暴力需以肉身抗暴、牺牲巨大,且殖民者不会轻易让步。武装起义或能复仇,却与你信念相悖。
+    scenario: 你深知温和坚持需承受压力、牺牲巨大,且对方不会轻易让步。激烈对抗或能快速破局,却与你信念相悖。
     options:
-      - {id: a, text: 坚持非暴力,以肉身抗暴, scores: {idealism: 2, agreeableness: 2, risk_taking: 1}, tag: courage}
-      - {id: b, text: 武装起义,以暴制暴, scores: {idealism: 1, agreeableness: -2, risk_taking: 2}, tag: courage}
-      - {id: c, text: 妥协谈判,求得自治, scores: {idealism: -1, agreeableness: 1, risk_taking: -1}, tag: pragmatic}
+      - {id: a, text: 坚持温和,承受压力, scores: {idealism: 2, agreeableness: 2, risk_taking: 1}, tag: courage}
+      - {id: b, text: 激烈对抗,快速破局, scores: {idealism: 1, agreeableness: -2, risk_taking: 2}, tag: courage}
+      - {id: c, text: 妥协谈判,求得改善, scores: {idealism: -1, agreeableness: 1, risk_taking: -1}, tag: pragmatic}
     historical_figure: 甘地
     historical_choice: a
 
@@ -551,12 +551,12 @@ questions:
   # ===== 补足困境题(再加深历史回响) =====
   - id: c_d15
     type: dilemma
-    prompt: 你坚信地动说,教会判你火刑,只要公开认错就能活命。
+    prompt: 你坚信地动说,权威判你重刑,只要公开认错就能活命。
     dimensions: [idealism, openness, risk_taking]
     time_limit_sec: 15
-    scenario: 你以理性确信日心说,但教会定性为异端。认错可活,但意味着背叛真理;坚持则被烧死。
+    scenario: 你以理性确信日心说,但权威定性为异说。认错可活,但意味着背叛真理;坚持则被处死。
     options:
-      - {id: a, text: 坚持真理,从容赴火, scores: {idealism: 2, openness: 2, risk_taking: 2}, tag: courage}
+      - {id: a, text: 坚持真理,从容赴死, scores: {idealism: 2, openness: 2, risk_taking: 2}, tag: courage}
       - {id: b, text: 表面认错,内心坚守, scores: {idealism: 1, openness: 1, risk_taking: 0}, tag: pragmatic}
       - {id: c, text: 公开认错,保命要紧, scores: {idealism: -2, openness: -1, risk_taking: -2}, tag: avoidance}
     historical_figure: 布鲁诺
@@ -566,7 +566,7 @@ questions:
     prompt: 你的变法已见成效,但旧贵族暗中布局,新君即位后清算在即。
     dimensions: [idealism, risk_taking, conscientiousness]
     time_limit_sec: 15
-    scenario: 变法使国富兵强,却也树敌无数。新君态度暧昧,旧势力卷土重来。逃则前功尽弃,留则性命堪忧——你的下场可能是车裂。
+    scenario: 变法使国富兵强,却也树敌无数。新君态度暧昧,旧势力卷土重来。逃则前功尽弃,留则性命堪忧——你的下场可能是极刑。
     options:
       - {id: a, text: 以身殉法,留守到底, scores: {idealism: 2, risk_taking: 2, conscientiousness: 2}, tag: courage}
       - {id: b, text: 据理力争,寻求转机, scores: {idealism: 1, risk_taking: 1, conscientiousness: 2}, tag: pragmatic}

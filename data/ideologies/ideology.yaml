@@ -46,7 +46,7 @@
   blurb: 市场经济+积极自由+福利保障
   coords: {econ: 40, social: 22}
 - id: technocracy
-  name: 技术官僚主义
+  name: 技术治理主义
   blurb: 专家治理+数据驱动+效率优先
   coords: {econ: 45, social: 60}
 - id: libertarian_socialism
@@ -81,7 +81,4 @@
   name: 新自由主义
   blurb: 自由市场+私有化+放松管制
   coords: {econ: 82, social: 42}
-- id: oligarchic_capitalism
-  name: 寡头资本主义
-  blurb: 寡头垄断+权力寻租+裙带资本
-  coords: {econ: 80, social: 85}
+
