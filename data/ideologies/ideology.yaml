@@ -22,7 +22,7 @@
   blurb: 生产资料社会化+民主政治
   coords: {econ: 15, social: 40}
 - id: author_cap
-  name: 权威资本主义
+  name: 国家主导型市场
   blurb: 自由市场+强国家管控
   coords: {econ: 70, social: 85}
 - id: nat_conservatism

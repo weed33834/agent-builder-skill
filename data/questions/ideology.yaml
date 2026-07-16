@@ -214,14 +214,14 @@ questions:
       - {id: "5", text: 严格限制, scores: {econ_right: 2}}
   - id: i_s12
     type: scale
-    prompt: 政府是否应审查媒体与网络内容以维护稳定?
+    prompt: 面对虚假信息广泛传播,平台是否应承担更严格的内容治理责任?
     dimensions: [authority, liberty]
     points:
-      - {id: "1", text: 应当审查, scores: {authority: 2}}
-      - {id: "2", text: 倾向审查, scores: {authority: 1}}
+      - {id: "1", text: 严格治理, scores: {authority: 2}}
+      - {id: "2", text: 倾向治理, scores: {authority: 1}}
       - {id: "3", text: 中立, scores: {}}
-      - {id: "4", text: 倾向自由, scores: {liberty: 1}}
-      - {id: "5", text: 绝对自由, scores: {liberty: 2}}
+      - {id: "4", text: 倾向宽松, scores: {liberty: 1}}
+      - {id: "5", text: 完全开放, scores: {liberty: 2}}
   - id: i_s13
     type: scale
     prompt: 性别角色是否应回归传统分工?
@@ -328,24 +328,24 @@ questions:
       - {id: "5", text: 反对碳税, scores: {econ_right: 2}}
   - id: i_s18
     type: scale
-    prompt: 是否应严格管控民间枪支持有?
+    prompt: 重大公共卫生危机中,政府强制隔离与限制聚集的边界应如何把握?
     dimensions: [authority, liberty]
     points:
-      - {id: "1", text: 全面禁枪, scores: {authority: 2}}
-      - {id: "2", text: 严格管控, scores: {authority: 1}}
+      - {id: "1", text: 严格限制, scores: {authority: 2}}
+      - {id: "2", text: 倾向限制, scores: {authority: 1}}
       - {id: "3", text: 中立, scores: {}}
-      - {id: "4", text: 适度放宽, scores: {liberty: 1}}
-      - {id: "5", text: 自由持有, scores: {liberty: 2}}
+      - {id: "4", text: 倾向自主, scores: {liberty: 1}}
+      - {id: "5", text: 完全自主, scores: {liberty: 2}}
   - id: i_s19
     type: scale
-    prompt: 女性堕胎权是否应由法律保障?
+    prompt: 个人生育选择应由个体自主还是受社会规范引导?
     dimensions: [progress, tradition]
     points:
-      - {id: "1", text: 完全保障, scores: {progress: 2}}
-      - {id: "2", text: 倾向保障, scores: {progress: 1}}
+      - {id: "1", text: 完全自主, scores: {progress: 2}}
+      - {id: "2", text: 倾向自主, scores: {progress: 1}}
       - {id: "3", text: 中立, scores: {}}
-      - {id: "4", text: 倾向限制, scores: {tradition: 1}}
-      - {id: "5", text: 严格禁止, scores: {tradition: 2}}
+      - {id: "4", text: 倾向引导, scores: {tradition: 1}}
+      - {id: "5", text: 严格引导, scores: {tradition: 2}}
   - id: i_s20
     type: scale
     prompt: 平台经济(外卖/网约车)的零工劳动者是否应享有正式工会权?
