@@ -57,7 +57,17 @@ def match_celebrity(dimensions: dict, answers, behavior) -> list[dict]:
         for c in celebrities
     ]
     scored.sort(key=lambda x: x["match_pct"], reverse=True)
-    return [{"id": c["id"], "name": c["name"], "match_pct": c["match_pct"], "blurb": c["blurb"]} for c in scored[:3]]
+    return [
+        {
+            "id": c["id"],
+            "name": c["name"],
+            "match_pct": c["match_pct"],
+            "blurb": c["blurb"],
+            "quote": c.get("quote", ""),
+            "image": c.get("image", ""),
+        }
+        for c in scored[:3]
+    ]
 
 
 def match_value(dimensions: dict, answers, behavior) -> list[dict]:

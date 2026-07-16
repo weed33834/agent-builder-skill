@@ -46,15 +46,24 @@ function doRender() {
     <div class="report-section">
       <h3>${mmI18n.t('report.sec_matches')}</h3>
       <div class="match-list">
-        ${(r.matches || []).map((m, i) => `
-          <div class="match-item ${i === 0 ? 'top' : ''}">
-            <div>
+        ${(r.matches || []).map((m, i) => {
+          const isCelebrity = r.assessment_type === 'celebrity';
+          const hasImage = isCelebrity && m.image;
+          const hasQuote = m.quote;
+          return `
+          <div class="match-item ${i === 0 ? 'top' : ''}${hasImage ? ' with-image' : ''}">
+            ${hasImage ? `
+              <div class="match-portrait">
+                <img src="${m.image}" alt="${m.name || ''}" loading="lazy" onerror="this.parentNode.classList.add('img-fallback');this.style.display='none';">
+              </div>` : ''}
+            <div class="match-body">
               <div class="match-name">${m.name || ''}</div>
               <div class="match-blurb">${m.blurb || ''}</div>
+              ${hasQuote ? `<div class="match-quote">"${m.quote}"</div>` : ''}
             </div>
             <div class="match-pct">${m.match_pct != null ? m.match_pct : ''}<span style="font-size:14px;opacity:0.6">%</span></div>
-          </div>
-        `).join('')}
+          </div>`;
+        }).join('')}
       </div>
     </div>
 
