@@ -6,31 +6,31 @@
   blurb: 坚定原则,愿为理想承担代价,在分裂中维系信念
   dims: {idealism: 90, risk_taking: 80, conscientiousness: 85, agreeableness: 60, openness: 60, extraversion: 50, neuroticism: 40}
   quote: "预测未来最好的方式,就是去创造它。"
-  image: /images/celebrities/lincoln.svg
+  image: /images/celebrities/lincoln.jpg
 - id: curie
   name: 居里夫人
   blurb: 理想主义与执着并存,不谋私利,纯粹探索
   dims: {idealism: 90, openness: 95, conscientiousness: 90, agreeableness: 55, extraversion: 30, risk_taking: 60, neuroticism: 50}
   quote: "生活中没有什么可怕的东西,只有需要理解的东西。"
-  image: /images/celebrities/curie.svg
+  image: /images/celebrities/curie.jpg
 - id: schindler
   name: 辛德勒
   blurb: 关键时刻选择救人,愿冒险担责,从利己转向利他
   dims: {idealism: 85, risk_taking: 90, agreeableness: 75, conscientiousness: 60, openness: 60, extraversion: 70, neuroticism: 60}
   quote: "救人一命,即救全世界。"
-  image: /images/celebrities/schindler.svg
+  image: /images/celebrities/schindler.jpg
 - id: confucius
   name: 孔子
   blurb: 重责任与秩序,坚守道德准则,知其不可而为之
   dims: {idealism: 80, conscientiousness: 90, agreeableness: 70, openness: 60, extraversion: 60, risk_taking: 30, neuroticism: 40}
   quote: "己所不欲,勿施于人。"
-  image: /images/celebrities/confucius.svg
+  image: /images/celebrities/confucius.jpg
 - id: darwin
   name: 达尔文
   blurb: 开放探索,审慎求证,内向深思,颠覆而不张扬
   dims: {openness: 95, conscientiousness: 85, idealism: 50, agreeableness: 60, extraversion: 25, risk_taking: 40, neuroticism: 65}
   quote: "能够生存下来的,不是最强壮的,也不是最聪明的,而是最能适应变化的。"
-  image: /images/celebrities/darwin.svg
+  image: /images/celebrities/darwin.jpg
 - id: machiavelli
   name: 马基雅维利
   blurb: 务实冷峻,结果导向,不计理想,洞察人性
@@ -42,262 +42,262 @@
   blurb: 极致利他+非暴力,理想至上,以信念撼动帝国
   dims: {idealism: 95, agreeableness: 90, conscientiousness: 85, openness: 65, extraversion: 65, risk_taking: 75, neuroticism: 45}
   quote: "如同明天就会死去那样去生活,如同永远活着那样去学习。"
-  image: /images/celebrities/gandhi.svg
+  image: /images/celebrities/gandhi.jpg
 - id: tesla
   name: 特斯拉
   blurb: 纯粹探索者,开放性极高,不善社交,为发明忘我
   dims: {openness: 98, conscientiousness: 80, idealism: 75, agreeableness: 50, extraversion: 15, risk_taking: 55, neuroticism: 70}
   quote: "现在属于他们,未来才真正属于我。"
-  image: /images/celebrities/tesla.svg
+  image: /images/celebrities/tesla.jpg
 - id: churchill
   name: 丘吉尔
   blurb: 危机中的决断者,外向强势,风险偏好高,意志如铁
   dims: {extraversion: 90, risk_taking: 85, conscientiousness: 65, openness: 70, agreeableness: 40, idealism: 70, neuroticism: 60}
   quote: "永远,永远,永远不要放弃。"
-  image: /images/celebrities/churchill.svg
+  image: /images/celebrities/churchill.jpg
 - id: einstein
   name: 爱因斯坦
   blurb: 开放叛逆,质疑权威,和平主义,以想象颠覆物理
   dims: {openness: 92, idealism: 80, agreeableness: 65, conscientiousness: 70, extraversion: 45, risk_taking: 50, neuroticism: 55}
   quote: "想象力比知识更重要。"
-  image: /images/celebrities/einstein.svg
+  image: /images/celebrities/einstein.jpg
 - id: joan_of_arc
   name: 圣女贞德
   blurb: 信念驱动,无畏赴死,理想主义的极致化身
   dims: {idealism: 98, risk_taking: 95, conscientiousness: 80, agreeableness: 60, openness: 50, extraversion: 65, neuroticism: 50}
   quote: "我不怕,因为上帝与我同在。"
-  image: /images/celebrities/joan_of_arc.svg
+  image: /images/celebrities/joan_of_arc.jpg
 - id: sun_tzu
   name: 孙武
   blurb: 冷静谋略,以智取胜,不战而屈人之兵
   dims: {conscientiousness: 85, openness: 80, risk_taking: 50, agreeableness: 35, idealism: 40, extraversion: 45, neuroticism: 30}
   quote: "知己知彼,百战不殆。"
-  image: /images/celebrities/sun_tzu.svg
+  image: /images/celebrities/sun_tzu.jpg
 - id: mother_teresa
   name: 特蕾莎修女
   blurb: 无私利他,侍奉最贫者,信仰坚定
   dims: {agreeableness: 98, conscientiousness: 88, idealism: 90, openness: 50, extraversion: 60, risk_taking: 60, neuroticism: 45}
   quote: "我们做不了伟大的事,只能用伟大的爱做小事。"
-  image: /images/celebrities/mother_teresa.svg
+  image: /images/celebrities/mother_teresa.jpg
 - id: napoleon
   name: 拿破仑
   blurb: 雄心勃勃,掌控欲强,风险偏好极高,重塑秩序
   dims: {extraversion: 85, risk_taking: 90, conscientiousness: 80, openness: 75, agreeableness: 30, idealism: 50, neuroticism: 55}
   quote: "不可能,只存在于愚人的字典里。"
-  image: /images/celebrities/napoleon.svg
+  image: /images/celebrities/napoleon.jpg
 - id: socrates
   name: 苏格拉底
   blurb: 质疑一切,坚守真理,从容赴死,开放与责任并存
   dims: {openness: 90, idealism: 88, conscientiousness: 75, agreeableness: 55, extraversion: 50, risk_taking: 60, neuroticism: 40}
   quote: "未经审视的人生不值得过。"
-  image: /images/celebrities/socrates.svg
+  image: /images/celebrities/socrates.jpg
 - id: marie_antoinette
   name: 玛丽·安托瓦内特
   blurb: 享乐主义,脱离现实,危机中显现韧性
   dims: {extraversion: 80, openness: 55, conscientiousness: 30, agreeableness: 50, idealism: 25, risk_taking: 45, neuroticism: 70}
   quote: "对不起,先生,我不是故意的。"
-  image: /images/celebrities/marie_antoinette.svg
+  image: /images/celebrities/marie_antoinette.jpg
 - id: wang_yangming
   name: 王阳明
   blurb: 知行合一,内向悟道,以心学重塑儒学
   dims: {idealism: 85, risk_taking: 60, conscientiousness: 85, agreeableness: 60, openness: 85, extraversion: 40, neuroticism: 45}
   quote: "知行合一。"
-  image: /images/celebrities/wang_yangming.svg
+  image: /images/celebrities/wang_yangming.jpg
 - id: lu_xun
   name: 鲁迅
   blurb: 犀利批判国民性,内向深思,以笔为刀
   dims: {idealism: 88, risk_taking: 70, conscientiousness: 80, agreeableness: 40, openness: 90, extraversion: 35, neuroticism: 65}
   quote: "横眉冷对千夫指,俯首甘为孺子牛。"
-  image: /images/celebrities/lu_xun.svg
+  image: /images/celebrities/lu_xun.jpg
 - id: zhuge_liang
   name: 诸葛亮
   blurb: 鞠躬尽瘁,谨慎谋略,忠诚担当
   dims: {idealism: 80, risk_taking: 45, conscientiousness: 95, agreeableness: 65, openness: 80, extraversion: 50, neuroticism: 50}
   quote: "鞠躬尽瘁,死而后已。"
-  image: /images/celebrities/zhuge_liang.svg
+  image: /images/celebrities/zhuge_liang.jpg
 - id: zeng_guofan
   name: 曾国藩
   blurb: 慎独克己,坚忍务实,以笨功夫成大业
   dims: {idealism: 70, risk_taking: 50, conscientiousness: 95, agreeableness: 55, openness: 65, extraversion: 45, neuroticism: 70}
   quote: "不问收获,但问耕耘。"
-  image: /images/celebrities/zeng_guofan.svg
+  image: /images/celebrities/zeng_guofan.png
 - id: qin_shihuang
   name: 秦始皇
   blurb: 雄才铁腕,一统六合,功过两极
   dims: {idealism: 50, risk_taking: 90, conscientiousness: 80, agreeableness: 20, openness: 60, extraversion: 70, neuroticism: 55}
   quote: "一法度,衡石丈尺,车同轨,书同文字。"
-  image: /images/celebrities/qin_shihuang.svg
+  image: /images/celebrities/qin_shihuang.jpg
 - id: wu_zetian
   name: 武则天
   blurb: 权谋果断,打破性别壁垒,用人不拘
   dims: {idealism: 50, risk_taking: 85, conscientiousness: 85, agreeableness: 35, openness: 75, extraversion: 75, neuroticism: 55}
   quote: "不信比来长下泪,开箱验取石榴裙。"
-  image: /images/celebrities/wu_zetian.svg
+  image: /images/celebrities/wu_zetian.png
 - id: lin_huiyin
   name: 林徽因
   blurb: 文理兼修,诗意建筑,沙龙女主
   dims: {idealism: 75, risk_taking: 55, conscientiousness: 75, agreeableness: 70, openness: 90, extraversion: 70, neuroticism: 50}
   quote: "你是人间的四月天。"
-  image: /images/celebrities/lin_huiyin.svg
+  image: /images/celebrities/lin_huiyin.jpg
 - id: yuan_longping
   name: 袁隆平
   blurb: 田野里的理想主义者,朴实专注
   dims: {idealism: 85, risk_taking: 50, conscientiousness: 90, agreeableness: 75, openness: 75, extraversion: 55, neuroticism: 35}
   quote: "我有两个梦:禾下乘凉梦,杂交水稻覆盖全球梦。"
-  image: /images/celebrities/yuan_longping.svg
+  image: /images/celebrities/yuan_longping.jpg
 - id: qian_xuesen
   name: 钱学森
   blurb: 归国报效,系统思维,严谨寡言
   dims: {idealism: 85, risk_taking: 65, conscientiousness: 90, agreeableness: 55, openness: 85, extraversion: 35, neuroticism: 45}
   quote: "我的事业在中国,我的归宿在中国。"
-  image: /images/celebrities/qian_xuesen.svg
+  image: /images/celebrities/qian_xuesen.png
 - id: tu_youyou
   name: 屠呦呦
   blurb: 低调执着,从古籍寻药,挽救百万
   dims: {idealism: 80, risk_taking: 55, conscientiousness: 92, agreeableness: 60, openness: 80, extraversion: 25, neuroticism: 50}
   quote: "青蒿素是中医药给世界的一份礼物。"
-  image: /images/celebrities/tu_youyou.svg
+  image: /images/celebrities/tu_youyou.jpg
 - id: mandela
   name: 曼德拉
   blurb: 二十七载不屈,以和解终结仇恨
   dims: {idealism: 92, risk_taking: 80, conscientiousness: 85, agreeableness: 75, openness: 75, extraversion: 60, neuroticism: 40}
   quote: "勇敢不是没有恐惧,而是战胜恐惧。"
-  image: /images/celebrities/mandela.svg
+  image: /images/celebrities/mandela.jpg
 - id: mlk
   name: 马丁·路德·金
   blurb: 以梦为旗,非暴力抗争,感召世代
   dims: {idealism: 95, risk_taking: 80, conscientiousness: 80, agreeableness: 80, openness: 75, extraversion: 85, neuroticism: 55}
   quote: "我有一个梦想。"
-  image: /images/celebrities/mlk.svg
+  image: /images/celebrities/mlk.jpg
 - id: adam_smith
   name: 亚当·斯密
   blurb: 冷静观察市场,道德情操与自利并论
   dims: {idealism: 60, risk_taking: 40, conscientiousness: 80, agreeableness: 65, openness: 90, extraversion: 40, neuroticism: 50}
   quote: "我们的晚餐并非来自屠夫的善心,而是源于他们对自身利益的关心。"
-  image: /images/celebrities/adam_smith.svg
+  image: /images/celebrities/adam_smith.jpg
 - id: freud
   name: 弗洛伊德
   blurb: 深掘潜意识,理论大胆,争议与开创并存
   dims: {idealism: 60, risk_taking: 75, conscientiousness: 80, agreeableness: 45, openness: 95, extraversion: 50, neuroticism: 60}
   quote: "未被表达的情绪永远不会消亡。"
-  image: /images/celebrities/freud.svg
+  image: /images/celebrities/freud.jpg
 - id: nietzsche
   name: 尼采
   blurb: 颠覆偶像,孤独超人,激情与病痛交织
   dims: {idealism: 85, risk_taking: 80, conscientiousness: 60, agreeableness: 30, openness: 95, extraversion: 40, neuroticism: 80}
   quote: "那些杀不死我的,使我更强大。"
-  image: /images/celebrities/nietzsche.svg
+  image: /images/celebrities/nietzsche.jpg
 - id: kant
   name: 康德
   blurb: 律己如钟,理性立法,终身未离小城
   dims: {idealism: 80, risk_taking: 30, conscientiousness: 98, agreeableness: 55, openness: 85, extraversion: 25, neuroticism: 45}
   quote: "在我之上的星空和居我心中的道德法则。"
-  image: /images/celebrities/kant.svg
+  image: /images/celebrities/kant.jpg
 - id: davinci
   name: 达·芬奇
   blurb: 文艺复兴全才,好奇无尽,留半成稿
   dims: {idealism: 70, risk_taking: 60, conscientiousness: 60, agreeableness: 60, openness: 98, extraversion: 45, neuroticism: 55}
   quote: "充实的一天带来安眠,充实的一生带来安息。"
-  image: /images/celebrities/davinci.svg
+  image: /images/celebrities/davinci.jpg
 - id: beethoven
   name: 贝多芬
   blurb: 扼住命运咽喉,孤傲暴躁,以音符抗争
   dims: {idealism: 80, risk_taking: 70, conscientiousness: 85, agreeableness: 35, openness: 90, extraversion: 40, neuroticism: 75}
   quote: "我要扼住命运的咽喉。"
-  image: /images/celebrities/beethoven.svg
+  image: /images/celebrities/beethoven.jpg
 - id: jobs
   name: 乔布斯
   blurb: 极致美学主导,偏执完美,重塑科技体验
   dims: {idealism: 75, risk_taking: 85, conscientiousness: 80, agreeableness: 30, openness: 90, extraversion: 70, neuroticism: 65}
   quote: "求知若饥,虚心若愚。"
-  image: /images/celebrities/jobs.svg
+  image: /images/celebrities/jobs.jpg
 - id: musk
   name: 马斯克
   blurb: 狂想工程师,风险嗜好者,多线颠覆
   dims: {idealism: 80, risk_taking: 95, conscientiousness: 75, agreeableness: 35, openness: 95, extraversion: 75, neuroticism: 70}
   quote: "我想死在火星上,只是别撞上去。"
-  image: /images/celebrities/musk.svg
+  image: /images/celebrities/musk.jpg
 - id: turing
   name: 图灵
   blurb: 内向天才,奠定计算之基,悲剧收场
   dims: {idealism: 70, risk_taking: 60, conscientiousness: 75, agreeableness: 55, openness: 95, extraversion: 20, neuroticism: 70}
   quote: "有时正是没人想到的人,做出了没人想到的事。"
-  image: /images/celebrities/turing.svg
+  image: /images/celebrities/turing.jpg
 - id: feynman
   name: 费曼
   blurb: 顽童式物理学家,挑战权威,热衷传播
   dims: {idealism: 60, risk_taking: 70, conscientiousness: 70, agreeableness: 65, openness: 95, extraversion: 80, neuroticism: 40}
   quote: "凡我不能创造的,我就还不理解。"
-  image: /images/celebrities/feynman.svg
+  image: /images/celebrities/feynman.jpg
 - id: hawking
   name: 霍金
   blurb: 身困轮椅心游宇宙,幽默坚韧
   dims: {idealism: 80, risk_taking: 55, conscientiousness: 85, agreeableness: 60, openness: 95, extraversion: 55, neuroticism: 45}
   quote: "记住要仰望星空,不要低头看脚下。"
-  image: /images/celebrities/hawking.svg
+  image: /images/celebrities/hawking.jpg
 - id: shakespeare
   name: 莎士比亚
   blurb: 洞悉人性的剧坛巨匠,以悲喜剧丈量世间万象
   dims: {openness: 95, conscientiousness: 75, extraversion: 55, agreeableness: 50, neuroticism: 60, risk_taking: 60, idealism: 65}
   quote: "生存还是毁灭,这是一个问题。"
-  image: /images/celebrities/shakespeare.svg
+  image: /images/celebrities/shakespeare.jpg
 - id: tolstoy
   name: 托尔斯泰
   blurb: 道德苦修的文豪,在信仰与享乐间自我撕扯
   dims: {idealism: 90, openness: 90, conscientiousness: 80, agreeableness: 65, extraversion: 45, risk_taking: 50, neuroticism: 70}
   quote: "幸福的家庭都是相似的,不幸的家庭各有各的不幸。"
-  image: /images/celebrities/tolstoy.svg
+  image: /images/celebrities/tolstoy.jpg
 - id: li_bai
   name: 李白
   blurb: 浪漫狂放的谪仙人,以诗酒啸傲山河
   dims: {openness: 95, extraversion: 85, risk_taking: 80, idealism: 75, agreeableness: 65, conscientiousness: 40, neuroticism: 55}
   quote: "天生我材必有用,千金散尽还复来。"
-  image: /images/celebrities/li_bai.svg
+  image: /images/celebrities/li_bai.jpg
 - id: marco_polo
   name: 马可·波罗
   blurb: 以脚步丈量东西方的威尼斯商人探险家
   dims: {risk_taking: 90, openness: 85, extraversion: 70, conscientiousness: 60, agreeableness: 55, idealism: 50, neuroticism: 40}
   quote: "我所讲述的,还不及我所见的一半。"
-  image: /images/celebrities/marco_polo.svg
+  image: /images/celebrities/marco_polo.jpg
 - id: xuanzang
   name: 玄奘
   blurb: 舍身求法,万里西行,以译经贯通中印
   dims: {idealism: 95, conscientiousness: 90, risk_taking: 85, openness: 75, agreeableness: 70, extraversion: 40, neuroticism: 35}
   quote: "宁可就西而死,岂归东而生。"
-  image: /images/celebrities/xuanzang.svg
+  image: /images/celebrities/xuanzang.jpg
 - id: van_gogh
   name: 梵高
   blurb: 用燃烧的色彩倾泻孤独,以疯狂书写热爱
   dims: {openness: 95, idealism: 85, neuroticism: 90, extraversion: 35, agreeableness: 55, conscientiousness: 65, risk_taking: 70}
   quote: "我梦想着绘画,我画着我的梦想。"
-  image: /images/celebrities/van_gogh.svg
+  image: /images/celebrities/van_gogh.jpg
 - id: picasso
   name: 毕加索
   blurb: 不断颠覆自我的艺术革命者,以变形重构视觉
   dims: {openness: 95, extraversion: 75, risk_taking: 80, conscientiousness: 70, agreeableness: 35, idealism: 55, neuroticism: 60}
   quote: "每个孩子都是艺术家,问题在于长大后如何仍是艺术家。"
-  image: /images/celebrities/picasso.svg
+  image: /images/celebrities/picasso.jpg
 - id: mozart
   name: 莫扎特
   blurb: 天真与天才并存,以纯净音符驾驭万象
   dims: {openness: 95, extraversion: 70, conscientiousness: 60, agreeableness: 60, neuroticism: 55, idealism: 60, risk_taking: 55}
   quote: "我既非诗人也非画家,只能用音符表达自己。"
-  image: /images/celebrities/mozart.svg
+  image: /images/celebrities/mozart.jpg
 - id: nightingale
   name: 南丁格尔
   blurb: 以数据与仁心重塑护理,提灯照护伤兵
   dims: {idealism: 90, conscientiousness: 90, agreeableness: 80, openness: 80, extraversion: 50, risk_taking: 65, neuroticism: 45}
   quote: "我从不找借口,也从不接受借口。"
-  image: /images/celebrities/nightingale.svg
+  image: /images/celebrities/nightingale.jpg
 - id: helen_keller
   name: 海伦·凯勒
   blurb: 盲聋中开出的精神之花,以坚韧点燃希望
   dims: {idealism: 90, conscientiousness: 90, openness: 85, agreeableness: 75, extraversion: 55, risk_taking: 60, neuroticism: 40}
   quote: "面对阳光,你就不会看到阴影。"
-  image: /images/celebrities/helen_keller.svg
+  image: /images/celebrities/helen_keller.jpg
 - id: muhammad_ali
   name: 穆罕默德·阿里
   blurb: 蝶飞蜂蜇的拳王,以骄傲为信仰抗争
   dims: {extraversion: 95, risk_taking: 85, idealism: 75, openness: 70, conscientiousness: 75, agreeableness: 55, neuroticism: 50}
   quote: "像蝴蝶一样飞舞,像蜜蜂一样蜇人。"
-  image: /images/celebrities/muhammad_ali.svg
+  image: /images/celebrities/muhammad_ali.jpg
