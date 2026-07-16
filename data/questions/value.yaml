@@ -205,14 +205,14 @@ questions:
       - {id: c, text: 让它随风, scores: {honesty: -2, justice: -2, empathy: 1}, tag: avoidance}
   - id: v_d11
     type: dilemma
-    prompt: 你的孩子犯下严重错误,自首会断送前程,包庇违背你的信念。
+    prompt: 你负责选拔,至亲是候选人之一,能力合格但有更优者。
     dimensions: [honesty, justice, duty, empathy]
     time_limit_sec: 15
-    scenario: 孩子酒驾撞人逃逸,受害者昏迷。你若不报,孩子或能逃过;你若报,孩子半生尽毁。
+    scenario: 亲人多年苦等这次机会。秉公选拔会让 ta 落选,亲友会指责你"忘本";偏袒则违背选拔公正。
     options:
-      - {id: a, text: 劝其自首,陪伴承担, scores: {honesty: 2, justice: 2, duty: 2, empathy: 1}, tag: courage}
-      - {id: b, text: 替 ta 隐瞒, scores: {empathy: 2, honesty: -2, justice: -2}, tag: avoidance}
-      - {id: c, text: 匿名举报, scores: {justice: 2, empathy: -2, duty: 1}, tag: pragmatic}
+      - {id: a, text: 秉公选拔,告知理由, scores: {honesty: 2, justice: 2, duty: 2, empathy: 1}, tag: courage}
+      - {id: b, text: 主动回避,请他人定, scores: {honesty: 1, duty: 1, empathy: 1}, tag: pragmatic}
+      - {id: c, text: 暗中倾斜,助其入选, scores: {empathy: -1, honesty: -2, justice: -2}, tag: avoidance}
   - id: v_d12
     type: dilemma
     prompt: 你掌管救命物资,规则要求平分,但有人明显更需要。
@@ -265,7 +265,7 @@ questions:
       - {id: lie_help, text: 为救人而撒谎, scores: {altruism: 1, empathy: 1}}
       - {id: steal_hunger, text: 饥寒所迫的偷盗, scores: {empathy: 1}}
       - {id: break_unjust, text: 违抗不义之法, scores: {justice: 1}}
-      - {id: fail_duty, text: 因情失职, scores: {empathy: 1}}
+      - {id: fail_duty, text: 因情失职, scores: {empathy: 1, duty: 1}}
       - {id: self_deception, text: 自欺欺人, scores: {honesty: 1}}
 
   # ===== 再扩展困境题(现代道德两难) =====
@@ -311,18 +311,18 @@ questions:
       - {id: c, text: 匿名曝光, scores: {justice: -1, empathy: -2, honesty: -1}, tag: avoidance}
   - id: v_d17
     type: dilemma
-    prompt: 你发现至亲受贿,举报会毁了整个家。
+    prompt: 你得知挚友即将被诬陷,作证可救 ta,但你会被牵连入狱。
     dimensions: [honesty, justice, duty, empathy]
     time_limit_sec: 15
-    scenario: 父母利用职务受贿维持家用。举报会让家破,不举报是包庇犯罪。
+    scenario: 挚友被冤枉,只有你知道真相。出庭作证能救 ta,但你将承担连带责任、失去自由。
     options:
-      - {id: a, text: 劝其退赃自首, scores: {honesty: 2, justice: 2, duty: 1, empathy: 1}, tag: courage}
-      - {id: b, text: 替其隐瞒, scores: {empathy: 2, honesty: -2, justice: -2}, tag: avoidance}
-      - {id: c, text: 匿名举报, scores: {justice: 2, duty: 1, empathy: -2}, tag: pragmatic}
+      - {id: a, text: 出庭作证,救友担责, scores: {honesty: 2, justice: 2, duty: 1, empathy: 1}, tag: courage}
+      - {id: b, text: 私下帮助,回避作证, scores: {empathy: 1, honesty: -1, justice: -1}, tag: pragmatic}
+      - {id: c, text: 明哲保身,沉默以对, scores: {empathy: -2, honesty: -2, justice: -2}, tag: avoidance}
   - id: v_d18
     type: dilemma
     prompt: 跳河救人,你可能终身残疾,对方是陌生孩子。
-    dimensions: [altruism, empathy, justice, discipline, duty]
+    dimensions: [altruism, empathy, discipline, duty]
     time_limit_sec: 15
     scenario: 陌生孩子落水,水流湍急。你若跳下大概率能救起,但自己可能瘫痪。无人看见。
     options:
@@ -413,6 +413,7 @@ questions:
       - {id: child, text: 子女, scores: {duty: 1, empathy: 1}}
       - {id: friend, text: 挚友, scores: {honesty: 1}}
       - {id: self, text: 与自己的关系, scores: {discipline: 1, honesty: 1}}
+      - {id: stranger, text: 与陌生人的连结, scores: {altruism: 1}}
   - id: v_s7
     type: sort
     prompt: 排序你最怕失去的东西(1=最怕失去)
@@ -424,6 +425,7 @@ questions:
       - {id: freedom, text: 自由, scores: {justice: 1}}
       - {id: faith, text: 信念, scores: {duty: 1}}
       - {id: wealth, text: 财富, scores: {discipline: -1}}
+      - {id: kinship, text: 助人的能力, scores: {altruism: 1}}
   - id: v_s8
     type: sort
     prompt: 排序你最珍视的品德(1=最珍视)
@@ -463,11 +465,11 @@ questions:
     prompt: 为避免他人痛苦,你可以说"善意的谎言"吗?
     dimensions: [honesty, empathy, altruism]
     points:
-      - {id: "1", text: 绝不说谎, scores: {honesty: 2, empathy: -1}}
+      - {id: "1", text: 绝不说谎, scores: {honesty: 2, empathy: -1, altruism: -1}}
       - {id: "2", text: 尽量诚实, scores: {honesty: 1}}
       - {id: "3", text: 看情况, scores: {}}
-      - {id: "4", text: 必要时会说, scores: {empathy: 1, honesty: -1}}
-      - {id: "5", text: 经常说, scores: {empathy: 2, honesty: -2}}
+      - {id: "4", text: 必要时会说, scores: {empathy: 1, honesty: -1, altruism: 1}}
+      - {id: "5", text: 经常说, scores: {empathy: 2, honesty: -2, altruism: 2}}
   - id: v_s4_scale
     type: scale
     prompt: 上级下达你确信有误的指令,你?
@@ -523,11 +525,11 @@ questions:
     prompt: 诚实与你珍视的其他价值冲突时,你?
     dimensions: [honesty, empathy, duty]
     points:
-      - {id: "1", text: 永远诚实优先, scores: {honesty: 2, empathy: -1}}
+      - {id: "1", text: 永远诚实优先, scores: {honesty: 2, empathy: -1, duty: 1}}
       - {id: "2", text: 倾向诚实, scores: {honesty: 1}}
       - {id: "3", text: 看情况, scores: {}}
-      - {id: "4", text: 可以为善而说谎, scores: {empathy: 1, honesty: -1}}
-      - {id: "5", text: 诚实非最高价值, scores: {empathy: 2, honesty: -2}}
+      - {id: "4", text: 可以为善而说谎, scores: {empathy: 1, honesty: -1, duty: -1}}
+      - {id: "5", text: 诚实非最高价值, scores: {empathy: 2, honesty: -2, duty: -2}}
   - id: v_s10_scale
     type: scale
     prompt: 你认为"公正"最接近?

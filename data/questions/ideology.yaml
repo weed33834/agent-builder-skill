@@ -99,14 +99,14 @@ questions:
       - {id: "5", text: 严格收紧, scores: {nationalist: 2, tradition: 1}}
   - id: i_s9
     type: scale
-    prompt: 传统家庭结构(异性婚姻+生育)是否应被倡导?
+    prompt: 学校教育应更侧重传统文化传承还是现代能力培养?
     dimensions: [tradition, progress]
     points:
-      - {id: "1", text: 强力倡导, scores: {tradition: 2}}
-      - {id: "2", text: 倾向倡导, scores: {tradition: 1}}
+      - {id: "1", text: 传统为重, scores: {tradition: 2}}
+      - {id: "2", text: 倾向传统, scores: {tradition: 1}}
       - {id: "3", text: 中立, scores: {}}
-      - {id: "4", text: 倾向多元, scores: {progress: 1}}
-      - {id: "5", text: 完全多元, scores: {progress: 2}}
+      - {id: "4", text: 倾向现代, scores: {progress: 1}}
+      - {id: "5", text: 现代为重, scores: {progress: 2}}
   - id: i_s10
     type: scale
     prompt: 面对气候问题,本国是否应承担与他国同等减排义务?
@@ -133,7 +133,7 @@ questions:
   - id: i_so2
     type: sort
     prompt: 排序你最看重的政府职能(1=最重要)
-    dimensions: [econ_left, econ_right, authority, liberty, tradition, progress, nationalist, globalist]
+    dimensions: [econ_left, econ_right, authority, liberty, tradition, progress]
     items:
       - {id: redistribute, text: 再分配财富, scores: {econ_left: 1}}
       - {id: market, text: 维护市场秩序, scores: {econ_right: 1}}
@@ -266,14 +266,14 @@ questions:
       - {id: c, text: 两者各半, scores: {econ_left: 0, econ_right: 0}, tag: pragmatic}
   - id: i_d2
     type: dilemma
-    prompt: 公共场所安保升级要求登记身份信息,你?
+    prompt: 城市规划要求征用老宅,补偿合理但老宅承载家族记忆,你?
     dimensions: [authority, liberty]
     time_limit_sec: 15
-    scenario: 安保升级能降低犯罪率,但每次进入公共场所都需核验身份,存在隐私让渡。
+    scenario: 城市更新能改善基础设施、惠及多数人,但需拆除你的祖宅。补偿金额公道,但记忆与情感无可替代。
     options:
-      - {id: a, text: 支持登记,安全优先, scores: {authority: 2}, tag: courage}
-      - {id: b, text: 反对登记,隐私优先, scores: {liberty: 2}, tag: courage}
-      - {id: c, text: 有监督的有限登记, scores: {authority: 1, liberty: 1}, tag: pragmatic}
+      - {id: a, text: 支持规划,服从公共, scores: {authority: 2}, tag: courage}
+      - {id: b, text: 主张保留,守护祖业, scores: {liberty: 2}, tag: courage}
+      - {id: c, text: 协商迁移,保留记忆, scores: {authority: 1, liberty: 1}, tag: pragmatic}
 
   # ===== 扩展排序题 =====
   - id: i_so4
@@ -348,14 +348,14 @@ questions:
       - {id: "5", text: 严格引导, scores: {tradition: 2}}
   - id: i_s20
     type: scale
-    prompt: 平台经济(外卖/网约车)的零工劳动者是否应享有正式工会权?
+    prompt: 公共服务(医疗/教育/养老)应主要由政府保障还是由市场供给?
     dimensions: [econ_left, econ_right]
     points:
-      - {id: "1", text: 强制保障, scores: {econ_left: 2}}
-      - {id: "2", text: 倾向保障, scores: {econ_left: 1}}
+      - {id: "1", text: 政府全责, scores: {econ_left: 2}}
+      - {id: "2", text: 倾向政府, scores: {econ_left: 1}}
       - {id: "3", text: 中立, scores: {}}
-      - {id: "4", text: 倾向自愿, scores: {econ_right: 1}}
-      - {id: "5", text: 不应干预, scores: {econ_right: 2}}
+      - {id: "4", text: 倾向市场, scores: {econ_right: 1}}
+      - {id: "5", text: 市场主导, scores: {econ_right: 2}}
   - id: i_s21
     type: scale
     prompt: 是否应对巨额遗产征收高税率遗产税?
@@ -378,14 +378,14 @@ questions:
       - {id: "5", text: 严格唯才, scores: {tradition: 2}}
   - id: i_s23
     type: scale
-    prompt: 是否应立法打击网络谣言与AI深度伪造内容?
+    prompt: 新兴技术(如基因编辑、脑机接口)的发展节奏应由谁把控?
     dimensions: [authority, liberty]
     points:
-      - {id: "1", text: 严格立法, scores: {authority: 2}}
-      - {id: "2", text: 倾向管控, scores: {authority: 1}}
+      - {id: "1", text: 严格监管, scores: {authority: 2}}
+      - {id: "2", text: 倾向监管, scores: {authority: 1}}
       - {id: "3", text: 中立, scores: {}}
-      - {id: "4", text: 倾向自律, scores: {liberty: 1}}
-      - {id: "5", text: 不应限制, scores: {liberty: 2}}
+      - {id: "4", text: 倾向自由, scores: {liberty: 1}}
+      - {id: "5", text: 完全开放, scores: {liberty: 2}}
   - id: i_s24
     type: scale
     prompt: 企业收集个人数据用于算法推荐是否应严格限制?
@@ -398,14 +398,14 @@ questions:
       - {id: "5", text: 允许自由使用, scores: {authority: 2}}
   - id: i_s25
     type: scale
-    prompt: 本国是否应提高移民配额以应对人口老龄化?
-    dimensions: [globalist, nationalist]
+    prompt: 国际文化交流中,本国应更强调文化输出还是吸纳融合?
+    dimensions: [nationalist, globalist]
     points:
-      - {id: "1", text: 大幅提高, scores: {globalist: 2}}
-      - {id: "2", text: 适度提高, scores: {globalist: 1}}
+      - {id: "1", text: 强力输出, scores: {nationalist: 2}}
+      - {id: "2", text: 倾向输出, scores: {nationalist: 1}}
       - {id: "3", text: 中立, scores: {}}
-      - {id: "4", text: 倾向收紧, scores: {nationalist: 1}}
-      - {id: "5", text: 严格收紧, scores: {nationalist: 2}}
+      - {id: "4", text: 倾向吸纳, scores: {globalist: 1}}
+      - {id: "5", text: 充分融合, scores: {globalist: 2}}
   - id: i_s26
     type: scale
     prompt: 是否应对进口商品加征关税以保护本国制造业?
@@ -480,14 +480,14 @@ questions:
       - {id: c, text: 视情况而定, scores: {progress: 1, tradition: 1}, tag: avoidance}
   - id: i_d7
     type: dilemma
-    prompt: 网络上出现极端仇视性言论,是否应平台封禁?
+    prompt: 突发重大灾害,政府是否可强制征用民间物资与场地?
     dimensions: [authority, liberty]
     time_limit_sec: 15
-    scenario: 某账号公开传播针对特定群体的仇视言论。封禁涉及言论边界,不封禁可能引发对立。
+    scenario: 灾害规模超出公共资源,征用私营资源能加速救援,但涉及财产权的边界与事后补偿。
     options:
-      - {id: a, text: 立即封禁, scores: {authority: 2}, tag: courage}
-      - {id: b, text: 保护表达,不封禁, scores: {liberty: 2}, tag: courage}
-      - {id: c, text: 限制扩散,标记警示, scores: {authority: 1, liberty: 1}, tag: pragmatic}
+      - {id: a, text: 紧急征用,生命优先, scores: {authority: 2}, tag: courage}
+      - {id: b, text: 仅限志愿征用, scores: {liberty: 2}, tag: courage}
+      - {id: c, text: 依法征用+事后补偿, scores: {authority: 1, liberty: 1}, tag: pragmatic}
   - id: i_d8
     type: dilemma
     prompt: 公共区域部署智能安防以降低犯罪率,你?

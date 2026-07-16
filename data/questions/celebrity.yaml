@@ -100,38 +100,38 @@ questions:
   # ===== 困境题(历史名人真实困境) =====
   - id: c_d1
     type: dilemma
-    prompt: 你发现上司在挪用公款,但 ta 是你恩人,且举报会让你失业。
+    prompt: 国家危亡之际,你被授权暂停一项基本权利以保全整体,但这违背你毕生信念。
     dimensions: [idealism, risk_taking]
     time_limit_sec: 15
-    scenario: 你在财务岗,发现一笔异常转账指向上司。ta 三年前在你母亲重病时借款救急。举报意味着你失业,且对方可能反咬。
+    scenario: 危机时刻,你握有决定权。暂停权利可稳局势,却与你坚守"权利不可让渡"的原则相悖。
     options:
-      - {id: a, text: 匿名举报,承担失业风险, scores: {idealism: 2, risk_taking: 2}, tag: courage}
-      - {id: b, text: 私下劝退,给对方退路, scores: {idealism: 1, risk_taking: 0}, tag: pragmatic}
-      - {id: c, text: 装作没看见,保住工作, scores: {idealism: -2, risk_taking: -1}, tag: avoidance}
+      - {id: a, text: 坚守原则,承受代价, scores: {idealism: 2, risk_taking: 2}, tag: courage}
+      - {id: b, text: 暂缓实施,寻求平衡, scores: {idealism: 1, risk_taking: 0}, tag: pragmatic}
+      - {id: c, text: 暂停权利,以稳为先, scores: {idealism: -2, risk_taking: -1}, tag: avoidance}
     historical_figure: 林肯
     historical_choice: a
   - id: c_d2
     type: dilemma
-    prompt: 你有一项颠覆性发明,公开会推动人类进步但会让你的公司破产。
+    prompt: 你的科研发现将造福无数人,但公开会让自己失去专利优先权与毕生心血。
     dimensions: [idealism, openness]
     time_limit_sec: 15
-    scenario: 你的发明能解决能源危机,但公开后你公司核心业务将归零,数千员工失业。
+    scenario: 你多年苦研终有突破。公开成果可推进人类福祉,但意味着你放弃独享的发现权与物质回报。
     options:
-      - {id: a, text: 公开发明,接受公司破产, scores: {idealism: 2, openness: 2}, tag: courage}
-      - {id: b, text: 内部转型,缓慢过渡, scores: {idealism: 0, openness: 1}, tag: pragmatic}
-      - {id: c, text: 封存专利,保住公司, scores: {idealism: -2, openness: -1}, tag: avoidance}
+      - {id: a, text: 公开成果,共享人类, scores: {idealism: 2, openness: 2}, tag: courage}
+      - {id: b, text: 谨慎公布,保留署名, scores: {idealism: 0, openness: 1}, tag: pragmatic}
+      - {id: c, text: 秘而不宣,独享成果, scores: {idealism: -2, openness: -1}, tag: avoidance}
     historical_figure: 居里夫人
     historical_choice: a
   - id: c_d3
     type: dilemma
-    prompt: 战争中你掌握情报,救一群平民会让你的潜伏身份暴露,导致更多同胞牺牲。
+    prompt: 你掌握资源能救危难中的一群人,但行善会让你失去全部身家。
     dimensions: [idealism, risk_taking]
     time_limit_sec: 15
-    scenario: 你是卧底。一个村庄即将被屠,你出手能救 200 人,但身份暴露后 5000 人计划失败。
+    scenario: 局势混乱,你手握工厂与财富。出手庇护可救百人,但资产会被查抄,你将一无所有。
     options:
-      - {id: a, text: 出手救眼前 200 人, scores: {idealism: 1, risk_taking: 2}, tag: courage}
-      - {id: b, text: 隐忍,保 5000 人计划, scores: {idealism: 0, risk_taking: -1}, tag: avoidance}
-      - {id: c, text: 试图两全,冒险传递情报, scores: {idealism: 2, risk_taking: 1}, tag: pragmatic}
+      - {id: a, text: 倾尽家产,护人周全, scores: {idealism: 1, risk_taking: 2}, tag: courage}
+      - {id: b, text: 暗中相助,量力而行, scores: {idealism: 0, risk_taking: -1}, tag: avoidance}
+      - {id: c, text: 设法周旋,两全其美, scores: {idealism: 2, risk_taking: 1}, tag: pragmatic}
     historical_figure: 辛德勒
     historical_choice: a
   - id: c_d4
@@ -250,14 +250,14 @@ questions:
     historical_choice: a
   - id: c_d8
     type: dilemma
-    prompt: 你的挚友成了你最大对手,你能用私密旧事击溃 ta,但会毁了 ta 一生。
+    prompt: 你因直言触怒当道,被贬至偏远之地,留则困顿、走则失志。
     dimensions: [agreeableness, risk_taking, idealism]
     time_limit_sec: 15
-    scenario: 你们曾无话不谈。如今在巅峰对决,曝光 ta 的旧错就能赢,但 ta 将万劫不复。
+    scenario: 你坚守立场却被流放至荒远。低头可重返中枢,但意味着放弃原则;坚守则一生困顿,却保全气节。
     options:
-      - {id: a, text: 公平较量,不用旧事, scores: {agreeableness: 2, idealism: 2, risk_taking: 1}, tag: courage}
-      - {id: b, text: 暗示警告,逼 ta 退让, scores: {agreeableness: -1, risk_taking: 0}, tag: pragmatic}
-      - {id: c, text: 曝光旧事,确保胜利, scores: {agreeableness: -2, idealism: -2, risk_taking: 2}, tag: avoidance}
+      - {id: a, text: 坚守立场,随遇而安, scores: {agreeableness: 2, idealism: 2, risk_taking: 1}, tag: courage}
+      - {id: b, text: 委婉致歉,寻机而动, scores: {agreeableness: -1, risk_taking: 0}, tag: pragmatic}
+      - {id: c, text: 公开认错,换取归途, scores: {agreeableness: -2, idealism: -2, risk_taking: 2}, tag: avoidance}
     historical_figure: 苏轼
     historical_choice: a
 
@@ -422,14 +422,14 @@ questions:
     historical_choice: a
   - id: c_d10
     type: dilemma
-    prompt: 你因直言触怒君主,死刑当前,可受辱免死,但史书未成。
+    prompt: 你因直言触怒君主,面临生死抉择,但你毕生心血尚未完成。
     dimensions: [idealism, conscientiousness, risk_taking]
     time_limit_sec: 15
-    scenario: 你正撰写一部空前史书,功亏一篑。赎命则倾家荡产,受辱则奇耻大辱,宁死则毕生心血湮灭。
+    scenario: 你正在撰写一部空前史书,功亏一篑。低头认罪可保全性命继续著述,却需承受屈辱;宁死不屈则心血湮灭,却保全气节。
     options:
-      - {id: a, text: 忍辱负重,完成史书, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}, tag: courage}
-      - {id: b, text: 倾家赎命,保全体面, scores: {idealism: 0, conscientiousness: 1}, tag: pragmatic}
-      - {id: c, text: 宁死不受辱, scores: {idealism: 1, conscientiousness: -1, risk_taking: 2}, tag: courage}
+      - {id: a, text: 忍辱负重,完成著述, scores: {idealism: 2, conscientiousness: 2, risk_taking: 1}, tag: courage}
+      - {id: b, text: 暂时低头,徐图后计, scores: {idealism: 0, conscientiousness: 1}, tag: pragmatic}
+      - {id: c, text: 宁死不屈,保全气节, scores: {idealism: 1, conscientiousness: -1, risk_taking: 2}, tag: courage}
     historical_figure: 司马迁
     historical_choice: a
   - id: c_d11
@@ -551,14 +551,14 @@ questions:
   # ===== 补足困境题(再加深历史回响) =====
   - id: c_d15
     type: dilemma
-    prompt: 你坚信地动说,权威判你重刑,只要公开认错就能活命。
+    prompt: 你毕生研究被视为禁忌,公开著作会触怒权威,但沉默会让真相湮灭。
     dimensions: [idealism, openness, risk_taking]
     time_limit_sec: 15
-    scenario: 你以理性确信日心说,但权威定性为异说。认错可活,但意味着背叛真理;坚持则被处死。
+    scenario: 你穷尽一生探索宇宙真相,但成果与当时主流教义相悖。公开发表可让真理流传,但你会被定性为叛逆、毕生心血或被焚毁。
     options:
-      - {id: a, text: 坚持真理,从容赴死, scores: {idealism: 2, openness: 2, risk_taking: 2}, tag: courage}
-      - {id: b, text: 表面认错,内心坚守, scores: {idealism: 1, openness: 1, risk_taking: 0}, tag: pragmatic}
-      - {id: c, text: 公开认错,保命要紧, scores: {idealism: -2, openness: -1, risk_taking: -2}, tag: avoidance}
+      - {id: a, text: 冒险刊印,让真理流传, scores: {idealism: 2, openness: 2, risk_taking: 2}, tag: courage}
+      - {id: b, text: 手稿密传,待后世发, scores: {idealism: 1, openness: 1, risk_taking: 0}, tag: pragmatic}
+      - {id: c, text: 销毁手稿,以保平安, scores: {idealism: -2, openness: -1, risk_taking: -2}, tag: avoidance}
     historical_figure: 布鲁诺
     historical_choice: a
   - id: c_d16
