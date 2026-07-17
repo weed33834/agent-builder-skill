@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 — 心镜</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="container">
+  <div class="take-header"><a href="/" class="back-link" data-i18n="common.back">← 返回</a></div>
+  <section class="bc-hero">
+    <div class="bc-eyebrow">SIGN IN</div>
+    <h2 class="bc-title">心镜账户</h2>
+    <p class="bc-select-sub">注册或登录,训练进度与对比码将绑定账户。</p>
+  </section>
+  <div class="auth-box">
+    <input id="email" class="compare-input" type="email" placeholder="邮箱" />
+    <input id="password" class="compare-input" type="password" placeholder="密码(至少 8 位)" />
+    <input id="nickname" class="compare-input" type="text" placeholder="昵称(注册可选)" />
+    <p id="auth-msg" class="compare-msg"></p>
+    <div class="compare-box">
+      <button class="btn-primary" id="btn-register" type="button">注册</button>
+      <button class="btn-secondary" id="btn-login" type="button">登录</button>
+    </div>
+  </div>
+</div>
+<script src="/i18n.js"></script>
+<script src="/app.js"></script>
+<script>
+  function msg(t, k){ const e=document.getElementById('auth-msg'); e.textContent=t||''; e.className='compare-msg'+(k?' '+k:''); }
+  async function doAuth(mode){
+    const email=document.getElementById('email').value.trim();
+    const pw=document.getElementById('password').value;
+    const nick=document.getElementById('nickname').value.trim();
+    try{
+      const data=await api.post('/api/auth/'+mode,{email:email,password:pw,nickname:nick||undefined});
+      setJwt(data.access_token);
+      location.href='/';
+    }catch(e){ msg((e.message||'失败').replace(/^\d+ /,''),'err'); }
+  }
+  document.getElementById('btn-register').addEventListener('click',()=>doAuth('register'));
+  document.getElementById('btn-login').addEventListener('click',()=>doAuth('login'));
+  injectLangSwitch();
+</script>
+</body>
+</html>

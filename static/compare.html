@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="compare.title">关系对比 — 心镜</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="container">
+  <div class="take-header">
+    <a href="/" class="back-link" data-i18n="common.back">← 返回</a>
+  </div>
+  <section class="bc-hero">
+    <div class="bc-eyebrow">COMPARE</div>
+    <h2 class="bc-title" data-i18n="compare.title">关系对比</h2>
+    <p class="bc-select-sub" data-i18n="compare.sub"></p>
+  </section>
+  <div class="compare-box">
+    <input id="code" class="compare-input" type="text" data-i18n-placeholder="compare.placeholder" placeholder="粘贴对方的对比码" />
+    <button class="btn-primary" id="btn-compare" type="button" data-i18n="compare.go">开始对比</button>
+    <button class="btn-secondary" id="btn-copy" type="button" data-i18n="compare.copy_mine">复制我的对比码</button>
+  </div>
+  <p id="compare-msg" class="compare-msg"></p>
+  <div id="compare-result"></div>
+</div>
+<script src="/i18n.js"></script>
+<script src="/app.js"></script>
+<script src="/compare.js"></script>
+<script>injectLangSwitch();</script>
+</body>
+</html>

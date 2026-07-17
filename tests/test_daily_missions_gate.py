@@ -439,22 +439,23 @@ async def test_TC_D4_normal_flow_no_account_creation_loop(client):
 # --------------------------------------------------------------------------- #
 # TC-E 系列：频控（R5）—— 代码未实现，标记 N/A
 # --------------------------------------------------------------------------- #
-async def test_TC_E1_E2_rate_limiting_not_implemented(client):
-    # 静态证据：missions service / routes 中无 throttle / rate-limit 关键字
-    assert "throttle" not in SVC
-    assert "slowapi" not in ROUTES
-    # 行为证据：同用户连续多次 POST /api/goals 全放行，无 429 → 频控未生效
+async def test_TC_E1_E2_rate_limiting_enforced(client):
+    # 行为证据：同用户短时间内超过阈值 → 429（R5 防刷 streak/徽章）
+    from app.core.config import get_settings
+
+    limit = get_settings().rate_limit_per_minute
     ua = await _seed_user(str(uuid.uuid4()))
     codes = []
-    for _ in range(3):
+    for _ in range(limit + 3):
         r = await client.post(
             "/api/goals",
             json={"trait_target": "more_decisive", "source_figure": "lincoln"},
             headers=H(ua.token),
         )
         codes.append(r.status_code)
-    assert 429 not in codes, f"unexpected 429: {codes}"
-    # 结论：E1/E2 = N/A（未实现，prod 前必须配置）
+    assert 429 in codes, f"expected 429 after exceeding limit, got: {codes}"
+    # 静态证据：写端点已接入 rate_limit 依赖
+    assert "rate_limit" in ROUTES
 
 
 # --------------------------------------------------------------------------- #
@@ -486,5 +487,5 @@ async def test_section6_static_checks(client):
     # strict_prompt 来自模板 tpl['strict_prompt']，而非用户输入
     assert "tpl['strict_prompt']" in SVC
 
-    # 6) 错误信息统一「资源不存在」（P1-7）—— 注意 /api/missions/today 例外（F1）
+    # 6) 错误信息统一「资源不存在」（P1-7,含 /api/missions/today,F1 已修复）
     assert 'detail="资源不存在"' in ROUTES

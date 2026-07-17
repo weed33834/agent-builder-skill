@@ -9,7 +9,7 @@
 - **范围**：mindmirror 新特性「教官每日任务」（TrainingGoal / DailyMission / MissionCompletion / streak，路由 /api/goals、/api/missions/*）。
 - **阶段**：本地匿名 token（local anon UUID）阶段。
 - **依据**：Phase 1 安全评审 must-fix（P0-2 资源归属 / P0-3 写入禁静默建号 / P1-4 输入校验 / P1-6 幂等+streak 服务端 / P1-7 统一 404）+ 设计补充约束（R1–R5）。
-- **独立阻塞（非本清单门禁，需 team-lead 跟踪）**：P0-1 生产真实登录（jwt/wx 真实验签）当前代码层**未实现**，`validate_production` 对 jwt/wx 的放行是假安全；prod 上线前必须落地，否则 goals/streak 身份基础不成立。
+- **独立阻塞（非本清单门禁，需 team-lead 跟踪）**：P0-1 生产真实登录 —— **jwt 路径已落地**（register/login + Bearer 双模 + 密码 pbkdf2 哈希），`validate_production` 对 jwt 已可真实验签；**wx 登录仍待实现**（需 appid/secret 外部凭据，`validate_production` 已显式拒绝 wx）。goals/streak 身份基础在 jwt 模式下成立。
 - **路径约定**：完成接口以 team-lead 给定为准 `POST /api/missions/{mission_id}/tasks/{task_id}/complete`。若 backend 最终实现改为 body 传 `{mission_id, task_id}`，请将本文路径参数平移为 JSON body，**断言不变**。
 
 ## 0. 测试前置（Fixtures）
@@ -20,7 +20,7 @@
 - **B_mission / B_mission_id**：B 名下 DailyMission（A 不拥有）。
 - **A_mission_future**：A 名下 `mission_date` 为「明天」（超出 `MISSION_GRACE_DAYS=0`）的 DailyMission。
 - **服务器时区**：测试环境显式设为 `Asia/Shanghai`（R3 用例依赖）。
-- **频控**：默认开启（R5 用例依赖），阈值按 §5 建议配置。
+- **频控**：已实现（per-user 内存固定窗口，默认 30/min，单实例；多实例部署须换 Redis 共享存储）。
 
 ## 1. 越权 / 资源归属（P0-2 / P1-7 / R1 / R2）
 
@@ -170,7 +170,7 @@ backend 实现后，除运行上述用例外，须静态确认：
 - [ ] 所有 `/api/missions/*` 路由改用 `RequireUser`（非 `current_user` 自动建号）（P0-3）。
 - [ ] 服务器时区显式 `Asia/Shanghai`（配置或启动项）（R3）。
 - [ ] `source_figure` 回包 `name` 取自 `celebrity.yaml`，无用户可控文本进入 `strict_prompt`（P1-5 复核）。
-- [ ] 错误信息统一「资源不存在」，无按存在性/归属差异化的分支（P1-7）。
+- [x] 错误信息统一「资源不存在」，无按存在性/归属差异化的分支（P1-7；F1 已修复 /today 例外）。
 
 ## 7. 门禁总览（Gate）
 
@@ -182,7 +182,7 @@ backend 实现后，除运行上述用例外，须静态确认：
   §6 静态核查全部 ✓。
 - **[P1] 必过（失败需 team-lead 决策；R5 频控 prod 前必须配置）**：
   TC-B4（时区）、TC-C3、TC-C4、TC-D4（建号流）、TC-E1、TC-E2（频控）。
-- **独立 prod 阻塞（非本清单门禁，需 team-lead 跟踪）**：P0-1 生产真实登录（jwt/wx 真实验签）未实现，prod 上线前必须落地。
+- **独立 prod 阻塞（非本清单门禁，需 team-lead 跟踪）**：P0-1 生产真实登录 —— jwt 已落地（见上）；wx 仍待实现（需外部凭据）。
 
 ## 8. 与 R1–R5 映射速查
 

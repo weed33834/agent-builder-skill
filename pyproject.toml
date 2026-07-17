@@ -12,6 +12,7 @@ dependencies = [
     "httpx>=0.27",
     "pendulum>=3.0",
     "python-ulid>=3.0",
+    "pyjwt>=2.8",
 ]
 
 [project.optional-dependencies]

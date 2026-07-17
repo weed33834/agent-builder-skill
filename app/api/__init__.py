@@ -1,3 +1,3 @@
-from app.api.routes import assessments, missions, results, sessions
+from app.api.routes import assessments, auth, missions, results, sessions
 
-ROUTERS = [assessments.router, sessions.router, results.router, missions.router]
+ROUTERS = [assessments.router, sessions.router, results.router, missions.router, auth.router]

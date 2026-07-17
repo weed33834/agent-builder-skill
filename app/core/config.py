@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     auth_secret: str = "change-me-in-production"
     auth_provider: str = "local"  # local | jwt | wx
 
+    rate_limit_per_minute: int = 30  # 单用户每分钟写请求上限(R5 防刷)
+
     @property
     def cors_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
@@ -44,6 +46,8 @@ class Settings(BaseSettings):
             problems.append("生产环境必须设置 auth_secret")
         if self.auth_provider == "local":
             problems.append("生产环境必须配置非 local 的 auth_provider")
+        elif self.auth_provider == "wx":
+            problems.append("wx 登录尚未实现,生产暂不可用(仅 jwt 已落地)")
         if self.database_url.startswith("sqlite"):
             problems.append("生产环境不应使用 SQLite")
         if problems:

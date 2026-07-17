@@ -139,7 +139,10 @@ function missionHtml() {
       <p class="bc-sub">${escapeHtml(state.goal ? (state.goal.trait_target || '') : '')} · ${mmI18n.t('bootcamp.account')}</p>
     </section>
     ${streakBlockHtml()}
-    <div class="task-list">${tasks}</div>`;
+    <div class="task-list">${tasks}</div>
+    <div class="actions bc-share-row">
+      <button class="btn-secondary" type="button" data-share="1">${mmI18n.t('bootcamp.share_btn')}</button>
+    </div>`;
 }
 
 function doneHtml() {
@@ -157,6 +160,8 @@ function doneHtml() {
       <div class="actions">
         <a href="/" class="btn-primary" data-i18n="bootcamp.tomorrow">${mmI18n.t('bootcamp.tomorrow')}</a>
         <a href="/report.html${resultId ? '?id=' + escapeHtml(resultId) : ''}" class="btn-secondary" data-i18n="bootcamp.result_link">${mmI18n.t('bootcamp.result_link')}</a>
+        <a href="/compare.html" class="btn-secondary" data-i18n="compare.title">${mmI18n.t('compare.title')}</a>
+        <button class="btn-secondary" type="button" data-share="1">${mmI18n.t('bootcamp.share_btn')}</button>
       </div>
     </section>`;
 }
@@ -326,6 +331,103 @@ function updateStreakDom() {
   if (seal) seal.classList.toggle('locked', !state.badge);
 }
 
+// ===== 分享卡（viral hook）=====
+function shareCard() {
+  if (!state.goal) {
+    state.error = mmI18n.t('bootcamp.share_no_data');
+    state.status = 'error'; render(); return;
+  }
+  const W = 1080, H = 1350;
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  // 宣纸底 + 朱墨边框
+  ctx.fillStyle = '#f3ece0'; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#8b2e1f'; ctx.lineWidth = 8; ctx.strokeRect(40, 40, W - 80, H - 80);
+  ctx.textAlign = 'center';
+  // 标题
+  ctx.fillStyle = '#2b2622'; ctx.font = '600 56px "Noto Serif SC", serif';
+  ctx.fillText('心镜 · 铁血训练营', W / 2, 165);
+  ctx.fillStyle = '#8b2e1f'; ctx.font = '400 30px "Noto Serif SC", serif';
+  ctx.fillText('MindMirror Bootcamp', W / 2, 212);
+  // 目标特质
+  const trait = state.goal.trait_label || mmI18n.t('bootcamp.select_title');
+  ctx.fillStyle = '#2b2622'; ctx.font = '700 84px "Noto Serif SC", serif';
+  ctx.fillText(trait, W / 2, 430);
+  ctx.fillStyle = '#6b6157'; ctx.font = '400 30px "Noto Serif SC", serif';
+  ctx.fillText(mmI18n.t('bootcamp.mission_eyebrow'), W / 2, 478);
+  // 连续天数（大字）
+  const s = state.streak || 0;
+  ctx.fillStyle = '#8b2e1f'; ctx.font = '800 200px "Noto Serif SC", serif';
+  ctx.fillText(String(s), W / 2, 760);
+  ctx.fillStyle = '#2b2622'; ctx.font = '400 34px "Noto Serif SC", serif';
+  const sub = state.badge
+    ? mmI18n.t('bootcamp.badge_short')
+    : mmI18n.t('bootcamp.badge_hint_progress', { n: Math.max(0, 7 - s) });
+  ctx.fillText(mmI18n.t('bootcamp.streak_unit') + ' · ' + sub, W / 2, 830);
+  // 分隔线
+  ctx.strokeStyle = '#d8cdbb'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(120, 900); ctx.lineTo(W - 120, 900); ctx.stroke();
+  // 文案
+  ctx.fillStyle = '#6b6157'; ctx.font = '400 30px "Noto Serif SC", serif';
+  ctx.fillText(mmI18n.t('bootcamp.share_hint'), W / 2, 980);
+  // 页脚日期
+  ctx.fillStyle = '#8b2e1f'; ctx.font = '400 28px "Noto Serif SC", serif';
+  const d = new Date();
+  const ds = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+  ctx.fillText('心镜 MindMirror · ' + ds, W / 2, 1240);
+
+  showShareOverlay(c.toDataURL('image/png'));
+}
+
+function showShareOverlay(url) {
+  let ov = document.getElementById('share-overlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'share-overlay';
+    ov.className = 'share-overlay';
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = `
+    <div class="share-modal">
+      <h3>${escapeHtml(mmI18n.t('bootcamp.share_title'))}</h3>
+      <img class="share-img" src="${url}" alt="share card" />
+      <div class="share-actions">
+        <button class="btn-primary" type="button" data-share-save="1">${escapeHtml(mmI18n.t('bootcamp.share_save'))}</button>
+        <button class="btn-secondary" type="button" data-share-via="1">${escapeHtml(mmI18n.t('bootcamp.share_via'))}</button>
+        <button class="btn-ghost" type="button" data-share-close="1">×</button>
+      </div>
+    </div>`;
+  ov.style.display = 'flex';
+  ov.onclick = (e) => {
+    if (e.target === ov || e.target.dataset.shareClose) ov.style.display = 'none';
+    else if (e.target.dataset.shareSave) downloadDataUrl(url, 'mindmirror-bootcamp.png');
+    else if (e.target.dataset.shareVia) shareViaWeb(url);
+  };
+}
+
+function downloadDataUrl(url, name) {
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+async function shareViaWeb(url) {
+  try {
+    const blob = await (await fetch(url)).blob();
+    const file = new File([blob], 'mindmirror-bootcamp.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: mmI18n.t('bootcamp.share_title'),
+        text: mmI18n.t('bootcamp.share_hint'),
+      });
+      return;
+    }
+  } catch (e) { /* 用户取消或非安全上下文,回落下载 */ }
+  downloadDataUrl(url, 'mindmirror-bootcamp.png');
+}
+
 // ===== 事件委托 =====
 function onBootcampClick(e) {
   const t = e.target.closest ? e.target : (e.target.parentNode || null);
@@ -337,6 +439,8 @@ function onBootcampClick(e) {
   if (toggle) { toggleStrict(toggle.dataset.toggleStrict); return; }
   const retry = t && t.closest ? t.closest('[data-retry]') : null;
   if (retry) { retryAction(); return; }
+  const share = t && t.closest ? t.closest('[data-share]') : null;
+  if (share) { shareCard(); return; }
 }
 function toggleStrict(taskId) {
   const el = document.querySelector(`[data-strict="${taskId}"]`);

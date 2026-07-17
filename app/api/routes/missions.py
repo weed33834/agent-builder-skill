@@ -1,11 +1,13 @@
 """教官每日任务路由 —— 全部端点强制 RequireUser(P0-2 / P0-3)。"""
 
 import pendulum
-from fastapi import APIRouter, HTTPException
+from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import DbSession, RequireUser
+from app.core.ratelimit import rate_limit
 from app.models.mission import DailyMission, TRAIT_LABELS, TrainingGoal
 from app.schemas.mission import GoalCreate, GoalOut, MissionOut, StreakOut, TaskOut
 from app.services.missions import (
@@ -43,7 +45,12 @@ def _to_mission_out(mission: DailyMission) -> MissionOut:
 
 
 @router.post("/goals", status_code=201)
-async def create_goal(body: GoalCreate, user: RequireUser, db: DbSession) -> GoalOut:
+async def create_goal(
+    body: GoalCreate,
+    user: RequireUser,
+    db: DbSession,
+    _: Annotated[None, Depends(rate_limit)],
+) -> GoalOut:
     if body.source_figure is not None and not _is_known_figure(body.source_figure):
         raise HTTPException(status_code=422, detail="source_figure 不是有效名人 id")
     # 旧 goal 软失效
@@ -77,12 +84,18 @@ async def my_goal(user: RequireUser, db: DbSession) -> GoalOut:
 async def get_today(user: RequireUser, db: DbSession) -> MissionOut:
     mission = await get_today_mission(db, user)
     if mission is None:
-        raise HTTPException(status_code=404, detail="请先完成至少一次测评")
+        raise HTTPException(status_code=404, detail="资源不存在")
     return _to_mission_out(mission)
 
 
 @router.post("/missions/{mission_id}/tasks/{task_id}/complete")
-async def complete(mission_id: str, task_id: str, user: RequireUser, db: DbSession) -> dict:
+async def complete(
+    mission_id: str,
+    task_id: str,
+    user: RequireUser,
+    db: DbSession,
+    _: Annotated[None, Depends(rate_limit)],
+) -> dict:
     mission, streak = await complete_task(db, user, mission_id, task_id)
     return {
         "mission": _to_mission_out(mission),

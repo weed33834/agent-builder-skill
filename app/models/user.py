@@ -11,6 +11,9 @@ class User(UlidPkMixin, Base):
 
     token: Mapped[str] = mapped_column(String(64), unique=True, index=True)  # 本地 token
     nickname: Mapped[str] = mapped_column(String(64))
+    # 真实登录(JWT 路径):邮箱 + 密码哈希;匿名用户这两列为 NULL
+    email: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True, index=True)
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     # 上线扩展位:wx openid / JWT sub
     external_id: Mapped[str | None] = mapped_column(String(128), unique=True, nullable=True, index=True)
     # 用户偏好(语言/主题等),避免后续加列

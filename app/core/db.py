@@ -2,6 +2,7 @@
 
 from collections.abc import AsyncGenerator
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from app.core.config import get_settings
@@ -31,3 +32,27 @@ async def init_db() -> None:
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # 本地 SQLite 增量迁移(无 Alembic):补齐 user 表新增列
+        await _migrate_users(conn)
+
+
+async def _migrate_users(conn) -> None:
+    """已有库缺 email/password_hash 时 ALTER 补列。
+
+    SQLite 不支持 ALTER ADD COLUMN ... UNIQUE,故分两步:先加裸列,再建唯一索引。
+    """
+
+    def _cols(sync_conn):
+        from sqlalchemy import inspect as _inspect
+
+        return {c["name"] for c in _inspect(sync_conn).get_columns("users")}
+
+    cols = await conn.run_sync(_cols)
+    if "email" not in cols:
+        await conn.execute(text("ALTER TABLE users ADD COLUMN email VARCHAR(255)"))
+        # 唯一索引(允许多个 NULL,兼容存量匿名用户)
+        await conn.execute(
+            text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_email ON users(email)")
+        )
+    if "password_hash" not in cols:
+        await conn.execute(text("ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)"))

@@ -8,19 +8,33 @@ function getToken() {
   return t;
 }
 
-// API 客户端 —— 自动带 X-User-Token
+// JWT(真实登录)存于此 key;存在时请求带 Bearer,否则回退匿名 uuid
+const JWT_KEY = 'mindmirror_jwt';
+function getJwt() { return localStorage.getItem(JWT_KEY) || ''; }
+function setJwt(t) { if (t) localStorage.setItem(JWT_KEY, t); else localStorage.removeItem(JWT_KEY); }
+
+// API 客户端 —— 有 JWT 带 Bearer,否则带匿名 X-User-Token
 const api = {
+  _headers(extra) {
+    const h = Object.assign({}, extra);
+    const jwt = getJwt();
+    if (jwt) h['Authorization'] = 'Bearer ' + jwt;
+    else h['X-User-Token'] = getToken();
+    return h;
+  },
   async get(url) {
-    const r = await fetch(url, { headers: { 'X-User-Token': getToken() } });
+    const r = await fetch(url, { headers: this._headers({}) });
+    if (r.status === 401 && getJwt()) setJwt('');  // 令牌失效则清掉,回退匿名
     if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
     return r.json();
   },
   async post(url, body) {
     const r = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-User-Token': getToken() },
+      headers: this._headers({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(body || {}),
     });
+    if (r.status === 401 && getJwt()) setJwt('');
     if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
     return r.json();
   },
