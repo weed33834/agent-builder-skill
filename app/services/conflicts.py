@@ -11,6 +11,16 @@ from collections import defaultdict
 from app.data import load_bank
 
 
+def _truncate(text: str, max_len: int = 24) -> str:
+    """安全截断文本,避免切断语义单元。
+
+    #27 修复:按字符截断后追加省略号,确保不会切断多字节字符。
+    """
+    if len(text) <= max_len:
+        return text
+    return text[:max_len] + "…"
+
+
 def detect_conflicts(assessment_type: str, answers, behavior: dict) -> list[dict]:
     """四类冲突源 + 严重度评分,最多 5 条。
 
@@ -42,7 +52,7 @@ def detect_conflicts(assessment_type: str, answers, behavior: dict) -> list[dict
             sev = 3 if ans.duration_ms > median * 4 else 2
             cand = {
                 "question_id": q.id,
-                "description": f"在「{q.prompt[:28]}...」上犹豫较久,此处存在内在张力",
+                "description": f"在「{_truncate(q.prompt)}」上犹豫较久,此处存在内在张力",
                 "conflict_type": "high_hesitation",
                 "severity": sev,
             }
@@ -52,7 +62,7 @@ def detect_conflicts(assessment_type: str, answers, behavior: dict) -> list[dict
         if ans.change_count >= 3:
             cand = {
                 "question_id": q.id,
-                "description": f"在「{q.prompt[:28]}...」上多次改主意,价值未定型",
+                "description": f"在「{_truncate(q.prompt)}」上多次改主意,价值未定型",
                 "conflict_type": "frequent_change",
                 "severity": 3 if ans.change_count >= 4 else 2,
             }
@@ -175,7 +185,7 @@ def _detect_dimension_conflicts(dim_directions: dict, q_by_id: dict) -> list[dic
             if q1 and q2:
                 out.append({
                     "question_id": f"{pos_q}+{neg_q}",
-                    "description": f"在「{dim}」维度上,你在不同题中给出方向相反的答案——「{q1.prompt[:18]}」与「{q2.prompt[:18]}」,反映内在未解的张力",
+                    "description": f"在「{dim}」维度上,你在不同题中给出方向相反的答案——「{_truncate(q1.prompt, 16)}」与「{_truncate(q2.prompt, 16)}」,反映内在未解的张力",
                     "conflict_type": "dimension_contradiction",
                     "severity": 3,
                 })
@@ -201,7 +211,7 @@ def _detect_iat_conflicts(answers, q_by_id: dict) -> list[dict]:
         if len(errors) >= len(reactions) * 0.3:  # 30% 以上错答
             out.append({
                 "question_id": q.id,
-                "description": f"IAT「{q.prompt[:24]}」中错答比例较高,你的内隐联想与外显判断可能存在分裂",
+                "description": f"IAT「{_truncate(q.prompt, 20)}」中错答比例较高,你的内隐联想与外显判断可能存在分裂",
                 "conflict_type": "iat_implicit_explicit",
                 "severity": 2,
             })
@@ -210,7 +220,7 @@ def _detect_iat_conflicts(answers, q_by_id: dict) -> list[dict]:
         if rts and max(rts) > sum(rts) / len(rts) * 2:
             out.append({
                 "question_id": q.id,
-                "description": f"IAT「{q.prompt[:24]}」中部分词汇反应时显著延长,潜意识层面存在犹豫",
+                "description": f"IAT「{_truncate(q.prompt, 20)}」中部分词汇反应时显著延长,潜意识层面存在犹豫",
                 "conflict_type": "iat_hesitation",
                 "severity": 2,
             })

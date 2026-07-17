@@ -1,12 +1,11 @@
-"""计分引擎 v2 —— 行为加权 + 矛盾追踪 + 归一化到 0-100。
+"""计分引擎 v3 —— 选项分值累加 + 矛盾追踪 + 归一化到 0-100。
 
 平台无关:输入纯数据,输出纯数据。HTTP/小程序/CLI 都可调。
 
-v2 升级:
-- 行为加权:耗时适中(3-15s)的答案权重 1.0;过快(<1s,随意)与超时(本能)权重 0.7
-- 改主意惩罚:change_count ≥2 的答案权重 0.8(价值未定型,信号弱)
-- 排序题权重非线性递减
-- 归一化分维度按理论极值(量表/困境/分配各算)
+v3 升级(#8 #18 修复):
+- 行为数据不再影响维度得分,仅用于行为洞察与矛盾检测
+- 归一化按各维度理论极值计算,边界与实际计分规则一致
+- 排序题位置权重非线性递减
 """
 
 import statistics
@@ -22,34 +21,13 @@ from app.services.percentiles import estimate_percentiles
 from app.services.summary import build_summary
 
 
-def _answer_weight(ans) -> float:
-    """根据行为轨迹给答案加权。
-
-    - 耗时 1-3s:0.85(偏快,可能未深思)
-    - 耗时 3-15s:1.0(理想区间)
-    - 耗时 >15s 或超时:0.75(本能或纠结)
-    - 改主意 ≥2:×0.85(价值未定型)
-    """
-    w = 1.0
-    ms = ans.duration_ms
-    if ms < 1000:
-        w *= 0.7  # 极速,几乎随意
-    elif ms < 3000:
-        w *= 0.85
-    elif ms > 15000:
-        w *= 0.75
-    if ans.change_count >= 2:
-        w *= 0.85
-    return w
-
-
 def _score_answers(assessment_type: str, answers: SubmitAnswersIn) -> dict[str, float]:
-    """按选项 scores 映射 + 行为加权 → 归一化到 0-100。
+    """按选项 scores 映射 → 归一化到 0-100。
 
-    归一化策略 v3:对每个维度,先计算"该维度所有题的分数理论上下限"
+    #8 修复:行为权重不再影响维度分(仅用于行为洞察),归一化边界与计分规则一致。
+    归一化策略:对每个维度,先计算"该维度所有题的分数理论上下限"
     (即所有题都选最强正向 / 最强负向时的累计分),再用线性映射
-    raw → [min, max] ⇒ [0, 100]。这根治"题库 scores 全正"导致
-    所有人都 90+ 的极值偏移问题。
+    raw → [min, max] ⇒ [0, 100]。
     """
     bank = load_bank(assessment_type)
     raw: dict[str, float] = defaultdict(float)
@@ -59,17 +37,15 @@ def _score_answers(assessment_type: str, answers: SubmitAnswersIn) -> dict[str, 
         q = q_by_id.get(ans.question_id)
         if q is None:
             continue
-        w = _answer_weight(ans)
-        _accumulate(q, ans.answer, raw, w)
+        _accumulate(q, ans.answer, raw)
 
     # 排序题:位置越靠前权重越大,递减系数 0.15
     # 注意:auction 题也有 items 属性,必须用 type 明确判断,不能用 getattr(q,"items")
     for ans in answers.answers:
         q = q_by_id.get(ans.question_id)
         if q and q.type == "sort" and "order" in ans.answer:
-            w = _answer_weight(ans)
             for idx, item_id in enumerate(ans.answer["order"]):
-                weight = (1.0 - idx * 0.15) * 2.0 * w
+                weight = (1.0 - idx * 0.15) * 2.0
                 item = next((i for i in q.items if i.id == item_id), None)  # type: ignore[union-attr]
                 if item:
                     for dim, v in item.scores.items():
@@ -116,11 +92,14 @@ def _compute_dim_bounds(bank) -> dict[str, tuple[float, float]]:
                     if dim in opt.scores:
                         contribs_by_dim[dim].append(opt.scores[dim] * 1.0)
         elif qtype == "allocation":
-            # 分配题:每个 target 可分配 0-100% → 贡献 = score × (pct/100) × 2
-            # 单 target 最大贡献 = score × 2;最小 = 0
+            # #9 修复:分配题总和必须 = total,不能所有 target 都给 0%
+            # 每维度:max = 给得分最高的 target 分配 100%;min = 给得分最低的 target 分配 100%
+            alloc_dims: set[str] = set()
             for tgt in q.targets:
-                for dim, v in tgt.scores.items():
-                    contribs_by_dim[dim].extend([0.0, v * 2.0])
+                alloc_dims.update(tgt.scores.keys())
+            for dim in alloc_dims:
+                vals = [tgt.scores.get(dim, 0.0) * 2.0 for tgt in q.targets]
+                contribs_by_dim[dim].extend([min(vals), max(vals)])
         elif qtype == "slider":
             # 滑块:low(端点0)或 high(端点100)
             for dim, bounds in q.scores.items():
@@ -190,29 +169,28 @@ def _compute_dim_bounds(bank) -> dict[str, tuple[float, float]]:
     return out
 
 
-def _accumulate(q, answer: dict, raw: dict[str, float], w: float) -> None:
-    """各题型分数累加(带行为权重 w)。
+def _accumulate(q, answer: dict, raw: dict[str, float]) -> None:
+    """各题型分数累加(行为权重已移除,仅按选项分值累加)。
 
-    注:旧的 weight_sum(行为加权绝对值和)已删除——v3 改用 _compute_dim_bounds
-    算理论上下限作归一化基准后,该变量从未被读取。
+    #8 修复:行为数据(duration/change_count)不再影响维度分,仅用于行为洞察。
     """
     qtype = q.type
     if qtype == "scale" and "option_id" in answer:
         for p in q.points:
             if p.id == answer["option_id"]:
                 for k, v in p.scores.items():
-                    raw[k] += v * w
+                    raw[k] += v
     elif qtype == "dilemma" and "option_id" in answer:
         for opt in q.options:
             if opt.id == answer["option_id"]:
                 for k, v in opt.scores.items():
-                    raw[k] += v * w
+                    raw[k] += v
     elif qtype == "allocation":
         alloc = answer.get("allocation", {})
         for tgt in q.targets:
             pct = alloc.get(tgt.id, 0) / 100.0
             for dim, v in tgt.scores.items():
-                raw[dim] += v * pct * 2 * w
+                raw[dim] += v * pct * 2
     elif qtype == "slider" and "position" in answer:
         # 连续滑块:position 0-100 线性插值 low→high
         pos = max(0.0, min(100.0, float(answer["position"]))) / 100.0
@@ -220,13 +198,13 @@ def _accumulate(q, answer: dict, raw: dict[str, float], w: float) -> None:
             low = bounds.get("low", 0.0)
             high = bounds.get("high", 0.0)
             v = low + (high - low) * pos
-            raw[dim] += v * w
+            raw[dim] += v
     elif qtype == "forced_choice" and "choice" in answer:
         # 强迫二选一:选中侧全分(无妥协)
         for side in q.sides:
             if side.id == answer["choice"]:
                 for k, v in side.scores.items():
-                    raw[k] += v * w * 1.5  # 强迫选择信号强,加权 1.5
+                    raw[k] += v * 1.5  # 强迫选择信号强,加权 1.5
     elif qtype == "matrix" and "ratings" in answer:
         # 同意度矩阵:rating 1-7 映射到 -3..+3,乘以陈述的权重因子
         ratings = answer["ratings"]
@@ -240,16 +218,16 @@ def _accumulate(q, answer: dict, raw: dict[str, float], w: float) -> None:
             norm = (r - mid) / ((smax - 1) / 2)
             for dim, factor in stmt.scores.items():
                 v = norm * factor
-                raw[dim] += v * w
+                raw[dim] += v
     elif qtype == "auction" and "bids" in answer:
         # 价值观拍卖:出价比例映射(预算可省,测绝对价值)
         budget = q.budget
         bids = answer["bids"]
         for item in q.items:
             bid = bids.get(item.id, 0)
-            ratio = max(0.0, bid) / budget  # 0..1
+            ratio = max(0.0, min(float(bid), float(budget))) / budget  # 0..1,防御性 clamp
             for dim, v in item.scores.items():
-                raw[dim] += v * ratio * 2 * w
+                raw[dim] += v * ratio * 2
 
 
 def _normalize(raw_score: float, bounds: tuple[float, float]) -> float:

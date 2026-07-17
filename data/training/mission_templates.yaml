@@ -1,0 +1,88 @@
+version: 1
+drill_prefix: "听令。今日三道令,不许讨价还价。"
+
+# 特质 → 偏好信号(生成优先序)
+traits:
+  more_decisive:
+    label: "更果断"
+    preferred_signals: [ambivalence_high, decision_slow, consistency_low]
+  more_courageous:
+    label: "更敢担当"
+    preferred_signals: [courage_low, ambivalence_high, iat_undecided]
+  more_resolute:
+    label: "更坚定"
+    preferred_signals: [consistency_low, ambivalence_high, courage_low]
+  more_action:
+    label: "更敢行动"
+    preferred_signals: [courage_low, decision_slow, ambivalence_high]
+  more_principled:
+    label: "更守原则"
+    preferred_signals: [consistency_low, courage_low, iat_undecided]
+  more_focused:
+    label: "更专注"
+    preferred_signals: [decision_slow, ambivalence_high, consistency_low]
+
+# 信号:触发条件来自 insights;命中=该用户此项弱/需练
+signals:
+  ambivalence_high:
+    desc: "纠结度高"
+    when: { field: ambivalence.score, op: ">=", value: 50 }
+    templates:
+      - id: decide_in_30s
+        prompt: "挑一件今天必须定的小事,30 秒内拍板并写下理由。"
+        strict_prompt: "磨蹭者必失良机。30 秒内给老子定下来,理由写清,不准反悔。"
+      - id: one_call
+        prompt: "今天就一件事做主,事后不许改。"
+        strict_prompt: "今日只准做主一次,做了就认,回头改算逃兵。"
+  courage_low:
+    desc: "勇气指数低"
+    when: { field: courage_index.score, op: "<", value: 40 }
+    templates:
+      - id: costly_act
+        prompt: "今天做一件有代价的小事(花钱/费时/露怯皆可)。"
+        strict_prompt: "怕代价就永远软。今天干一件让你肉疼的小事,回来报数。"
+      - id: say_no
+        prompt: "今天对一件不想做的事,当面说'不'。"
+        strict_prompt: "今日当面拒一次,含糊其辞者罚。"
+  consistency_low:
+    desc: "一致性低"
+    when: { field: consistency.label, op: "==", value: "低" }
+    templates:
+      - id: hold_stance
+        prompt: "写下你对某件事的立场,日落前不许改。"
+        strict_prompt: "把立场刻下来,日落前敢改一字,算你输。"
+      - id: no_flip
+        prompt: "今天选一边站定,不因为别人反对就摇摆。"
+        strict_prompt: "墙头草最可鄙。今日站定一边,谁劝都不许改。"
+  decision_slow:
+    desc: "决策过慢(深思型)"
+    when: { field: decision_style.label, op: "==", value: "深思型" }
+    templates:
+      - id: quick_call
+        prompt: "选一件小事,用不超过 1 分钟决定。"
+        strict_prompt: "想太多就是怯。1 分钟内定,拖者加练。"
+      - id: timer_task
+        prompt: "给今天一个小决定设 60 秒倒计时,响铃即决。"
+        strict_prompt: "上计时器。铃响不决者,加练三件。"
+  iat_undecided:
+    desc: "内隐偏向未定/中立"
+    when: { field: iat_bias.label, op: "in", value: ["中立", "无数据"] }
+    templates:
+      - id: pick_side
+        prompt: "今天主动在一个两难里选边,并记录依据。"
+        strict_prompt: "骑墙最可耻。今日择一立场,写清为何,不许含糊。"
+      - id: state_why
+        prompt: "就一件你一直回避的事,明确写出你的倾向。"
+        strict_prompt: "躲闪者无能。把你的倾向写出来,敢认。"
+
+# 信号不足 3 个时的兜底(保证每天 3 个任务)
+fallback:
+  - id: micro_commit
+    prompt: "今天为你的目标做一件最小的承诺行动。"
+    strict_prompt: "空谈误己。今日为你的目标做一件最小的事,证明你不是嘴炮。"
+  - id: write_why
+    prompt: "写一句话:你为什么想变强。"
+    strict_prompt: "连自己为何而战都不知道,练个屁。写一句话交上来。"
+  - id: evening_review
+    prompt: "睡前回顾:今天哪次你本可以更果断?"
+    strict_prompt: "夜里复盘。今天哪次你软了?写下来,明天补上。"

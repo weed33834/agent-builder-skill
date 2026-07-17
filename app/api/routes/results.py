@@ -33,6 +33,7 @@ async def my_results(user: CurrentUser, db: DbSession) -> list[ResultSummary]:
             assessment_type=r.assessment_type,
             summary=r.summary,
             created_at=r.created_at.isoformat(),
+            profile=r.profile,  # #16 修复:传递已生成的 profile
         )
         for r in rows.scalars()
     ]

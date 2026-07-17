@@ -31,11 +31,11 @@ def _load_ideologies() -> list[dict]:
     return yaml.safe_load(path.read_text(encoding="utf-8")) or []
 
 
-def _match_pct_by_distance(user: dict[str, float], ref: dict[str, float], max_dist: float) -> float:
+def _match_pct_by_distance(user: dict[str, float], ref: dict[str, float]) -> float:
     """归一化欧氏距离 → 匹配度%。
 
-    距离 0 = 100% 匹配;距离 ≥ max_dist = 0%。
-    比余弦相似度更敏感于绝对差异,避免"所有人都 90%+"。
+    距离 0 = 100% 匹配;距离 ≥ 理论最大 = 0%。
+    #13 修复:移除未使用的 max_dist 死参数。
     """
     keys = set(user) & set(ref)
     if not keys:
@@ -53,7 +53,7 @@ def match_celebrity(dimensions: dict, answers, behavior) -> list[dict]:
     if not celebrities:
         return []
     scored = [
-        {**c, "match_pct": _match_pct_by_distance(dimensions, c["dims"], 100.0)}
+        {**c, "match_pct": _match_pct_by_distance(dimensions, c["dims"])}
         for c in celebrities
     ]
     scored.sort(key=lambda x: x["match_pct"], reverse=True)
@@ -89,7 +89,11 @@ def match_value(dimensions: dict, answers, behavior) -> list[dict]:
         tier, blurb = "理想型", "原则高于一切,常愿为此付代价"
 
     # 主导价值类型 —— 分数最高的维度
-    dominant = max(dimensions, key=lambda d: dimensions.get(d, 0))
+    # #14 修复:dimensions 为空时 max() 会抛 ValueError,增加防御
+    if not dimensions:
+        dominant = "unknown"
+    else:
+        dominant = max(dimensions, key=lambda d: dimensions.get(d, 0))
     type_map = {
         "honesty": "诚实至上者", "altruism": "利他主义者", "justice": "公正守护者",
         "duty": "责任承担者", "empathy": "共情型", "discipline": "自律型",

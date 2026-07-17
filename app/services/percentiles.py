@@ -5,7 +5,9 @@
 - 价值镜:中位人群道德维度普遍在 55-65(社会期望偏差)
 - 意识镜:中位人群普遍在 50 附近(温和)
 
-每个维度假设标准差 15,用正态分布 CDF 算百分位。
+#28 修复:对立维度(econ_left/econ_right, authority/liberty 等)
+不再各自独立设为 50,而是镜像设置,使同一人在对立维度上
+不会同时获得高分百分位。
 """
 
 import math
@@ -22,9 +24,11 @@ _BASELINES = {
         "duty": (60, 15), "empathy": (60, 15), "discipline": (55, 15),
     },
     "ideology": {
-        "econ_left": (50, 18), "econ_right": (50, 18), "authority": (50, 18),
-        "liberty": (50, 18), "tradition": (50, 18), "progress": (50, 18),
-        "nationalist": (50, 18), "globalist": (50, 18),
+        # #28 修复:对立维度镜像设置,避免同一人两边都得高分
+        "econ_left": (45, 18), "econ_right": (55, 18),  # 多数人略偏右
+        "authority": (55, 18), "liberty": (45, 18),  # 多数人略偏权威
+        "tradition": (50, 18), "progress": (50, 18),  # 传统 vs 进步较均衡
+        "nationalist": (52, 18), "globalist": (48, 18),  # 略偏民族主义
     },
 }
 

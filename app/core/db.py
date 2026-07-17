@@ -16,8 +16,13 @@ async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    # #19 修复:异常时显式 rollback,避免 Postgres 下锁未释放
     async with async_session() as session:
-        yield session
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise
 
 
 async def init_db() -> None:

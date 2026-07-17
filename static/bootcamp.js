@@ -1,0 +1,354 @@
+// 训练营(教官每日任务)—— 状态机 + API 调用 + 交互
+// 复用 app.js:api(get/post 自动注入 X-User-Token)、getToken
+
+const params = new URLSearchParams(location.search);
+const resultId = params.get('result_id');
+const GOAL_KEY = 'mm_bootcamp_goal';
+
+// HTML 转义 —— 防止服务端任务数据(prompt/strict_prompt)注入 XSS
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function is404(e) { return e && typeof e.message === 'string' && e.message.indexOf('404') === 0; }
+
+function readCachedGoal() {
+  try {
+    const raw = localStorage.getItem(GOAL_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+let state = {
+  status: 'loading',   // loading | select | mission | done | error | empty
+  goal: null,          // { trait_target, source_figure, ... }
+  mission: null,       // { id, mission_date, tasks:[{id,prompt,strict_prompt,done}], ... }
+  streak: 0,
+  badge: false,
+  reportTraits: null,  // { tags:[], figure:'' }
+  error: null,
+};
+const expanded = new Set();   // 已展开 strict_prompt 的任务 id,渲染后恢复
+
+// ===== 渲染 =====
+function render() {
+  const root = document.getElementById('bootcamp');
+  if (!root) return;
+  switch (state.status) {
+    case 'loading': root.innerHTML = loadingHtml(); break;
+    case 'select':  root.innerHTML = selectHtml(); break;
+    case 'mission': root.innerHTML = missionHtml(); break;
+    case 'done':    root.innerHTML = doneHtml(); break;
+    case 'error':   root.innerHTML = errorHtml(); break;
+    case 'empty':   root.innerHTML = emptyHtml(); break;
+    default:        root.innerHTML = loadingHtml();
+  }
+  // 恢复 strict_prompt 展开态
+  expanded.forEach(id => {
+    const el = root.querySelector(`[data-strict="${id}"]`);
+    const btn = root.querySelector(`[data-toggle-strict="${id}"]`);
+    if (el) el.style.display = '';
+    if (btn) btn.textContent = mmI18n.t('bootcamp.hide_strict');
+  });
+}
+
+function loadingHtml() {
+  return `
+    <div class="loading-overlay" style="position:static;background:transparent">
+      <div class="mirror-disc" data-clarity="high"></div>
+      <p>${mmI18n.t('common.loading')}</p>
+    </div>`;
+}
+
+function selectHtml() {
+  const traits = (state.reportTraits && state.reportTraits.tags) || [];
+  const figure = (state.reportTraits && state.reportTraits.figure) || '';
+  const cards = traits.length
+    ? traits.map(t => `
+      <div class="trait-card" data-trait="${escapeHtml(t)}" data-figure="${escapeHtml(figure)}">
+        <h3>${escapeHtml(t)}</h3>
+        <p class="trait-desc">${mmI18n.t('bootcamp.select_sub')}</p>
+        ${figure ? `<p class="trait-inspire">${mmI18n.t('bootcamp.inspire', { figure: escapeHtml(figure) })}</p>` : ''}
+        <p class="trait-pick">${mmI18n.t('bootcamp.pick')}</p>
+      </div>`).join('')
+    : `<p class="bc-select-sub">${mmI18n.t('bootcamp.no_trait')}</p>`;
+  return `
+    <section class="bc-hero">
+      <div class="bc-eyebrow">${mmI18n.t('bootcamp.eyebrow')}</div>
+      <h2 class="bc-title">${mmI18n.t('bootcamp.select_title')}</h2>
+      <p class="bc-select-sub">${mmI18n.t('bootcamp.select_sub')}</p>
+    </section>
+    <div class="trait-grid">${cards}</div>`;
+}
+
+function streakBlockHtml() {
+  const s = state.streak || 0;
+  const pct = Math.min(100, Math.max(0, (s / 7) * 100));
+  const remaining = Math.max(0, 7 - s);
+  const hint = remaining > 0
+    ? mmI18n.t('bootcamp.badge_hint_progress', { n: remaining })
+    : mmI18n.t('bootcamp.badge_hint');
+  return `
+    <div class="streak-block">
+      <div class="streak-top">
+        <div class="streak-num"><span class="num">${s}</span><span class="streak-unit">${mmI18n.t('bootcamp.streak_unit')}</span></div>
+        <div class="badge-seal${state.badge ? '' : ' locked'}" title="${mmI18n.t('bootcamp.badge_short')}">${mmI18n.t('bootcamp.badge_short')}</div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%;background:var(--accent)"></div></div>
+      <p class="streak-hint">${hint}</p>
+    </div>`;
+}
+
+function taskCardHtml(t) {
+  const idx = state.mission.tasks.indexOf(t) + 1;
+  const done = !!t.done;
+  return `
+    <div class="task-card${done ? ' done' : ''}" data-task="${escapeHtml(t.id)}">
+      <button class="task-check" type="button" data-complete="${escapeHtml(t.id)}" aria-pressed="${done}" aria-label="${mmI18n.t('bootcamp.task_prefix')} ${idx}">
+        <span class="task-check-box">${done ? '✓' : ''}</span>
+      </button>
+      <div class="task-body">
+        <div class="task-head">
+          <span class="task-idx">${mmI18n.t('bootcamp.task_prefix')} ${idx}</span>
+          ${done ? `<span class="task-done-tag">${mmI18n.t('bootcamp.done_tag')}</span>` : ''}
+          <span class="task-syncing" data-syncing="${escapeHtml(t.id)}" style="display:none">${mmI18n.t('bootcamp.syncing')}</span>
+        </div>
+        <p class="task-prompt">${escapeHtml(t.prompt)}</p>
+        <button class="task-strict-toggle" type="button" data-toggle-strict="${escapeHtml(t.id)}">${mmI18n.t('bootcamp.show_strict')}</button>
+        <div class="task-strict" data-strict="${escapeHtml(t.id)}" style="display:none">
+          <p class="task-strict-text">${escapeHtml(t.strict_prompt)}</p>
+        </div>
+        <div class="task-error" data-error="${escapeHtml(t.id)}" style="display:none"></div>
+      </div>
+    </div>`;
+}
+
+function missionHtml() {
+  const m = state.mission;
+  const tasks = (m.tasks || []).map(t => taskCardHtml(t)).join('');
+  return `
+    <section class="bc-hero">
+      <div class="bc-eyebrow">${mmI18n.t('bootcamp.mission_eyebrow')}</div>
+      <h2 class="bc-title">${mmI18n.t('bootcamp.mission_title')}</h2>
+      <p class="bc-sub">${escapeHtml(state.goal ? (state.goal.trait_target || '') : '')} · ${mmI18n.t('bootcamp.account')}</p>
+    </section>
+    ${streakBlockHtml()}
+    <div class="task-list">${tasks}</div>`;
+}
+
+function doneHtml() {
+  const s = state.streak || 0;
+  return `
+    <section class="bc-done">
+      <div class="badge-seal${state.badge ? '' : ' locked'}">${mmI18n.t('bootcamp.badge_short')}</div>
+      <h2 class="bc-done-title">${mmI18n.t('bootcamp.done_title')}</h2>
+      <p class="bc-done-sub">${mmI18n.t('bootcamp.done_sub')}</p>
+      <div class="streak-block">
+        <div class="streak-top">
+          <div class="streak-num"><span class="num">${s}</span><span class="streak-unit">${mmI18n.t('bootcamp.streak_unit')}</span></div>
+        </div>
+      </div>
+      <div class="actions">
+        <a href="/" class="btn-primary" data-i18n="bootcamp.tomorrow">${mmI18n.t('bootcamp.tomorrow')}</a>
+        <a href="/report.html${resultId ? '?id=' + escapeHtml(resultId) : ''}" class="btn-secondary" data-i18n="bootcamp.result_link">${mmI18n.t('bootcamp.result_link')}</a>
+      </div>
+    </section>`;
+}
+
+function errorHtml() {
+  return `
+    <div class="empty-state">
+      <h2>${mmI18n.t('bootcamp.error_title')}</h2>
+      <p>${escapeHtml(state.error || mmI18n.t('common.error_generic'))}</p>
+      <p><button class="btn-primary" type="button" data-retry="1">${mmI18n.t('bootcamp.retry')}</button></p>
+    </div>`;
+}
+
+function emptyHtml() {
+  return `
+    <div class="empty-state">
+      <h2>${mmI18n.t('bootcamp.empty_title')}</h2>
+      <p>${mmI18n.t('bootcamp.empty_sub')}</p>
+      <p><a href="/report.html${resultId ? '?id=' + escapeHtml(resultId) : ''}" class="btn-primary" data-i18n="bootcamp.empty_cta">${mmI18n.t('bootcamp.empty_cta')}</a></p>
+    </div>`;
+}
+
+// ===== 流程 =====
+async function init() {
+  // 返回链接带上 result_id
+  const back = document.querySelector('.back-link');
+  if (back) back.href = '/report.html' + (resultId ? '?id=' + resultId : '');
+
+  state.status = 'loading'; render();
+  try {
+    const goal = await api.get('/api/goals/me');
+    state.goal = goal;
+    await enterMission();
+  } catch (e) {
+    if (is404(e)) { await enterSelect(); return; }
+    // 非 404(多为网络错误):尝试本地缓存 goal 兜底,否则报错
+    const cached = readCachedGoal();
+    if (cached) { state.goal = cached; await enterMission(); return; }
+    state.error = e.message || mmI18n.t('common.error_generic');
+    state.status = 'error'; render();
+  }
+}
+
+async function enterSelect() {
+  if (!resultId) {
+    state.error = mmI18n.t('bootcamp.no_result');
+    state.status = 'error'; render(); return;
+  }
+  try {
+    const report = await api.get(`/api/results/${resultId}`);
+    const tags = (report.profile && report.profile.tags) || [];
+    const figure = (report.matches && report.matches[0] && report.matches[0].name) || '';
+    state.reportTraits = { tags, figure };
+    state.status = 'select';
+  } catch (e) {
+    state.error = e.message || mmI18n.t('common.error_generic');
+    state.status = 'error';
+  }
+  render();
+}
+
+async function enterMission() {
+  state.status = 'loading'; render();
+  try {
+    const [mission, streak] = await Promise.all([
+      api.get('/api/missions/today'),
+      api.get('/api/missions/streak'),
+    ]);
+    state.mission = mission;
+    state.streak = streak.streak || 0;
+    state.badge = !!streak.badge;
+    if (!mission.tasks || mission.tasks.length === 0) {
+      state.status = 'empty';
+    } else if (mission.tasks.every(t => t.done)) {
+      state.status = 'done';
+    } else {
+      state.status = 'mission';
+    }
+  } catch (e) {
+    if (is404(e)) { state.status = 'empty'; }
+    else { state.error = e.message || mmI18n.t('common.error_generic'); state.status = 'error'; }
+  }
+  render();
+}
+
+async function createGoal(traitTarget, sourceFigure) {
+  try {
+    const goal = await api.post('/api/goals', {
+      trait_target: traitTarget,
+      source_figure: sourceFigure || undefined,
+    });
+    state.goal = goal;
+  } catch (e) {
+    state.error = e.message || mmI18n.t('common.error_generic');
+    state.status = 'error'; render(); return;
+  }
+  // 本地缓存(离线兜底 / 避免重复选);服务端为权威
+  try { localStorage.setItem(GOAL_KEY, JSON.stringify({ trait_target: traitTarget, source_figure: sourceFigure || '' })); } catch (e) {}
+  await enterMission();
+}
+
+async function completeTask(taskId) {
+  const m = state.mission;
+  if (!m) return;
+  const task = m.tasks.find(t => t.id === taskId);
+  if (!task || task.done) return;
+  const card = document.querySelector(`[data-task="${taskId}"]`);
+  if (card && card.dataset.locked) return;   // 防双击竞态
+  if (card) card.dataset.locked = '1';
+
+  // 乐观更新:标记完成 + 显示"同步中"(不盲目 +1 streak,避免多任务重复计数)
+  task.done = true;
+  if (card) {
+    card.classList.add('done');
+    const box = card.querySelector('.task-check-box'); if (box) box.textContent = '✓';
+    const btn = card.querySelector('.task-check'); if (btn) btn.setAttribute('aria-pressed', 'true');
+  }
+  showSyncing(taskId, true);
+
+  try {
+    const res = await api.post(`/api/missions/${m.id}/tasks/${taskId}/complete`, {});
+    // 以响应为准对账(坑2:乐观 ≠ 后端 done)
+    if (res && res.mission && Array.isArray(res.mission.tasks)) m.tasks = res.mission.tasks;
+    if (res && typeof res.streak === 'number') state.streak = res.streak;
+    if (res && typeof res.badge === 'boolean') state.badge = res.badge;
+    showSyncing(taskId, false);
+    if (card) card.removeAttribute('data-locked');
+    if (m.tasks.every(t => t.done)) {
+      state.status = 'done';
+      render();
+    } else {
+      updateStreakDom();   // 局部刷新 streak,保留 strict_prompt 展开态
+    }
+  } catch (e) {
+    // 回滚
+    task.done = false;
+    if (card) {
+      card.classList.remove('done');
+      const box = card.querySelector('.task-check-box'); if (box) box.textContent = '';
+      card.removeAttribute('data-locked');
+    }
+    showSyncing(taskId, false);
+    showCardError(taskId, e.message || mmI18n.t('common.error_generic'));
+  }
+}
+
+function showSyncing(taskId, on) {
+  const el = document.querySelector(`[data-syncing="${taskId}"]`);
+  if (el) el.style.display = on ? '' : 'none';
+}
+function showCardError(taskId, msg) {
+  const el = document.querySelector(`[data-error="${taskId}"]`);
+  if (el) { el.textContent = mmI18n.t('bootcamp.retry_hint', { msg }); el.style.display = ''; }
+}
+function updateStreakDom() {
+  const block = document.querySelector('.streak-block');
+  if (!block) { render(); return; }
+  const s = state.streak || 0;
+  const numEl = block.querySelector('.streak-num .num');
+  if (numEl) numEl.textContent = s;
+  const fill = block.querySelector('.progress-fill');
+  if (fill) fill.style.width = Math.min(100, Math.max(0, (s / 7) * 100)) + '%';
+  const hint = block.querySelector('.streak-hint');
+  const remaining = Math.max(0, 7 - s);
+  if (hint) hint.textContent = remaining > 0 ? mmI18n.t('bootcamp.badge_hint_progress', { n: remaining }) : mmI18n.t('bootcamp.badge_hint');
+  const seal = block.querySelector('.badge-seal');
+  if (seal) seal.classList.toggle('locked', !state.badge);
+}
+
+// ===== 事件委托 =====
+function onBootcampClick(e) {
+  const t = e.target.closest ? e.target : (e.target.parentNode || null);
+  const trait = t && t.closest ? t.closest('[data-trait]') : null;
+  if (trait) { createGoal(trait.dataset.trait, trait.dataset.figure || ''); return; }
+  const check = t && t.closest ? t.closest('[data-complete]') : null;
+  if (check) { completeTask(check.dataset.complete); return; }
+  const toggle = t && t.closest ? t.closest('[data-toggle-strict]') : null;
+  if (toggle) { toggleStrict(toggle.dataset.toggleStrict); return; }
+  const retry = t && t.closest ? t.closest('[data-retry]') : null;
+  if (retry) { retryAction(); return; }
+}
+function toggleStrict(taskId) {
+  const el = document.querySelector(`[data-strict="${taskId}"]`);
+  const btn = document.querySelector(`[data-toggle-strict="${taskId}"]`);
+  if (!el || !btn) return;
+  const open = el.style.display === 'none';
+  el.style.display = open ? '' : 'none';
+  btn.textContent = open ? mmI18n.t('bootcamp.hide_strict') : mmI18n.t('bootcamp.show_strict');
+  if (open) expanded.add(taskId); else expanded.delete(taskId);
+}
+function retryAction() { init(); }
+
+document.getElementById('bootcamp').addEventListener('click', onBootcampClick);
+window.__mmBootcampRerender = render;
+init();

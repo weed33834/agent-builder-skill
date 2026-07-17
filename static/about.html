@@ -74,7 +74,7 @@ const ABOUT_RES = {
     concept_body: `
       <p>市面上的人格测评大多是量表——你勾选,它加总,你得到一个标签。这套流程把人压缩成几个数字,却丢弃了最有价值的部分:你在面对两难时如何抉择,你在时间压力下流露的本能,你在改主意与笃定之间的微妙差异。</p>
       <p>心镜不满足于此。它用<strong>两难困境</strong>将你置入历史情境,逼你在冲突中表态而非在安全区打分;用<strong>强迫抉择</strong>取消中间地带,让回避无处藏身;用<strong>价值拍卖</strong>以有限预算竞拍信念,出价即真实排序;用<strong>内隐联想</strong>绕过意识层,直接量度本能反应时差异。</p>
-      <p>每一道题都记录你的<strong>作答耗时、修改次数、决策轨迹</strong>。这些行为数据不是装饰——它们直接进入计分。秒选的答案会被降权,反复犹豫的会被标记,笃定的选择获得更高权重。你以为你在选答案,其实答案也在选你。</p>
+      <p>每一道题都记录你的<strong>作答耗时、修改次数、决策轨迹</strong>。这些行为数据不直接改变维度得分,而是用于生成行为洞察与矛盾检测。秒选的答案会被标记,反复犹豫的会被追踪,笃定的选择会被识别。你以为你在选答案,其实答案也在选你。</p>
     `,
     sec_mirrors: '三面镜子',
     mirrors: [
@@ -96,11 +96,11 @@ const ABOUT_RES = {
     ],
     sec_behavior: '行为轨迹与计分',
     behavior_body: `
-      <p>心镜的计分引擎不只是加总选项分值。每个答案都携带三项行为数据,它们直接决定该答案在最终分数中的权重:</p>
-      <p><strong>作答耗时</strong>——3 至 15 秒被视为理想区间,权重 1.0。低于 1 秒的秒选降权至 0.7(近乎随意),超时或本能反应降权至 0.75(缺乏深思)。这套加权基于一个假设:经过适度思考的答案比本能反应更接近真实倾向。</p>
-      <p><strong>修改次数</strong>——改主意两次以上的答案降权至 0.85。价值未定型的信号弱于笃定的选择。这并非惩罚犹豫,而是承认:反复摇摆的回答,其信息量低于一次笃定的回答。</p>
+      <p>心镜的计分引擎按选项分值累加并归一化。行为数据不改变维度得分,而是用于洞察与矛盾检测:</p>
+      <p><strong>作答耗时</strong>——记录每题耗时,用于识别犹豫(远超中位数)与秒选(低于 1 秒)。这些模式不降低分数,但会在行为洞察中标注,帮助你理解自己的决策风格。</p>
+      <p><strong>修改次数</strong>——改主意 3 次以上的题目会被标记为"价值未定型"。这不是惩罚,而是承认:反复摇摆的回答本身就是一个信号,揭示你在该议题上的内在张力。</p>
       <p><strong>决策轨迹</strong>——排序题的位置权重非线性递减,第一名与第二名的分差远大于第四与第五。资源分配题的峰值项会被高亮。这些轨迹数据让计分从"你最终选了什么"升级为"你如何选"。</p>
-      <p>最终,各维度的加权得分经动态归一化映射到 0-100,再通过正态分布 CDF 估算百分位——告诉你在这个维度上高于多少人。冲突检测会揪出跨题型的维度矛盾(量表说左、排序说右)、IAT 内隐与外显的分裂、犹豫与反复的模式,生成六维行为洞察。</p>
+      <p>最终,各维度得分经动态归一化映射到 0-100,再通过正态分布 CDF 估算百分位——告诉你在这个维度上高于多少人。冲突检测会揪出跨题型的维度矛盾(量表说左、排序说右)、IAT 内隐与外显的分裂、犹豫与反复的模式,生成六维行为洞察。</p>
     `,
     sec_privacy: '数据与隐私',
     privacy_body: `
@@ -142,11 +142,11 @@ const ABOUT_RES = {
     ],
     sec_behavior: 'BEHAVIORAL TRAJECTORY & SCORING',
     behavior_body: `
-      <p>MindMirror\'s scoring engine does more than tally option values. Every answer carries three behavioral metrics that directly determine its weight in the final score:</p>
-      <p><strong>Response time</strong> — 3 to 15 seconds is the ideal window, weighted 1.0. Sub-second instant picks are downweighted to 0.7 (near-random), timeouts or instinctive reactions to 0.75 (lacking deliberation). This weighting rests on one assumption: a moderately considered answer is closer to your true inclination than a reflex.</p>
-      <p><strong>Edit count</strong> — answers changed two or more times are downweighted to 0.85. A signal from an unformed value is weaker than one from a conviction. This is not punishment for hesitation, but acknowledgment that a wavering answer carries less information than a decisive one.</p>
+      <p>MindMirror\'s scoring engine tallies option values and normalizes them. Behavioral data does not alter dimension scores — it powers insights and conflict detection:</p>
+      <p><strong>Response time</strong> — every question\'s duration is logged to identify hesitation (far above median) and instant picks (under 1 second). These patterns don\'t reduce scores but are flagged in behavioral insights, helping you understand your decision style.</p>
+      <p><strong>Edit count</strong> — questions changed 3 or more times are flagged as "unformed values." This isn\'t a penalty but an acknowledgment: a wavering answer is itself a signal, revealing inner tension on that issue.</p>
       <p><strong>Decision trajectory</strong> — in ranking questions, position weights decay non-linearly; the gap between first and second far exceeds that between fourth and fifth. In allocation questions, the peak item is highlighted. This trajectory data elevates scoring from "what you chose" to "how you chose".</p>
-      <p>Finally, weighted scores per dimension are dynamically normalized to 0-100, then fed through a normal-distribution CDF to estimate percentiles — telling you what fraction of people you surpass on each dimension. Conflict detection surfaces cross-type contradictions (left on the scale, right in the ranking), IAT implicit-explicit splits, and hesitation patterns, yielding six-dimensional behavioral insights.</p>
+      <p>Finally, dimension scores are dynamically normalized to 0-100, then fed through a normal-distribution CDF to estimate percentiles — telling you what fraction of people you surpass on each dimension. Conflict detection surfaces cross-type contradictions (left on the scale, right in the ranking), IAT implicit-explicit splits, and hesitation patterns, yielding six-dimensional behavioral insights.</p>
     `,
     sec_privacy: 'DATA & PRIVACY',
     privacy_body: `
@@ -188,11 +188,11 @@ const ABOUT_RES = {
     ],
     sec_behavior: '行動軌跡と採点',
     behavior_body: `
-      <p>心鏡の採点エンジンは選択肢の値を合計するだけではありません。各回答は三つの行動指標を持ち、それらが最終スコアにおける重みを直接決定します:</p>
-      <p><strong>回答時間</strong>——3〜15秒を理想区間とし、重み1.0。1秒未満の即答は0.7に減点(ほぼランダム)、タイムアウトや本能的反応は0.75に減点(熟考を欠く)。この重み付けは一つの仮定に基づきます:適度に考えた回答は本能的反応よりも真の傾向に近い。</p>
-      <p><strong>修正回数</strong>——二回以上変更された回答は0.85に減点。未成型の価値からの信号は確信からのものより弱い。これは躊躇への罰ではなく、揺れる回答が確定的な回答より情報量が少ないという承認です。</p>
+      <p>心鏡の採点エンジンは選択肢の値を合計して正規化します。行動データは次元スコアを変更せず、インサイトと矛盾検出に使用されます:</p>
+      <p><strong>回答時間</strong>——各問題の所要時間を記録し、躊躇(中央値を大幅に超過)と即答(1秒未満)を識別。これらのパターンはスコアを下げず、行動インサイトでフラグ付けされ、自分の意思決定スタイルの理解に役立ちます。</p>
+      <p><strong>修正回数</strong>——3回以上変更された問題は「未成型の価値」としてフラグ付け。これは罰ではなく、揺れる回答自体が信号であり、その議題における内なる緊張を明らかにすることの承認です。</p>
       <p><strong>意思決定軌跡</strong>——並べ替え問題では位置の重みが非線形減衰し、第一位と第二位の差は第四位と第五位の差を遥かに超える。配分問題ではピーク項が強調される。この軌跡データは採点を「何を選んだか」から「どう選んだか」へ昇格させます。</p>
-      <p>最終的に、各次元の加重スコアは動的に0-100に正規化され、正規分布CDFで百分位を推定します——各次元であなたが何パーセントの人を上回るかを示す。矛盾検出は次元を跨ぐ矛盾(尺度では左、並べ替えでは右)、IATの内隠と外顕の分裂、躊躇パターンを摘出し、六次元の行動インサイトを生成します。</p>
+      <p>最終的に、各次元のスコアは動的に0-100に正規化され、正規分布CDFで百分位を推定します——各次元であなたが何パーセントの人を上回るかを示す。矛盾検出は次元を跨ぐ矛盾(尺度では左、並べ替えでは右)、IATの内隠と外顕の分裂、躊躇パターンを摘出し、六次元の行動インサイトを生成します。</p>
     `,
     sec_privacy: 'データとプライバシー',
     privacy_body: `

@@ -10,6 +10,27 @@ const answers = [];
 let timerInterval = null;
 let rhythmInterval = null;
 
+// HTML 转义 —— 防止服务端题库数据(题干、选项、ID 等)注入 XSS
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Fisher-Yates 洗牌 —— 等概率随机打乱(替代 sort(random-0.5) 的有偏分布)
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 // 题型展示信息 —— 从 i18n 资源动态取
 function typeMeta(type) {
   return {
@@ -83,19 +104,22 @@ function showDraftResume(draftCount) {
 function restoreDraft() {
   if (!session.draft_answers) return;
   const beh = session.behavior_log || {};
-  for (const q of bank.questions) {
+  // 按题目 ID 映射到对应位置(而非顺序追加),避免草稿不连续导致 answers 与 currentIdx 错位
+  bank.questions.forEach((q, i) => {
     if (session.draft_answers[q.id]) {
       const b = beh[q.id] || {};
-      answers.push({
+      answers[i] = {
         question_id: q.id,
         answer: session.draft_answers[q.id],
         duration_ms: b.duration_ms || 0,
         change_count: b.change_count || 0,
         trajectory: b.trajectory || null,
-      });
-      currentIdx++;
+      };
     }
-  }
+  });
+  // 定位第一道未答题作为 currentIdx;全部已答则指向末尾触发提交
+  currentIdx = bank.questions.findIndex((q, i) => !answers[i]);
+  if (currentIdx < 0) currentIdx = bank.questions.length;
 }
 
 function renderQuestion() {
@@ -132,7 +156,7 @@ function renderQuestion() {
         <div class="section-eyebrow">${mmI18n.t('take.section_label', { n: phaseNumber(q.type, ti) })}</div>
         <h2 class="section-title">${meta.section}</h2>
         <p class="section-hint">${meta.hint}</p>
-        <button class="btn-primary section-start" type="button" data-i18n="common.start">开始</button>
+        <button class="btn-primary section-start" type="button" data-i18n="common.start">${mmI18n.t('common.start')}</button>
       </div>`;
     lastType = q.type;
     document.querySelector('.section-start').addEventListener('click', () => {
@@ -265,9 +289,9 @@ function setupTimer(q) {
 function renderScale(q) {
   return `
     <div class="question-card">
-      <div class="question-prompt">${q.prompt}</div>
-      <div class="scale-points" data-q="${q.id}">
-        ${q.points.map(p => `<div class="scale-point" data-id="${p.id}">${p.text}</div>`).join('')}
+      <div class="question-prompt">${escapeHtml(q.prompt)}</div>
+      <div class="scale-points" data-q="${escapeHtml(q.id)}">
+        ${q.points.map(p => `<div class="scale-point" data-id="${escapeHtml(p.id)}">${escapeHtml(p.text)}</div>`).join('')}
       </div>
     </div>`;
 }
@@ -275,42 +299,42 @@ function renderScale(q) {
 function renderDilemma(q) {
   return `
     <div class="question-card">
-      <div class="question-prompt">${q.prompt}</div>
-      <div class="scenario">${q.scenario}</div>
-      <div class="options" data-q="${q.id}">
-        ${q.options.map(o => `<div class="option" data-id="${o.id}">${o.text}</div>`).join('')}
+      <div class="question-prompt">${escapeHtml(q.prompt)}</div>
+      <div class="scenario">${escapeHtml(q.scenario)}</div>
+      <div class="options" data-q="${escapeHtml(q.id)}">
+        ${q.options.map(o => `<div class="option" data-id="${escapeHtml(o.id)}">${escapeHtml(o.text)}</div>`).join('')}
       </div>
-      ${q.historical_figure ? `<p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-top:32px;letter-spacing:0.1em;text-align:center">— 历史上,${q.historical_figure} 亦曾面对相似抉择</p>` : ''}
+      ${q.historical_figure ? `<p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-top:32px;letter-spacing:0.1em;text-align:center">${mmI18n.t('take.dilemma_historical', { figure: escapeHtml(q.historical_figure) })}</p>` : ''}
     </div>`;
 }
 
 function renderAllocation(q) {
   return `
     <div class="question-card">
-      <div class="question-prompt">${q.prompt}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">分配总和须 = ${q.total} · 可用按钮或拖动滑块</p>
-      <div data-q="${q.id}" class="alloc-list">
+      <div class="question-prompt">${escapeHtml(q.prompt)}</div>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">${mmI18n.t('take.alloc_hint', { total: escapeHtml(q.total) })}</p>
+      <div data-q="${escapeHtml(q.id)}" class="alloc-list">
         ${q.targets.map(t => `
-          <div class="alloc-row" data-id="${t.id}">
+          <div class="alloc-row" data-id="${escapeHtml(t.id)}">
             <div class="alloc-head">
-              <label>${t.text}</label>
+              <label>${escapeHtml(t.text)}</label>
               <div class="alloc-controls">
-                <button class="alloc-btn" data-delta="-10" aria-label="减10">−10</button>
-                <button class="alloc-btn" data-delta="-1" aria-label="减1">−1</button>
+                <button class="alloc-btn" data-delta="-10" aria-label="${mmI18n.t('take.btn_minus', { n: 10 })}">−10</button>
+                <button class="alloc-btn" data-delta="-1" aria-label="${mmI18n.t('take.btn_minus', { n: 1 })}">−1</button>
                 <span class="val">0</span>
-                <button class="alloc-btn" data-delta="1" aria-label="加1">+1</button>
-                <button class="alloc-btn" data-delta="10" aria-label="加10">+10</button>
+                <button class="alloc-btn" data-delta="1" aria-label="${mmI18n.t('take.btn_plus', { n: 1 })}">+1</button>
+                <button class="alloc-btn" data-delta="10" aria-label="${mmI18n.t('take.btn_plus', { n: 10 })}">+10</button>
               </div>
             </div>
             <div class="alloc-bar"><div class="alloc-bar-fill" style="width:0%"></div></div>
-            <input type="range" min="0" max="${q.total}" value="0" data-id="${t.id}" aria-label="${t.text}">
+            <input type="range" min="0" max="${escapeHtml(q.total)}" value="0" data-id="${escapeHtml(t.id)}" aria-label="${escapeHtml(t.text)}">
           </div>
         `).join('')}
         <div class="alloc-total">
           <span>${mmI18n.t('take.total_label')}</span>
           <span class="num">0</span>
           <span class="sep">/</span>
-          <span class="target">${q.total}</span>
+          <span class="target">${escapeHtml(q.total)}</span>
           <button class="alloc-balance" id="alloc-balance" type="button">${mmI18n.t('take.auto_balance')}</button>
         </div>
       </div>
@@ -319,13 +343,14 @@ function renderAllocation(q) {
 }
 
 function renderSort(q) {
-  const shuffled = [...q.items].sort(() => Math.random() - 0.5);
+  // Fisher-Yates 洗牌,等概率打乱选项顺序
+  const shuffled = shuffle(q.items);
   return `
     <div class="question-card">
-      <div class="question-prompt">${q.prompt}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">拖拽或点击箭头排序,1 = 最重要</p>
-      <div class="sort-list" data-q="${q.id}">
-        ${shuffled.map((it, i) => `<div class="sort-item" data-id="${it.id}" draggable="true"><div class="sort-controls"><button class="sort-move" data-dir="up" aria-label="上移">▲</button><button class="sort-move" data-dir="down" aria-label="下移">▼</button></div><span class="order">${i+1}</span><span class="sort-text">${it.text}</span></div>`).join('')}
+      <div class="question-prompt">${escapeHtml(q.prompt)}</div>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">${mmI18n.t('take.sort_hint')}</p>
+      <div class="sort-list" data-q="${escapeHtml(q.id)}">
+        ${shuffled.map((it, i) => `<div class="sort-item" data-id="${escapeHtml(it.id)}" draggable="true"><div class="sort-controls"><button class="sort-move" data-dir="up" aria-label="${mmI18n.t('take.sort_move_up')}">▲</button><button class="sort-move" data-dir="down" aria-label="${mmI18n.t('take.sort_move_down')}">▼</button></div><span class="order">${i+1}</span><span class="sort-text">${escapeHtml(it.text)}</span></div>`).join('')}
       </div>
       <button class="btn-primary" id="sort-confirm" style="margin-top:40px;display:block;width:100%">${mmI18n.t('common.confirm')}</button>
     </div>`;
@@ -334,17 +359,17 @@ function renderSort(q) {
 function renderIAT(q) {
   return `
     <div class="question-card">
-      <div class="question-prompt">${q.prompt}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--ink-faint);font-size:13px;text-align:center;letter-spacing:0.15em;margin-bottom:20px">凭直觉,越快越好</p>
-      <div class="iat-area" data-q="${q.id}">
+      <div class="question-prompt">${escapeHtml(q.prompt)}</div>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--ink-faint);font-size:13px;text-align:center;letter-spacing:0.15em;margin-bottom:20px">${mmI18n.t('take.iat_hint')}</p>
+      <div class="iat-area" data-q="${escapeHtml(q.id)}">
         <div class="iat-labels">
-          <span>← ${q.left_label}</span>
-          <span>${q.right_label} →</span>
+          <span>← ${escapeHtml(q.left_label)}</span>
+          <span>${escapeHtml(q.right_label)} →</span>
         </div>
         <div class="iat-word" id="iat-word"><span class="iat-fixation">+</span></div>
         <div class="iat-buttons">
-          <button class="iat-btn" id="iat-left">${q.left_label}</button>
-          <button class="iat-btn" id="iat-right">${q.right_label}</button>
+          <button class="iat-btn" id="iat-left">${escapeHtml(q.left_label)}</button>
+          <button class="iat-btn" id="iat-right">${escapeHtml(q.right_label)}</button>
         </div>
         <div class="iat-progress"><span id="iat-progress">0 / ${q.words.length}</span></div>
       </div>
@@ -354,17 +379,17 @@ function renderIAT(q) {
 function renderSlider(q) {
   return `
     <div class="question-card">
-      <div class="question-prompt">${q.prompt}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:40px;letter-spacing:0.1em;text-align:center">拖动滑块,标记你的倾向</p>
-      <div class="slider-area" data-q="${q.id}">
+      <div class="question-prompt">${escapeHtml(q.prompt)}</div>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:40px;letter-spacing:0.1em;text-align:center">${mmI18n.t('take.slider_hint')}</p>
+      <div class="slider-area" data-q="${escapeHtml(q.id)}">
         <div class="slider-value" id="slider-value">50</div>
         <div class="slider-track-wrap">
-          <input type="range" min="0" max="100" value="50" id="slider-input" class="slider-input" aria-label="倾向滑块">
+          <input type="range" min="0" max="100" value="50" id="slider-input" class="slider-input" aria-label="${mmI18n.t('take.slider_aria')}">
           <div class="slider-fill" id="slider-fill"></div>
         </div>
         <div class="slider-labels">
-          <span>${q.left_label}</span>
-          <span>${q.right_label}</span>
+          <span>${escapeHtml(q.left_label)}</span>
+          <span>${escapeHtml(q.right_label)}</span>
         </div>
         <button class="btn-primary" id="slider-confirm" style="margin-top:40px;display:block;width:100%">${mmI18n.t('common.confirm')}</button>
       </div>
@@ -374,14 +399,14 @@ function renderSlider(q) {
 function renderForcedChoice(q) {
   return `
     <div class="question-card">
-      <div class="question-prompt">${q.prompt}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:40px;letter-spacing:0.1em;text-align:center">必须选其一,无中间地带</p>
-      <div class="fc-area" data-q="${q.id}">
+      <div class="question-prompt">${escapeHtml(q.prompt)}</div>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:40px;letter-spacing:0.1em;text-align:center">${mmI18n.t('take.forced_choice_hint')}</p>
+      <div class="fc-area" data-q="${escapeHtml(q.id)}">
         <div class="fc-cards">
           ${q.sides.map((s, i) => `
-            <div class="fc-card" data-id="${s.id}">
+            <div class="fc-card" data-id="${escapeHtml(s.id)}">
               <div class="fc-letter">${String.fromCharCode(65 + i)}</div>
-              <div class="fc-text">${s.text}</div>
+              <div class="fc-text">${escapeHtml(s.text)}</div>
             </div>
           `).join('')}
         </div>
@@ -392,14 +417,15 @@ function renderForcedChoice(q) {
 
 function renderMatrix(q) {
   const smax = q.scale_max || 7;
-  const labels = ['强烈反对', '反对', '较反对', '中立', '较同意', '同意', '强烈同意'];
+  // 同意度标签从 i18n 资源取(三语),数组长度固定 7
+  const labels = mmI18n.t('take.matrix_labels');
   const leftAnchor = labels[0];
   const rightAnchor = labels[smax - 1];
   return `
     <div class="question-card">
-      <div class="question-prompt">${q.prompt}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">对每条陈述选择同意程度</p>
-      <div class="matrix-area" data-q="${q.id}">
+      <div class="question-prompt">${escapeHtml(q.prompt)}</div>
+      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">${mmI18n.t('take.matrix_hint')}</p>
+      <div class="matrix-area" data-q="${escapeHtml(q.id)}">
         <div class="matrix-header">
           <span></span>
           <div>
@@ -413,8 +439,8 @@ function renderMatrix(q) {
           </div>
         </div>
         ${q.statements.map(s => `
-          <div class="matrix-row" data-id="${s.id}">
-            <div class="matrix-text">${s.text}</div>
+          <div class="matrix-row" data-id="${escapeHtml(s.id)}">
+            <div class="matrix-text">${escapeHtml(s.text)}</div>
             <div class="matrix-scale">
               ${Array.from({length: smax}, (_, i) => `<div class="matrix-dot" data-val="${i+1}"></div>`).join('')}
             </div>
@@ -428,29 +454,29 @@ function renderMatrix(q) {
 function renderAuction(q) {
   return `
     <div class="question-card">
-      <div class="question-prompt">${q.prompt}</div>
-      <div class="auction-area" data-q="${q.id}" data-budget="${q.budget}">
+      <div class="question-prompt">${escapeHtml(q.prompt)}</div>
+      <div class="auction-area" data-q="${escapeHtml(q.id)}" data-budget="${escapeHtml(q.budget)}">
         <div class="auction-budget">
-          <span>剩余金币</span>
-          <span class="auction-remaining" id="auction-remaining">${q.budget}</span>
-          <span>/ ${q.budget}</span>
+          <span>${mmI18n.t('take.auction_remaining')}</span>
+          <span class="auction-remaining" id="auction-remaining">${escapeHtml(q.budget)}</span>
+          <span>/ ${escapeHtml(q.budget)}</span>
         </div>
         ${q.items.map(it => `
-          <div class="auction-row" data-id="${it.id}">
+          <div class="auction-row" data-id="${escapeHtml(it.id)}">
             <div class="auction-head">
-              <label>${it.text}</label>
+              <label>${escapeHtml(it.text)}</label>
               <div class="alloc-controls">
-                <button class="alloc-btn" data-delta="-10" aria-label="减10">−10</button>
-                <button class="alloc-btn" data-delta="-1" aria-label="减1">−1</button>
+                <button class="alloc-btn" data-delta="-10" aria-label="${mmI18n.t('take.btn_minus', { n: 10 })}">−10</button>
+                <button class="alloc-btn" data-delta="-1" aria-label="${mmI18n.t('take.btn_minus', { n: 1 })}">−1</button>
                 <span class="val">0</span>
-                <button class="alloc-btn" data-delta="1" aria-label="加1">+1</button>
-                <button class="alloc-btn" data-delta="10" aria-label="加10">+10</button>
+                <button class="alloc-btn" data-delta="1" aria-label="${mmI18n.t('take.btn_plus', { n: 1 })}">+1</button>
+                <button class="alloc-btn" data-delta="10" aria-label="${mmI18n.t('take.btn_plus', { n: 10 })}">+10</button>
               </div>
             </div>
             <div class="auction-bar"><div class="auction-bar-fill" style="width:0%"></div></div>
           </div>
         `).join('')}
-        <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:13px;margin-top:24px;letter-spacing:0.1em;text-align:center">可保留预算,出价反映你对每项的真实价值评估</p>
+        <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:13px;margin-top:24px;letter-spacing:0.1em;text-align:center">${mmI18n.t('take.auction_hint')}</p>
         <button class="btn-primary" id="auction-confirm" style="margin-top:32px;display:block;width:100%">${mmI18n.t('common.confirm')}</button>
       </div>
     </div>`;
@@ -541,7 +567,7 @@ function bindEvents(q) {
       const alloc = {};
       container.querySelectorAll('input[type=range]').forEach(i => { alloc[i.dataset.id] = +i.value; });
       const sum = Object.values(alloc).reduce((a, b) => a + b, 0);
-      if (sum !== total) { alert(`总和须 = ${total}(当前 ${sum})。可点击「自动配平」一键补齐。`); return; }
+      if (sum !== total) { alert(mmI18n.t('take.alert_alloc_sum', { total, sum })); return; }
       recordAnswer(q, { allocation: alloc });
     });
   } else if (q.type === 'sort') {
@@ -624,7 +650,7 @@ function bindEvents(q) {
         if (row.dataset.val) ratings[row.dataset.id] = +row.dataset.val;
         else allDone = false;
       });
-      if (!allDone) { alert('请为每条陈述都选择同意程度。'); return; }
+      if (!allDone) { alert(mmI18n.t('take.alert_matrix_incomplete')); return; }
       recordAnswer(q, { ratings });
     });
   } else if (q.type === 'auction') {
@@ -677,7 +703,7 @@ function bindEvents(q) {
       const bids = {};
       container.querySelectorAll('.auction-row').forEach(r => { bids[r.dataset.id] = +(r.querySelector('.val').textContent); });
       const sum = Object.values(bids).reduce((a, b) => a + b, 0);
-      if (sum > budget) { alert(`总出价不能超过预算 ${budget}(当前 ${sum})。`); return; }
+      if (sum > budget) { alert(mmI18n.t('take.alert_auction_over', { budget, sum })); return; }
       recordAnswer(q, { bids });
     });
   } else if (q.type === 'iat') {
@@ -703,6 +729,7 @@ function runIAT(q) {
   let idx = 0;
   let wordStart = 0;
   let canRespond = false;
+  let currentErrored = false;  // 当前词是否已记录过错答,避免重复 push
   const reactions = [];
   const area = document.querySelector(`[data-q="${q.id}"]`);
   const wordEl = document.getElementById('iat-word');
@@ -723,6 +750,7 @@ function runIAT(q) {
     wordEl.style.animation = '';
     wordStart = performance.now();
     canRespond = true;
+    currentErrored = false;  // 新词展示 → 重置错答标记
   }
 
   function next() {
@@ -745,9 +773,12 @@ function runIAT(q) {
     const rt = performance.now() - wordStart;
     const correct = w.category === side;
     if (!correct) {
-      // 错答:闪烁纠错,不推进,反应时计入惩罚
+      // 错答:闪烁纠错,不推进;仅首次错答记录一次,避免重复反应堆积
       flashError(side === 'left' ? leftBtn : rightBtn);
-      reactions.push({ word: w.word, category: w.category, response: side, rt: Math.round(rt), correct: false });
+      if (!currentErrored) {
+        reactions.push({ word: w.word, category: w.category, response: side, rt: Math.round(rt), correct: false });
+        currentErrored = true;
+      }
       return;
     }
     reactions.push({ word: w.word, category: w.category, response: side, rt: Math.round(rt), correct: true });
@@ -829,7 +860,7 @@ function getCurrentAnswer(q) {
   return {};
 }
 
-function recordAnswer(q, answer, timeout = false) {
+async function recordAnswer(q, answer, timeout = false) {
   clearInterval(timerInterval);
   stopRhythmBar();
   // 清理 IAT 键盘监听(如果存在)
@@ -850,9 +881,18 @@ function recordAnswer(q, answer, timeout = false) {
     _timeout: timeout,  // 标记超时,供 submitAll 保留
   };
   currentIdx++;
-  // 存草稿
-  api.post(`/api/sessions/${session.id}/responses`, { answers: [answers[currentIdx - 1]], complete: false });
+  // 存草稿 —— await 确保存盘完成;失败时提示用户(复用通用错误文案)
+  await saveDraft(answers[currentIdx - 1]);
   renderQuestion();
+}
+
+// 草稿保存(被 recordAnswer await;失败时弹窗提示,随后继续渲染下一题)
+async function saveDraft(answer) {
+  try {
+    await api.post(`/api/sessions/${session.id}/responses`, { answers: [answer], complete: false });
+  } catch (e) {
+    alert(mmI18n.t('common.error_generic'));
+  }
 }
 
 async function submitAll(complete) {

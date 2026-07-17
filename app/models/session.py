@@ -1,6 +1,7 @@
 """测评会话 —— 一次完整测评的过程记录,含草稿与行为轨迹。"""
 
 import enum
+from datetime import datetime
 
 from sqlalchemy import JSON, DateTime, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -27,7 +28,8 @@ class AssessmentSession(UlidPkMixin, Base):
     draft_answers: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     # 全程行为轨迹(耗时/修改/拖拽路径/IAT 反应时)
     behavior_log: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    started_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    finished_at: Mapped[str | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # #15 修复:类型标注改为 datetime | None,与 DateTime 列类型一致
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     result: Mapped["Result | None"] = relationship(back_populates="session", uselist=False)  # type: ignore[name-defined]

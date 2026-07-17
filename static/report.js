@@ -8,6 +8,17 @@ let _radarChart = null;
 
 const INSIGHT_ORDER = ['decision_style', 'consistency', 'ambivalence', 'courage_index', 'time_pressure_effect', 'iat_bias'];
 
+// HTML 转义 —— 防止服务端报告数据(summary/匹配/冲突/洞察等)注入 XSS
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function render() {
   if (!resultId) { location.href = '/'; return; }
   const r = await api.get(`/api/results/${resultId}`);
@@ -38,9 +49,9 @@ function doRender() {
       <div class="hero-divider"><span></span></div>
       ${tags.length ? `
       <div class="profile-tags">
-        ${tags.map(t => `<span class="profile-tag">${t}</span>`).join('')}
+        ${tags.map(t => `<span class="profile-tag">${escapeHtml(t)}</span>`).join('')}
       </div>` : `<p class="profile-empty">${mmI18n.t('report.tags_empty')}</p>`}
-      <p class="report-summary">${r.summary || ''}</p>
+      <p class="report-summary">${escapeHtml(r.summary)}</p>
     </div>
 
     <div class="report-section">
@@ -54,14 +65,14 @@ function doRender() {
           <div class="match-item ${i === 0 ? 'top' : ''}${hasImage ? ' with-image' : ''}">
             ${hasImage ? `
               <div class="match-portrait">
-                <img src="${m.image}" alt="${m.name || ''}" loading="lazy" onerror="this.parentNode.classList.add('img-fallback');this.style.display='none';">
+                <img src="${escapeHtml(m.image)}" alt="${escapeHtml(m.name)}" loading="lazy" onerror="this.parentNode.classList.add('img-fallback');this.style.display='none';">
               </div>` : ''}
             <div class="match-body">
-              <div class="match-name">${m.name || ''}</div>
-              <div class="match-blurb">${m.blurb || ''}</div>
-              ${hasQuote ? `<div class="match-quote">"${m.quote}"</div>` : ''}
+              <div class="match-name">${escapeHtml(m.name)}</div>
+              <div class="match-blurb">${escapeHtml(m.blurb)}</div>
+              ${hasQuote ? `<div class="match-quote">"${escapeHtml(m.quote)}"</div>` : ''}
             </div>
-            <div class="match-pct">${m.match_pct != null ? m.match_pct : ''}<span style="font-size:14px;opacity:0.6">%</span></div>
+            <div class="match-pct">${m.match_pct != null ? escapeHtml(m.match_pct) : ''}<span style="font-size:14px;opacity:0.6">%</span></div>
           </div>`;
         }).join('')}
       </div>
@@ -80,14 +91,14 @@ function doRender() {
           const dimLabel = mmI18n.t(`report.dim_labels.${k}`) || k;
           const dimDesc = mmI18n.t(`report.dim_desc.${k}`) || '';
           return `
-          <div class="dim-item" data-dim="${k}" style="cursor:pointer">
+          <div class="dim-item" data-dim="${escapeHtml(k)}" style="cursor:pointer">
             <div class="dim-head">
-              <div class="dim-name">${dimLabel}</div>
-              ${pctText ? `<div class="dim-pct">${pctText}</div>` : ''}
+              <div class="dim-name">${escapeHtml(dimLabel)}</div>
+              ${pctText ? `<div class="dim-pct">${escapeHtml(pctText)}</div>` : ''}
             </div>
-            <div class="dim-score">${v != null ? v : ''}</div>
+            <div class="dim-score">${v != null ? escapeHtml(v) : ''}</div>
             <div class="dim-bar"><div class="dim-bar-fill" style="width:0" data-w="${Math.min(100, Math.max(0, v || 0))}"></div></div>
-            <div class="dim-detail" style="display:none">${dimDesc}</div>
+            <div class="dim-detail" style="display:none">${escapeHtml(dimDesc)}</div>
           </div>`;
         }).join('')}
       </div>
@@ -103,10 +114,10 @@ function doRender() {
           return `
           <div class="conflict-item sev-${sev}">
             <div class="conflict-meta">
-              <span class="conflict-type">${typeLabel}</span>
+              <span class="conflict-type">${escapeHtml(typeLabel)}</span>
               <span class="conflict-dots">${'●'.repeat(sev)}${'○'.repeat(3 - sev)}</span>
             </div>
-            <div class="conflict-desc">${c.description || ''}</div>
+            <div class="conflict-desc">${escapeHtml(c.description)}</div>
           </div>`;
         }).join('')}
       </div>
@@ -129,10 +140,10 @@ function doRender() {
           return `
           <div class="insight-item">
             <div class="insight-head">
-              <span class="insight-label">${mmI18n.t(`report.insight_labels.${k}`) || k}</span>
-              <span class="insight-value">${v.label || ''}</span>
+              <span class="insight-label">${escapeHtml(mmI18n.t(`report.insight_labels.${k}`) || k)}</span>
+              <span class="insight-value">${escapeHtml(v.label)}</span>
             </div>
-            <div class="insight-desc">${v.desc || ''}</div>
+            <div class="insight-desc">${escapeHtml(v.desc)}</div>
             ${extra}
           </div>`;
         }).join('')}
@@ -140,6 +151,7 @@ function doRender() {
     </div>
 
     <div class="actions">
+      <a href="/bootcamp.html?result_id=${escapeHtml(resultId)}" class="btn-primary" data-i18n="bootcamp.enter">进入训练营 · 今日开练</a>
       <a href="/" class="btn-secondary" data-i18n="report.back_home">回到首页</a>
       <a href="/history.html" class="btn-secondary" data-i18n="report.my_reports">我的报告</a>
     </div>
@@ -205,7 +217,7 @@ function drawRadar(entries) {
       borderColor: line,
       textStyle: { color: inkSoft, fontFamily: "'Noto Serif SC', serif" },
       formatter: () => {
-        const vals = entries.map(([k, v]) => `${mmI18n.t(`report.dim_labels.${k}`) || k}: <b>${v}</b>`);
+        const vals = entries.map(([k, v]) => `${escapeHtml(mmI18n.t(`report.dim_labels.${k}`) || k)}: <b>${escapeHtml(v)}</b>`);
         return vals.join('<br/>');
       },
     },

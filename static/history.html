@@ -37,6 +37,17 @@
 <script>
   function typeLabel(t) { return mmI18n.t(`history.type_labels.${t}`) || t; }
 
+  // HTML 转义 —— 防止服务端历史数据(摘要、ID、类型等)注入 XSS
+  function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   async function render() {
     const el = document.getElementById('list');
     let list;
@@ -63,12 +74,12 @@
       const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
       return `
       <div class="history-item" style="animation-delay:${0.1 + i*0.06}s">
-        <a href="/report.html?id=${r.id}" class="history-main">
+        <a href="/report.html?id=${escapeHtml(r.id)}" class="history-main">
           <div class="history-idx"><span class="num">${String(i+1).padStart(2,'0')}</span></div>
           <div class="history-body">
-            <div class="history-summary">${r.summary || ''}</div>
+            <div class="history-summary">${escapeHtml(r.summary)}</div>
             <div class="history-meta">
-              <span class="meta-type">${typeLabel(r.assessment_type)}</span>
+              <span class="meta-type">${escapeHtml(typeLabel(r.assessment_type))}</span>
               <span class="meta-sep">·</span>
               <span class="meta-date">${dateStr}</span>
               <span class="meta-sep">·</span>
@@ -77,7 +88,7 @@
           </div>
           <span class="history-arrow">→</span>
         </a>
-        <a href="/take.html?type=${r.assessment_type}" class="history-retake" title="${mmI18n.t('history.retake_hint')}">${mmI18n.t('history.retake')}</a>
+        <a href="/take.html?type=${escapeHtml(r.assessment_type)}" class="history-retake" title="${escapeHtml(mmI18n.t('history.retake_hint'))}">${escapeHtml(mmI18n.t('history.retake'))}</a>
       </div>`;
     }).join('');
   }

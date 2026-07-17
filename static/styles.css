@@ -2218,3 +2218,59 @@ h1, h2, h3 {
     transform: none !important;
   }
 }
+
+/* ============================================================
+   训练营 Bootcamp —— 教官每日任务(沿用宣纸×墨设计语言)
+   ============================================================ */
+.bc-hero { text-align: center; padding: 40px 0 24px; }
+.bc-eyebrow { font-family: var(--font-display); font-style: italic; font-size: 12px; letter-spacing: .3em; text-transform: uppercase; color: var(--accent); font-variation-settings: 'opsz' 14; }
+.bc-title { font-family: var(--font-serif); font-size: 30px; font-weight: 600; margin: 10px 0 8px; color: var(--ink); }
+.bc-sub { font-size: 14px; color: var(--ink-faint); letter-spacing: .05em; }
+.bc-select-sub { text-align: center; font-family: var(--font-display); font-style: italic; color: var(--ink-soft); font-size: 15px; margin: 6px 0 4px; letter-spacing: .06em; }
+
+.trait-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 28px 0; }
+.trait-card { display: flex; flex-direction: column; gap: 10px; padding: 30px 26px; background: var(--paper-soft); border: 1px solid var(--line); border-top: 2px solid var(--accent); cursor: pointer; transition: all .3s var(--ease); }
+.trait-card:hover { background: var(--paper-faint); transform: translateY(-3px); }
+.trait-card.selected { background: var(--accent-soft); border-color: var(--accent); }
+.trait-card h3 { font-family: var(--font-serif); font-size: 22px; font-weight: 600; color: var(--ink); }
+.trait-desc { font-size: 14px; color: var(--ink-soft); line-height: 1.7; }
+.trait-inspire { font-size: 12px; color: var(--ink-faint); font-style: italic; }
+.trait-pick { margin-top: 4px; font-family: var(--font-display); font-style: italic; color: var(--accent); letter-spacing: .1em; }
+
+.streak-block { margin: 8px 0 28px; padding: 20px 22px; background: var(--paper-soft); border: 1px solid var(--line); }
+.streak-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.streak-num { display: flex; align-items: baseline; gap: 6px; color: var(--ink); }
+.streak-num .num { font-size: 40px; font-variation-settings: 'opsz' 72; }
+.streak-unit { font-size: 14px; color: var(--ink-faint); letter-spacing: .1em; }
+.badge-seal { width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; border: 2px solid var(--accent); color: var(--accent); background: var(--accent-soft); font-family: var(--font-display); font-style: italic; font-size: 18px; letter-spacing: .08em; }
+.badge-seal.locked { border-color: var(--ink-ghost); color: var(--ink-ghost); background: transparent; }
+.streak-hint { font-size: 12px; color: var(--ink-faint); margin-top: 10px; letter-spacing: .05em; }
+
+.task-list { display: flex; flex-direction: column; gap: 14px; }
+.task-card { display: flex; gap: 16px; padding: 22px; background: var(--paper-soft); border: 1px solid var(--line); border-left: 3px solid var(--accent); transition: all .3s var(--ease); }
+.task-card.done { background: var(--paper-faint); border-left-color: var(--ink-ghost); }
+.task-check { flex: 0 0 auto; padding: 0; background: none; border: none; cursor: pointer; }
+.task-check-box { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 2px solid var(--accent); color: var(--accent); font-size: 16px; font-weight: 700; background: transparent; transition: all .25s var(--ease); }
+.task-card.done .task-check-box { background: var(--accent); color: var(--paper-faint); }
+.task-body { flex: 1; min-width: 0; }
+.task-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.task-idx { font-family: var(--font-display); font-style: italic; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.task-done-tag { font-size: 11px; color: var(--ink-faint); border: 1px solid var(--line); padding: 1px 8px; letter-spacing: .1em; }
+.task-syncing { font-size: 11px; color: var(--ink-faint); font-style: italic; letter-spacing: .1em; }
+.task-prompt { font-family: var(--font-serif); font-size: 17px; line-height: 1.7; color: var(--ink); }
+.task-strict-toggle { margin-top: 10px; padding: 0; background: none; border: none; color: var(--ink-faint); font-family: var(--font-display); font-style: italic; font-size: 13px; letter-spacing: .08em; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.task-strict { margin-top: 10px; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--accent-soft); }
+.task-strict-text { font-family: var(--font-serif); font-size: 14px; line-height: 1.7; color: var(--ink-soft); font-style: italic; }
+.task-error { margin-top: 10px; font-size: 12px; color: var(--accent); }
+
+.bc-done { text-align: center; padding: 48px 0; }
+.bc-done .badge-seal { width: 88px; height: 88px; margin: 0 auto 18px; font-size: 24px; }
+.bc-done-title { font-family: var(--font-serif); font-size: 28px; font-weight: 600; color: var(--ink); }
+.bc-done-sub { font-size: 15px; color: var(--ink-soft); margin: 10px 0 24px; }
+
+@media (max-width: 720px) {
+  .trait-grid { grid-template-columns: 1fr; }
+  .bc-title { font-size: 26px; }
+  .task-prompt { font-size: 16px; }
+  .streak-num .num { font-size: 34px; }
+}

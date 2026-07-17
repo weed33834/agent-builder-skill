@@ -1,6 +1,6 @@
 """结果输出 schema。"""
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class MatchItem(BaseModel):
@@ -19,13 +19,16 @@ class ResultOut(BaseModel):
     conflicts: list[dict]
     insights: dict
     percentiles: dict[str, float]
-    profile: dict = {}  # 综合画像标签 {tags: [...]}
+    # #17 修复:使用 Field(default_factory=dict) 避免可变默认值
+    profile: dict = Field(default_factory=dict)  # 综合画像标签 {tags: [...]}
 
 
 class ResultSummary(BaseModel):
     """历史结果摘要(列表用)。"""
+
     id: str
     assessment_type: str
     summary: str
     created_at: str
-    profile: dict = {}  # 画像标签(可选,用于历史列表展示)
+    # #17 修复:使用 Field(default_factory=dict)
+    profile: dict = Field(default_factory=dict)  # 画像标签(可选,用于历史列表展示)
