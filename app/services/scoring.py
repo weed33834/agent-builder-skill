@@ -8,7 +8,6 @@ v3 升级(#8 #18 修复):
 - 排序题位置权重非线性递减
 """
 
-import statistics
 from collections import defaultdict
 
 from app.data import load_bank
@@ -122,7 +121,6 @@ def _compute_dim_bounds(bank) -> dict[str, tuple[float, float]]:
                     # rating=1 → -factor;rating=7 → +factor
                     contribs_by_dim[dim].extend([-factor, factor])
         elif qtype == "auction":
-            budget = getattr(q, "budget", 100)
             for item in q.items:
                 for dim, v in item.scores.items():
                     # 0 出价或全预算 → 0 或 v×2

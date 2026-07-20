@@ -15,16 +15,15 @@ _TMP = tempfile.mkdtemp(prefix="mm_compare_")
 _DB = os.path.join(_TMP, "compare.db").replace("\\", "/")
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{_DB}"
 
-import pytest  # noqa: E402
-import pytest_asyncio  # noqa: E402
-import httpx  # noqa: E402
+import httpx
+import pytest_asyncio
 
-from app.main import app  # noqa: E402
-from app.core.db import engine, async_session, init_db  # noqa: E402
-from app.models.base import Base  # noqa: E402
-from app.models.user import User  # noqa: E402
-from app.models.session import AssessmentSession, SessionStatus  # noqa: E402
-from app.models.result import Result  # noqa: E402
+from app.core.db import async_session, engine, init_db
+from app.main import app
+from app.models.base import Base
+from app.models.result import Result
+from app.models.session import AssessmentSession, SessionStatus
+from app.models.user import User
 
 H = lambda token: {"X-User-Token": token}  # noqa: E731
 

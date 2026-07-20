@@ -6,7 +6,6 @@
 from datetime import date, timedelta
 from functools import lru_cache
 from pathlib import Path
-from typing import Type
 
 import pendulum
 import yaml
@@ -305,7 +304,7 @@ async def complete_task(db: AsyncSession, user: User, mission_id: str, task_id: 
 # --------------------------------------------------------------------------- #
 # 查询辅助(P0-2 归属校验 + 生成依赖)
 # --------------------------------------------------------------------------- #
-async def _get_owned_or_404(db: AsyncSession, Model: Type, id_: str, user: User):
+async def _get_owned_or_404(db: AsyncSession, Model: type, id_: str, user: User):
     """P0-2/P1-7:按 id+user_id 查;查不到(含非本人)一律 404,不泄露存在性/归属。"""
     res = await db.execute(select(Model).where(Model.id == id_, Model.user_id == user.id))
     obj = res.scalar_one_or_none()

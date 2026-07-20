@@ -72,7 +72,7 @@ def detect_conflicts(assessment_type: str, answers, behavior: dict) -> list[dict
         if getattr(q, "time_limit_sec", None) and q.type != "iat" and ans.duration_ms > q.time_limit_sec * 1000:
             cand = {
                 "question_id": q.id,
-                "description": f"限时题超时作答,本能反应可能与理性判断分裂",
+                "description": "限时题超时作答,本能反应可能与理性判断分裂",
                 "conflict_type": "timeout_instinct",
                 "severity": 2,
             }

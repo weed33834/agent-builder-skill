@@ -31,8 +31,8 @@ async def start_session(
     """开始一次测评。若有未完成草稿默认恢复;restart=true 放弃草稿重开。"""
     try:
         load_bank(assessment_type)
-    except FileNotFoundError:
-        raise HTTPException(404, f"测评不存在: {assessment_type}")
+    except FileNotFoundError as e:
+        raise HTTPException(404, f"测评不存在: {assessment_type}") from e
 
     # 找未完成草稿 —— 用 all() 防御并发创建导致的多条记录
     existing = await db.execute(
@@ -89,7 +89,7 @@ async def submit_responses(
     try:
         validate_answers(session.assessment_type, payload)
     except ValueError as e:
-        raise HTTPException(422, str(e))
+        raise HTTPException(422, str(e)) from e
 
     # 写草稿 + 行为轨迹
     draft = {a.question_id: a.answer for a in payload.answers}
@@ -117,7 +117,7 @@ async def submit_responses(
         validate_answers(session.assessment_type, full_payload)
     except ValueError as e:
         await db.commit()  # 先保存草稿
-        raise HTTPException(422, str(e))
+        raise HTTPException(422, str(e)) from e
 
     prev_status = session.status
     session.status = SessionStatus.completed
@@ -152,7 +152,7 @@ async def submit_responses(
             session.status = prev_status
             session.finished_at = None
             await db.commit()
-        raise HTTPException(500, "计分处理失败,请重试")
+        raise HTTPException(500, "计分处理失败,请重试") from None
 
 
 def _build_full_payload(session: AssessmentSession) -> SubmitAnswersIn:

@@ -9,7 +9,17 @@ TrainingStreak:连续天数与铁血徽章。
 import enum
 from datetime import date, datetime
 
-from sqlalchemy import JSON, Boolean, Date, DateTime, Enum, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base, UlidPkMixin

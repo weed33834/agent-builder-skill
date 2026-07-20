@@ -28,7 +28,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 async def init_db() -> None:
     """建表 —— 本地开发用,上线走 Alembic 迁移。"""
-    from app.models.base import Base  # noqa: PLC0415 — 延迟导入避免循环
+    from app.models.base import Base
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

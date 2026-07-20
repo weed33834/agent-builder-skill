@@ -7,7 +7,8 @@ from app.core.deps import CurrentUser, DbSession, RequireUser
 from app.models.result import Result
 from app.schemas.compare import CompareOut, ComparePublicOut
 from app.schemas.result import ResultOut, ResultSummary
-from app.services.compare import compare as compare_svc, public_summary
+from app.services.compare import compare as compare_svc
+from app.services.compare import public_summary
 
 router = APIRouter(prefix="/api", tags=["results"])
 

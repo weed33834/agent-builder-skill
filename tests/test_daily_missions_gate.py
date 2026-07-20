@@ -19,25 +19,28 @@ _TMP_DIR = tempfile.mkdtemp(prefix="mindmirror_gate_")
 _DB_FILE = os.path.join(_TMP_DIR, "gate.db").replace("\\", "/")
 os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{_DB_FILE}"
 
-import asyncio  # noqa: E402
-import pytest  # noqa: E402
-import pytest_asyncio  # noqa: E402
-import httpx  # noqa: E402
-import pendulum  # noqa: E402
-from sqlalchemy import func, select  # noqa: E402
-from sqlalchemy import UniqueConstraint  # noqa: E402
+import asyncio
 
-from app.main import app  # noqa: E402
-from app.core.db import engine, async_session, init_db  # noqa: E402
-from app.models.base import Base  # noqa: E402
-from app.models.mission import (  # noqa: E402
+import httpx
+import pendulum
+import pytest_asyncio
+from sqlalchemy import (
+    UniqueConstraint,
+    func,
+    select,
+)
+
+from app.core.db import async_session, engine, init_db
+from app.main import app
+from app.models.base import Base
+from app.models.mission import (
     DailyMission,
     MissionCompletion,
     TrainingGoal,
     TrainingStreak,
     TraitTarget,
 )
-from app.models.user import User  # noqa: E402
+from app.models.user import User
 
 REPO = Path(__file__).resolve().parent.parent
 SVC = (REPO / "app" / "services" / "missions.py").read_text(encoding="utf-8")
@@ -214,7 +217,7 @@ async def test_TC_A5_path_param_resource_read_N_A(client):
     # 设计上不存在 /api/goals/{goal_id} 这类路径参数读接口（仅有 /api/goals/me）
     ua = await _seed_user(str(uuid.uuid4()))
     await _seed_goal(ua.id, TraitTarget.more_decisive, "lincoln")
-    r = await client.get(f"/api/goals/{str(uuid.uuid4())}", headers=H(ua.token))
+    r = await client.get(f"/api/goals/{uuid.uuid4()!s}", headers=H(ua.token))
     # 无此路由 → 404（路由层，非资源归属）。标记为 N/A：无此类路径参数接口。
     assert r.status_code == 404
     # 若存在应为「资源不存在」，但此处为路由缺失，故 N/A。
@@ -437,7 +440,7 @@ async def test_TC_D4_normal_flow_no_account_creation_loop(client):
 
 
 # --------------------------------------------------------------------------- #
-# TC-E 系列：频控（R5）—— 代码未实现，标记 N/A
+# TC-E 系列：频控（R5）—— ratelimit.py 已实现，per-user 60s 固定窗口
 # --------------------------------------------------------------------------- #
 async def test_TC_E1_E2_rate_limiting_enforced(client):
     # 行为证据：同用户短时间内超过阈值 → 429（R5 防刷 streak/徽章）
@@ -467,7 +470,6 @@ async def test_section6_static_checks(client):
     assert "DailyMission.user_id == user_id" in SVC
 
     # 2) MissionCompletion 含 unique(user_id, mission_id) 约束（P1-6 并发门）
-    from sqlalchemy import UniqueConstraint
 
     ucs = [c for c in MissionCompletion.__table_args__ if isinstance(c, UniqueConstraint)]
     assert any({"user_id", "mission_id"} <= {col.name for col in c.columns} for c in ucs), [

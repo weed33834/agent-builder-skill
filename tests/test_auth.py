@@ -14,13 +14,12 @@ os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{_DB}"
 # 设一个满足长度要求的密钥,避免 InsecureKeyLengthWarning
 os.environ.setdefault("AUTH_SECRET", "test-secret-" + "x" * 40)
 
-import pytest  # noqa: E402
-import pytest_asyncio  # noqa: E402
-import httpx  # noqa: E402
+import httpx
+import pytest_asyncio
 
-from app.main import app  # noqa: E402
-from app.core.db import engine, init_db  # noqa: E402
-from app.models.base import Base  # noqa: E402
+from app.core.db import engine, init_db
+from app.main import app
+from app.models.base import Base
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)

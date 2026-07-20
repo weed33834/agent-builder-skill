@@ -29,8 +29,8 @@ async def get_questions(assessment_type: str) -> dict:
     """取某面镜子的题目(整批下发,前端控制节奏)。"""
     try:
         bank = load_bank(assessment_type)
-    except FileNotFoundError:
-        raise HTTPException(404, f"测评不存在: {assessment_type}")
+    except FileNotFoundError as e:
+        raise HTTPException(404, f"测评不存在: {assessment_type}") from e
     return {
         "assessment_type": bank.assessment_type,
         "title": bank.title,

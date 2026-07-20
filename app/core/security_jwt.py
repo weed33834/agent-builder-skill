@@ -49,5 +49,5 @@ def create_token(sub: str, email: str | None = None) -> str:
 def verify_token(tok: str) -> dict:
     try:
         return _jwt.decode(tok, get_settings().auth_secret, algorithms=["HS256"])
-    except Exception:
-        raise HTTPException(status_code=401, detail="未授权")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="未授权") from e

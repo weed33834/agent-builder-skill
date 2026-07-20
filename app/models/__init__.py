@@ -11,14 +11,14 @@ from app.models.session import AssessmentSession, SessionStatus
 from app.models.user import User
 
 __all__ = [
-    "Base",
-    "User",
     "AssessmentSession",
-    "SessionStatus",
-    "Result",
-    "TrainingGoal",
+    "Base",
     "DailyMission",
-    "TrainingStreak",
     "MissionCompletion",
+    "Result",
+    "SessionStatus",
+    "TrainingGoal",
+    "TrainingStreak",
     "TraitTarget",
+    "User",
 ]

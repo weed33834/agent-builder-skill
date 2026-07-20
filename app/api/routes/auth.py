@@ -9,11 +9,11 @@ import uuid
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import select
 
 from app.core.deps import DbSession
 from app.core.security_jwt import create_token, hash_password, verify_password
 from app.models.user import User
-from sqlalchemy import select
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 

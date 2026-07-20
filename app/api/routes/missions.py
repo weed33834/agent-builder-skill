@@ -1,14 +1,14 @@
 """教官每日任务路由 —— 全部端点强制 RequireUser(P0-2 / P0-3)。"""
 
-import pendulum
 from typing import Annotated
+
+import pendulum
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import DbSession, RequireUser
 from app.core.ratelimit import rate_limit
-from app.models.mission import DailyMission, TRAIT_LABELS, TrainingGoal
+from app.models.mission import TRAIT_LABELS, DailyMission, TrainingGoal
 from app.schemas.mission import GoalCreate, GoalOut, MissionOut, StreakOut, TaskOut
 from app.services.missions import (
     _figure_name,
