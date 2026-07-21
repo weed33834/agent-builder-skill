@@ -17,6 +17,7 @@ function escapeHtml(str) {
 }
 
 function is404(e) { return e && typeof e.message === 'string' && e.message.indexOf('404') === 0; }
+function is401(e) { return e && typeof e.message === 'string' && e.message.indexOf('401') === 0; }
 
 function readCachedGoal() {
   try {
@@ -67,17 +68,22 @@ function loadingHtml() {
 }
 
 function selectHtml() {
-  const traits = (state.reportTraits && state.reportTraits.tags) || [];
+  // figure=id(后端校验),figureName=显示名(界面展示)
   const figure = (state.reportTraits && state.reportTraits.figure) || '';
-  const cards = traits.length
-    ? traits.map(t => `
-      <div class="trait-card" data-trait="${escapeHtml(t)}" data-figure="${escapeHtml(figure)}">
-        <h3>${escapeHtml(t)}</h3>
-        <p class="trait-desc">${mmI18n.t('bootcamp.select_sub')}</p>
-        ${figure ? `<p class="trait-inspire">${mmI18n.t('bootcamp.inspire', { figure: escapeHtml(figure) })}</p>` : ''}
+  const figureName = (state.reportTraits && state.reportTraits.figureName) || '';
+  // 6 个固定特质(对应后端 TraitTarget 枚举),data-trait 传英文枚举值,
+  // 显示用 i18n.t 本地化标签。不再用 report.profile.tags(那是画像标签,非磨砺特质)。
+  const TRAIT_KEYS = ['more_decisive', 'more_courageous', 'more_resolute', 'more_action', 'more_principled', 'more_focused'];
+  const cards = TRAIT_KEYS.map(k => {
+    const label = mmI18n.t(`bootcamp.traits.${k}`) || k;
+    return `
+      <div class="trait-card" data-trait="${escapeHtml(k)}" data-figure="${escapeHtml(figure)}">
+        <h3>${escapeHtml(label)}</h3>
+        <p class="trait-desc">${mmI18n.t('bootcamp.trait_desc')}</p>
+        ${figureName ? `<p class="trait-inspire">${mmI18n.t('bootcamp.inspire', { figure: escapeHtml(figureName) })}</p>` : ''}
         <p class="trait-pick">${mmI18n.t('bootcamp.pick')}</p>
-      </div>`).join('')
-    : `<p class="bc-select-sub">${mmI18n.t('bootcamp.no_trait')}</p>`;
+      </div>`;
+  }).join('');
   return `
     <section class="bc-hero">
       <div class="bc-eyebrow">${mmI18n.t('bootcamp.eyebrow')}</div>
@@ -136,7 +142,7 @@ function missionHtml() {
     <section class="bc-hero">
       <div class="bc-eyebrow">${mmI18n.t('bootcamp.mission_eyebrow')}</div>
       <h2 class="bc-title">${mmI18n.t('bootcamp.mission_title')}</h2>
-      <p class="bc-sub">${escapeHtml(state.goal ? (state.goal.trait_target || '') : '')} · ${mmI18n.t('bootcamp.account')}</p>
+      <p class="bc-sub">${escapeHtml(state.goal ? (mmI18n.t(`bootcamp.traits.${state.goal.trait_target}`) || state.goal.trait_label || state.goal.trait_target || '') : '')} · ${mmI18n.t('bootcamp.account')}</p>
     </section>
     ${streakBlockHtml()}
     <div class="task-list">${tasks}</div>
@@ -197,10 +203,17 @@ async function init() {
     await enterMission();
   } catch (e) {
     if (is404(e)) { await enterSelect(); return; }
-    // 非 404(多为网络错误):尝试本地缓存 goal 兜底,否则报错
+    // 401 未登录:若有 result_id 走 enterSelect 让匿名选型,否则提示登录
+    if (is401(e)) {
+      if (resultId) { await enterSelect(); return; }
+      state.error = mmI18n.t('bootcamp.error_login_required');
+      state.status = 'error'; render();
+      return;
+    }
+    // 非 404/401(多为网络错误):尝试本地缓存 goal 兜底,否则报错
     const cached = readCachedGoal();
     if (cached) { state.goal = cached; await enterMission(); return; }
-    state.error = e.message || mmI18n.t('common.error_generic');
+    state.error = mmI18n.t('common.error_generic');
     state.status = 'error'; render();
   }
 }
@@ -213,11 +226,20 @@ async function enterSelect() {
   try {
     const report = await api.get(`/api/results/${resultId}`);
     const tags = (report.profile && report.profile.tags) || [];
-    const figure = (report.matches && report.matches[0] && report.matches[0].name) || '';
-    state.reportTraits = { tags, figure };
+    // figure_id 用于后端 createGoal(source_figure) 校验(必须为 celebrity.yaml 的 id)
+    // figure_name 用于界面展示("启发来源: 林肯")
+    const topMatch = report.matches && report.matches[0];
+    const figureId = (topMatch && topMatch.id) || '';
+    const figureName = (topMatch && topMatch.name) || '';
+    state.reportTraits = { tags, figure: figureId, figureName };
     state.status = 'select';
   } catch (e) {
-    state.error = e.message || mmI18n.t('common.error_generic');
+    // 401/404 时给友好文案,不暴露原始 JSON
+    if (is401(e) || is404(e)) {
+      state.error = mmI18n.t('bootcamp.error_login_required');
+    } else {
+      state.error = mmI18n.t('common.error_generic');
+    }
     state.status = 'error';
   }
   render();
@@ -231,8 +253,9 @@ async function enterMission() {
       api.get('/api/missions/streak'),
     ]);
     state.mission = mission;
-    state.streak = streak.streak || 0;
-    state.badge = !!streak.badge;
+    // StreakOut schema: { current, longest, badge, last_completed_date }
+    state.streak = (streak && streak.current) || 0;
+    state.badge = !!(streak && streak.badge);
     if (!mission.tasks || mission.tasks.length === 0) {
       state.status = 'empty';
     } else if (mission.tasks.every(t => t.done)) {
@@ -242,7 +265,8 @@ async function enterMission() {
     }
   } catch (e) {
     if (is404(e)) { state.status = 'empty'; }
-    else { state.error = e.message || mmI18n.t('common.error_generic'); state.status = 'error'; }
+    else if (is401(e)) { state.error = mmI18n.t('bootcamp.error_login_required'); state.status = 'error'; }
+    else { state.error = mmI18n.t('common.error_generic'); state.status = 'error'; }
   }
   render();
 }
@@ -255,7 +279,7 @@ async function createGoal(traitTarget, sourceFigure) {
     });
     state.goal = goal;
   } catch (e) {
-    state.error = e.message || mmI18n.t('common.error_generic');
+    state.error = is401(e) ? mmI18n.t('bootcamp.error_login_required') : mmI18n.t('common.error_generic');
     state.status = 'error'; render(); return;
   }
   // 本地缓存(离线兜底 / 避免重复选);服务端为权威
@@ -285,8 +309,9 @@ async function completeTask(taskId) {
     const res = await api.post(`/api/missions/${m.id}/tasks/${taskId}/complete`, {});
     // 以响应为准对账(坑2:乐观 ≠ 后端 done)
     if (res && res.mission && Array.isArray(res.mission.tasks)) m.tasks = res.mission.tasks;
-    if (res && typeof res.streak === 'number') state.streak = res.streak;
-    if (res && typeof res.badge === 'boolean') state.badge = res.badge;
+    // complete 响应:{ mission, streak: StreakOut },streak 是对象不是 number
+    if (res && res.streak && typeof res.streak.current === 'number') state.streak = res.streak.current;
+    if (res && res.streak && typeof res.streak.badge === 'boolean') state.badge = res.streak.badge;
     showSyncing(taskId, false);
     if (card) card.removeAttribute('data-locked');
     if (m.tasks.every(t => t.done)) {
@@ -304,7 +329,7 @@ async function completeTask(taskId) {
       card.removeAttribute('data-locked');
     }
     showSyncing(taskId, false);
-    showCardError(taskId, e.message || mmI18n.t('common.error_generic'));
+    showCardError(taskId, is401(e) ? mmI18n.t('bootcamp.error_login_required') : mmI18n.t('common.error_generic'));
   }
 }
 

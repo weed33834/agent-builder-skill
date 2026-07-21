@@ -32,7 +32,7 @@
   <main id="main">
   <section class="bc-hero">
     <div class="bc-eyebrow" data-i18n="login.eyebrow">SIGN IN</div>
-    <h2 class="bc-title" data-i18n="login.title_zh">心镜账户</h2>
+    <h1 class="bc-title" data-i18n="login.title_zh">心镜账户</h1>
     <p class="bc-select-sub" data-i18n="login.sub">注册或登录,训练进度与对比码将绑定账户。</p>
   </section>
   <div class="auth-box">
@@ -95,8 +95,13 @@
       setJwt(data.access_token);
       location.href='/';
     }catch(e){
-      const raw=(e.message||'失败').replace(/^\d+ /,'');
-      msg(mmI18n.t('login.err_'+raw) || raw, 'err');
+      // e.message 形如 "401 {"detail":"..."}",按 HTTP status 区分,不暴露原始 JSON
+      const s = (e.message || '').split(' ')[0];
+      let key;
+      if (s === '401') key = 'login.err_credentials';
+      else if (s === '409') key = 'login.err_exists';
+      else key = 'login.err_failed';
+      msg(mmI18n.t(key), 'err');
     }
   }
   document.getElementById('auth-form').addEventListener('submit', (e) => {

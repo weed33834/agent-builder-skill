@@ -168,6 +168,7 @@ function doRender() {
 
     <div class="actions">
       <a href="/bootcamp.html?result_id=${escapeHtml(resultId)}" class="btn-primary" data-i18n="bootcamp.enter">进入训练营 · 今日开练</a>
+      <button id="copy-compare-code" class="btn-secondary" type="button" data-i18n="report.copy_compare_code">复制对比码</button>
       <a href="/" class="btn-secondary" data-i18n="report.back_home">回到首页</a>
       <a href="/history.html" class="btn-secondary" data-i18n="report.my_reports">我的报告</a>
     </div>
@@ -204,6 +205,29 @@ function doRender() {
       if (detail) detail.style.display = detail.style.display === 'none' ? '' : 'none';
     });
   });
+
+  // 复制对比码按钮:把当前 result_id 作为对比码复制到剪贴板
+  const copyBtn = document.getElementById('copy-compare-code');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(resultId);
+        const original = copyBtn.textContent;
+        copyBtn.textContent = mmI18n.t('report.compare_code_copied') || '已复制';
+        setTimeout(() => { copyBtn.textContent = original; }, 1800);
+      } catch (e) {
+        // clipboard API 在非 HTTPS / 非交互上下文可能失败,fallback 用 textarea
+        const ta = document.createElement('textarea');
+        ta.value = resultId;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (e2) {}
+        ta.remove();
+      }
+    });
+  }
 
   if (dimEntries.length) drawRadar(dimEntries);
 }

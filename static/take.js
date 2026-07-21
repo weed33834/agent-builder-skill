@@ -63,7 +63,12 @@ async function init() {
   ]);
   // 设置三镜主题色
   document.body.dataset.mirror = type;
-  document.getElementById('title').textContent = mmI18n.t(`take.title_${type}`) || bank.title;
+  const mirrorName = mmI18n.t(`take.title_${type}`) || bank.title;
+  document.getElementById('title').textContent = mirrorName;
+  // 同步浏览器标签 title(覆盖 i18n.js 注入的 seo.take_title 模板中的 {name} 占位符)
+  document.title = mmI18n.t('seo.take_title', { name: mirrorName });
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.setAttribute('content', mmI18n.t('seo.take_description', { name: mirrorName }));
   bank._typeIndex = buildTypeIndex(bank.questions);
   tracker = new BehaviorTracker();
 

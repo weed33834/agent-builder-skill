@@ -26,6 +26,8 @@ const MM_I18N_RESOURCES = {
       err_offline: '网络已断开,请检查连接',
       back_home: '回到首页',
       my_reports: '我的报告',
+      compare: '关系对比',
+      login: '登录',
       about: '关于',
       about_brand: '关于心镜',
       minutes: '分钟',
@@ -57,6 +59,8 @@ const MM_I18N_RESOURCES = {
       about_description: '心镜是一个开源的自我探索工具,基于情境化测评与行为轨迹分析。',
       login_title: '登录 — 心镜',
       login_description: '注册或登录心镜账户,同步训练进度与对比码。',
+      notfound_title: '404 — 镜子未照见此处 — 心镜',
+      notfound_description: '你访问的页面不存在,或已被移动。回到镜子前,继续看见自己。',
       og_image: '/images/og-card.svg',
       og_type: 'website',
       twitter_card: 'summary_large_image',
@@ -183,6 +187,8 @@ const MM_I18N_RESOURCES = {
       // 报告
       back_home: '回到首页',
       my_reports: '我的报告',
+      copy_compare_code: '复制对比码',
+      compare_code_copied: '已复制,可粘贴给好友',
       higher_than: '高于 {pct}%',
     },
     history: {
@@ -226,6 +232,7 @@ const MM_I18N_RESOURCES = {
       tomorrow: '明日再来 →',
       error_title: '连接中断',
       error_sub: '教官暂时联系不上,稍后再试。',
+      error_login_required: '需要登录才能使用训练营。请先登录,或从报告页"进入训练营"按钮进入。',
       empty_title: '今日未布训',
       empty_sub: '教官今日尚未布训,先去照照镜子。',
       empty_cta: '回我的结果',
@@ -236,6 +243,16 @@ const MM_I18N_RESOURCES = {
       share_via: '喊战友来练',
       share_hint: '把进度甩给朋友,叫他们也来磨刀',
       share_no_data: '先完成一次训练再分享',
+      // 6 个固定特质(对应后端 TraitTarget 枚举,英文 key 不翻译)
+      traits: {
+        more_decisive: '更果断',
+        more_courageous: '更敢担当',
+        more_resolute: '更坚定',
+        more_action: '更敢行动',
+        more_principled: '更守原则',
+        more_focused: '更专注',
+      },
+      trait_desc: '选你想磨砺的一面,教官每日布训磨你',
     },
     compare: {
       title: '关系对比',
@@ -269,6 +286,9 @@ const MM_I18N_RESOURCES = {
       login: '登录',
       err_email: '请输入有效邮箱',
       err_pwd: '密码至少 8 位',
+      err_credentials: '邮箱或密码错误',
+      err_exists: '该邮箱已注册,请直接登录',
+      err_failed: '操作失败,请稍后重试',
     },
   },
 
@@ -285,8 +305,10 @@ const MM_I18N_RESOURCES = {
       submit_failed: 'Submission failed, please retry',
       err_timeout: 'Request timed out, please retry',
       err_offline: 'Network offline, check your connection',
-      back_home: 'Back to Home',
+      back_home: 'Back Home',
       my_reports: 'My Reports',
+      compare: 'Compare',
+      login: 'Sign In',
       about: 'About',
       about_brand: 'About MindMirror',
       minutes: 'min',
@@ -317,6 +339,8 @@ const MM_I18N_RESOURCES = {
       about_description: 'MindMirror is an open-source self-discovery tool built on scenario-based assessments and behavioral trajectory analysis.',
       login_title: 'Sign In — MindMirror',
       login_description: 'Register or sign in to sync your bootcamp progress and compare codes.',
+      notfound_title: '404 — The mirror sees nothing here — MindMirror',
+      notfound_description: 'The page does not exist or has been moved. Return to the mirror and keep discovering yourself.',
       og_image: '/images/og-card.svg',
       og_type: 'website',
       twitter_card: 'summary_large_image',
@@ -432,6 +456,8 @@ const MM_I18N_RESOURCES = {
       },
       back_home: 'Back to Home',
       my_reports: 'My Reports',
+      copy_compare_code: 'Copy Compare Code',
+      compare_code_copied: 'Copied — paste to a friend',
       higher_than: 'Higher than {pct}%',
     },
     history: {
@@ -475,6 +501,7 @@ const MM_I18N_RESOURCES = {
       tomorrow: 'Come Back Tomorrow →',
       error_title: 'Connection Lost',
       error_sub: 'The sergeant is unreachable. Try again later.',
+      error_login_required: 'Sign in to use the bootcamp. Or enter from the "Enter Bootcamp" button on a report page.',
       empty_title: 'No Drill Today',
       empty_sub: 'No orders issued today. Go look in the mirror first.',
       empty_cta: 'Back to My Result',
@@ -485,6 +512,16 @@ const MM_I18N_RESOURCES = {
       share_via: 'Call in Allies',
       share_hint: 'Throw your progress at friends — make them train too',
       share_no_data: 'Finish a drill before sharing',
+      // 6 fixed traits (matching backend TraitTarget enum; English keys stay untranslated)
+      traits: {
+        more_decisive: 'More Decisive',
+        more_courageous: 'More Courageous',
+        more_resolute: 'More Resolute',
+        more_action: 'More Action',
+        more_principled: 'More Principled',
+        more_focused: 'More Focused',
+      },
+      trait_desc: 'Pick a trait to forge — your instructor drills you daily',
     },
     compare: {
       title: 'Relation Compare',
@@ -518,6 +555,9 @@ const MM_I18N_RESOURCES = {
       login: 'Sign In',
       err_email: 'Please enter a valid email',
       err_pwd: 'Password must be at least 8 characters',
+      err_credentials: 'Email or password is incorrect',
+      err_exists: 'This email is already registered, please sign in directly',
+      err_failed: 'Operation failed, please try again later',
     },
   },
 
@@ -534,8 +574,10 @@ const MM_I18N_RESOURCES = {
       submit_failed: '送信に失敗しました。再試行してください',
       err_timeout: 'リクエストがタイムアウトしました。後でもう一度',
       err_offline: 'ネットワークが切断されました',
-      back_home: 'ホームへ戻る',
+      back_home: 'ホームへ',
       my_reports: 'レポート',
+      compare: '関係比較',
+      login: 'ログイン',
       about: '心鏡とは',
       about_brand: '心鏡について',
       minutes: '分',
@@ -566,6 +608,8 @@ const MM_I18N_RESOURCES = {
       about_description: '心鏡は状況設定評価と行動軌跡分析に基づくオープンソースの自己探索ツール。',
       login_title: 'サインイン — 心鏡',
       login_description: '登録またはサインインして訓練進捗と対比コードを同期。',
+      notfound_title: '404 — 鏡はここを照らさない — 心鏡',
+      notfound_description: 'ページは存在しないか、移動されました。鏡に戻り、自分を見つめ続けてください。',
       og_image: '/images/og-card.svg',
       og_type: 'website',
       twitter_card: 'summary_large_image',
@@ -681,6 +725,8 @@ const MM_I18N_RESOURCES = {
       },
       back_home: 'ホームへ戻る',
       my_reports: 'レポート',
+      copy_compare_code: '比較コードをコピー',
+      compare_code_copied: 'コピーしました',
       higher_than: '{pct}% より上',
     },
     history: {
@@ -724,6 +770,7 @@ const MM_I18N_RESOURCES = {
       tomorrow: '明日また来る →',
       error_title: '接続切断',
       error_sub: '教官と連絡が取れません。後ほど再試行。',
+      error_login_required: 'ブートキャンプ利用にはログインが必要です。ログインするか、レポートページの「ブートキャンプへ」ボタンから入ってください。',
       empty_title: '今日は訓練なし',
       empty_sub: '教官は今日まだ訓練を出していない。まず鏡を見よ。',
       empty_cta: '結果へ戻る',
@@ -734,6 +781,16 @@ const MM_I18N_RESOURCES = {
       share_via: '戦友を呼ぶ',
       share_hint: '進捗を友に投げつけ、一緒に鍛えよう',
       share_no_data: '共有する前に一度訓練を終えよ',
+      // 6 つの固定特性(後端 TraitTarget 列挙と対応、英語 key は翻訳しない)
+      traits: {
+        more_decisive: 'より決断を',
+        more_courageous: 'より勇気を',
+        more_resolute: 'より意志を',
+        more_action: 'より行動を',
+        more_principled: 'より原則を',
+        more_focused: 'より集中を',
+      },
+      trait_desc: '鍛えたい一面を選べ——教官が毎日鍛えに来る',
     },
     compare: {
       title: '関係比較',
@@ -767,6 +824,9 @@ const MM_I18N_RESOURCES = {
       login: 'ログイン',
       err_email: '有効なメールを入力してください',
       err_pwd: 'パスワードは8文字以上必要です',
+      err_credentials: 'メールまたはパスワードが正しくありません',
+      err_exists: 'このメールは既に登録済みです、直接ログインしてください',
+      err_failed: '操作に失敗しました、後でもう一度お試しください',
     },
   },
 };
@@ -850,8 +910,9 @@ function applyLang(lang) {
       const v = mmI18n.t(el.dataset.i18nHtml);
       if (v !== el.dataset.i18nHtml) el.innerHTML = v;
     });
-    // lang 属性
-    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : lang;
+    // lang 属性(统一带区域子标签,便于浏览器/读屏器选择字体与发音)
+    const langTag = { zh: 'zh-CN', en: 'en-US', ja: 'ja-JP' }[lang] || lang;
+    document.documentElement.lang = langTag;
     // 激活态
     document.querySelectorAll('.lang-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.lang === lang);
@@ -875,7 +936,14 @@ function applyLang(lang) {
 
 function initLang() {
   let saved = 'zh';
-  try { saved = localStorage.getItem(MM_LANG_KEY) || 'zh'; } catch (e) {}
+  // 优先读 URL ?lang= 参数(分享链接指定语言),其次读 localStorage
+  const urlLang = new URLSearchParams(location.search).get('lang');
+  if (urlLang && MM_I18N_RESOURCES[urlLang]) {
+    saved = urlLang;
+    try { localStorage.setItem(MM_LANG_KEY, saved); } catch (e) {}
+  } else {
+    try { saved = localStorage.getItem(MM_LANG_KEY) || 'zh'; } catch (e) {}
+  }
   if (!MM_I18N_RESOURCES[saved]) saved = 'zh';
   mmI18n.lang = saved;
   applyLang(saved);
@@ -914,6 +982,8 @@ function _applySeoMeta() {
   const ogImage = t('seo.og_image');
   const ogType = t('seo.og_type');
   const twitterCard = t('seo.twitter_card');
+  // OG image 必须是绝对 URL,社交平台才能抓取
+  const ogImageUrl = new URL(ogImage, location.origin).href;
 
   if (title && title !== `seo.${page}_title`) {
     document.title = title;
@@ -925,15 +995,16 @@ function _applySeoMeta() {
   _setMeta('property', 'og:description', desc);
   _setMeta('property', 'og:site_name', siteName);
   _setMeta('property', 'og:type', ogType);
-  _setMeta('property', 'og:image', ogImage);
+  _setMeta('property', 'og:image', ogImageUrl);
   _setMeta('property', 'og:locale', mmI18n.lang === 'zh' ? 'zh_CN' : (mmI18n.lang === 'ja' ? 'ja_JP' : 'en_US'));
   // Twitter Card
   _setMeta('name', 'twitter:card', twitterCard);
   _setMeta('name', 'twitter:title', title);
   _setMeta('name', 'twitter:description', desc);
-  _setMeta('name', 'twitter:image', ogImage);
-  // canonical(若已存在则不覆盖)
-  if (!document.head.querySelector('link[rel="canonical"]')) {
+  _setMeta('name', 'twitter:image', ogImageUrl);
+  // canonical(若已存在则不覆盖);404 页面不注入 canonical(避免搜索引擎索引不存在的 URL)
+  const pageType404 = document.querySelector('meta[name="mm-page"]')?.content === 'notfound';
+  if (!pageType404 && !document.head.querySelector('link[rel="canonical"]')) {
     const link = document.createElement('link');
     link.rel = 'canonical';
     link.href = location.origin + location.pathname;

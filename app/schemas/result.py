@@ -8,6 +8,9 @@ class MatchItem(BaseModel):
     name: str
     match_pct: float
     blurb: str
+    # 名人镜专用:SVG 肖像路径与名言。value/ideology matcher 不返回,默认空串。
+    image: str = ""
+    quote: str = ""
 
 
 class ResultOut(BaseModel):
