@@ -9,6 +9,7 @@ class SessionOut(BaseModel):
     id: str
     assessment_type: str
     status: str
+    version: str = "standard"  # fast | standard | deep
     current_index: int
     draft_answers: dict | None = None
     behavior_log: dict | None = None

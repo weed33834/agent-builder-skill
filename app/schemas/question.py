@@ -34,6 +34,9 @@ class BaseQuestion(BaseModel):
     prompt: str
     time_limit_sec: int | None = None  # 限时题;None = 无限
     dimensions: list[str] = Field(default_factory=list)  # 此题涉及的维度
+    # 难度分层:1=fast(快速版,约 20 题/镜);2=standard(标准版,约 40 题/镜);3=deep(深度版,约 80 题/镜)
+    # 未标注默认 2(standard),兼容历史题库
+    tier: int = 2
 
 
 class ScaleQuestion(BaseQuestion):

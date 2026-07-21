@@ -23,6 +23,8 @@ class AssessmentSession(UlidPkMixin, Base):
     status: Mapped[SessionStatus] = mapped_column(
         Enum(SessionStatus), default=SessionStatus.in_progress, index=True
     )
+    # 测评版本:fast=快速 / standard=标准 / deep=深度。默认 standard 兼容历史数据
+    version: Mapped[str] = mapped_column(String(16), default="standard", index=True)
     current_index: Mapped[int] = mapped_column(Integer, default=0)  # 当前题号
     # 草稿:已答题目答案,中途退出可恢复
     draft_answers: Mapped[dict | None] = mapped_column(JSON, nullable=True)

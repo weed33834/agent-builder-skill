@@ -6,11 +6,14 @@ v3 升级(#8 #18 修复):
 - 行为数据不再影响维度得分,仅用于行为洞察与矛盾检测
 - 归一化按各维度理论极值计算,边界与实际计分规则一致
 - 排序题位置权重非线性递减
+
+v4 升级(版本分层):
+- 按 session.version 过滤题库,计分边界与题目一致
 """
 
 from collections import defaultdict
 
-from app.data import load_bank
+from app.data import filter_bank, load_bank
 from app.models.session import AssessmentSession
 from app.schemas.session import SubmitAnswersIn
 from app.services.conflicts import detect_conflicts
@@ -20,7 +23,7 @@ from app.services.percentiles import estimate_percentiles
 from app.services.summary import build_summary
 
 
-def _score_answers(assessment_type: str, answers: SubmitAnswersIn) -> dict[str, float]:
+def _score_answers(assessment_type: str, answers: SubmitAnswersIn, version: str = "standard") -> dict[str, float]:
     """按选项 scores 映射 → 归一化到 0-100。
 
     #8 修复:行为权重不再影响维度分(仅用于行为洞察),归一化边界与计分规则一致。
@@ -28,7 +31,8 @@ def _score_answers(assessment_type: str, answers: SubmitAnswersIn) -> dict[str, 
     (即所有题都选最强正向 / 最强负向时的累计分),再用线性映射
     raw → [min, max] ⇒ [0, 100]。
     """
-    bank = load_bank(assessment_type)
+    full_bank = load_bank(assessment_type)
+    bank = filter_bank(full_bank, version)
     raw: dict[str, float] = defaultdict(float)
     q_by_id = {q.id: q for q in bank.questions}
 
@@ -257,7 +261,8 @@ def compute_result(session: AssessmentSession, answers: SubmitAnswersIn) -> dict
     - profile: 综合画像标签(新增)
     """
     assessment_type = session.assessment_type
-    dimensions = _score_answers(assessment_type, answers)
+    version = session.version or "standard"
+    dimensions = _score_answers(assessment_type, answers, version)
 
     behavior = session.behavior_log or {}
 

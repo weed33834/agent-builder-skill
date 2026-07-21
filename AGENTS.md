@@ -58,6 +58,25 @@ tests/              # pytest,含安全门禁测试
 - 提交前必须 `uv run pytest tests/` 全过
 - 安全门禁测试在 `tests/test_daily_missions_gate.py`,覆盖 TC-A..E + §6 静态核查
 
+### E2E 全流程测试(Playwright)
+
+`scripts/e2e_walkthrough.py` 以普通用户视角真实点击走完全流程,不直接调 API:
+
+```bash
+# 1. 先启动开发服务器
+uv run fastapi dev app/main.py --host 0.0.0.0 --port 8765
+
+# 2. 首次运行需装浏览器内核
+uv run playwright install chromium
+
+# 3. 跑全流程(三镜 × 三版本 = 9 组)
+uv run python scripts/e2e_walkthrough.py
+```
+
+覆盖:首页渲染 → 进入 take.html → section-intro 点击过渡 → 逐题作答(全 9 种题型)→ 跳转 report.html → 结果页渲染检查。IAT 题型通过 API 预加载题库构建 word→category 映射,直接点正确一侧。任何 console 错误或网络失败都会被记入 `issues` 列表。
+
+提交题库或前端改动前建议跑一遍 E2E,避免引入回归。
+
 ## 提交规范
 
 格式:`<type>(<scope>): <subject>`
@@ -74,9 +93,21 @@ tests/              # pytest,含安全门禁测试
 
 新增题目/名人/意识形态时:
 1. 编辑 `data/questions/*.yaml` / `data/figures/celebrity.yaml` / `data/ideologies/ideology.yaml`
-2. 名人图片放 `static/images/celebrities/{id}.svg`,240×240 viewBox,延续 machiavelli.svg 风格
-3. YAML 中 `image` 字段路径写 `/images/celebrities/{id}.svg`
-4. 跑测试确认 `matchers.py` 能正确取到 `image` 字段
+2. 每题必须标 `tier`(`1`=进 fast/standard/deep,`2`=进 standard/deep,`3`=仅 deep),同 tier 内按题型分组排序
+3. 名人图片放 `static/images/celebrities/{id}.svg`,240×240 viewBox,延续 machiavelli.svg 风格
+4. YAML 中 `image` 字段路径写 `/images/celebrities/{id}.svg`
+5. 跑单元测试 + E2E 全流程(`uv run python scripts/e2e_walkthrough.py`)确认无回归
+
+## 自动化与依赖管理
+
+**本仓库不启用任何机器人自动化**:
+
+- **不启用 Dependabot** —— 依赖更新由维护者手动进行,不接受 dependabot 自动 PR
+- **不启用自动合并(auto-merge)** —— 所有 PR 必须人工审查后手动合并
+- **不启用自动发布** —— 版本发布由维护者手动打 tag
+- **不启用 Stale Bot** —— issue/PR 不会因为闲置被自动关闭
+
+CI 仅保留最低程度的 `.github/workflows/ci.yml`:在 push 和 PR 时运行 `pytest` + `ruff check`,不触发任何额外动作。
 
 ## 已知限制
 

@@ -3,44 +3,106 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>登录 — 心镜</title>
+<meta name="robots" content="noindex">
+<meta name="mm-page" content="login">
+<title data-i18n="login.title">登录 — 心镜</title>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/favicon.svg">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap">
 <link rel="stylesheet" href="/styles.css">
+<style>
+  .pwd-wrap { position: relative; }
+  .pwd-toggle {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; padding: 4px 8px;
+    color: var(--ink-faint); font-size: 12px; border-radius: 4px;
+  }
+  .pwd-toggle:hover { color: var(--ink-soft); background: var(--paper-deep); }
+  .auth-box form { display: flex; flex-direction: column; gap: 12px; }
+  .auth-box .compare-input { padding-right: 56px; }
+</style>
 </head>
 <body>
+<a href="#main" class="skip-link">跳到主内容</a>
 <div class="container">
   <div class="take-header"><a href="/" class="back-link" data-i18n="common.back">← 返回</a></div>
+  <main id="main">
   <section class="bc-hero">
-    <div class="bc-eyebrow">SIGN IN</div>
-    <h2 class="bc-title">心镜账户</h2>
-    <p class="bc-select-sub">注册或登录,训练进度与对比码将绑定账户。</p>
+    <div class="bc-eyebrow" data-i18n="login.eyebrow">SIGN IN</div>
+    <h2 class="bc-title" data-i18n="login.title_zh">心镜账户</h2>
+    <p class="bc-select-sub" data-i18n="login.sub">注册或登录,训练进度与对比码将绑定账户。</p>
   </section>
   <div class="auth-box">
-    <input id="email" class="compare-input" type="email" placeholder="邮箱" />
-    <input id="password" class="compare-input" type="password" placeholder="密码(至少 8 位)" />
-    <input id="nickname" class="compare-input" type="text" placeholder="昵称(注册可选)" />
-    <p id="auth-msg" class="compare-msg"></p>
-    <div class="compare-box">
-      <button class="btn-primary" id="btn-register" type="button">注册</button>
-      <button class="btn-secondary" id="btn-login" type="button">登录</button>
-    </div>
+    <form id="auth-form" autocomplete="on" novalidate>
+      <input id="email" class="compare-input" type="email" name="email"
+             autocomplete="email" required maxlength="120" spellcheck="false"
+             data-i18n-placeholder="login.email_ph" placeholder="邮箱"
+             aria-label="邮箱" />
+      <div class="pwd-wrap">
+        <input id="password" class="compare-input" type="password" name="password"
+               autocomplete="current-password" required minlength="8" maxlength="128"
+               data-i18n-placeholder="login.pwd_ph" placeholder="密码(至少 8 位)"
+               aria-label="密码(至少 8 位)" />
+        <button type="button" class="pwd-toggle" id="pwd-toggle"
+                data-i18n="login.show" aria-label="显示密码">显示</button>
+      </div>
+      <input id="nickname" class="compare-input" type="text" name="nickname"
+             autocomplete="nickname" maxlength="32" spellcheck="false"
+             data-i18n-placeholder="login.nick_ph" placeholder="昵称(注册可选)"
+             aria-label="昵称(注册可选)" />
+      <p id="auth-msg" class="compare-msg" role="status" aria-live="polite"></p>
+      <div class="compare-box">
+        <button class="btn-primary" id="btn-register" type="submit" data-i18n="login.register">注册</button>
+        <button class="btn-secondary" id="btn-login" type="button" data-i18n="login.login">登录</button>
+      </div>
+    </form>
   </div>
+  </main>
 </div>
 <script src="/i18n.js"></script>
 <script src="/app.js"></script>
 <script>
   function msg(t, k){ const e=document.getElementById('auth-msg'); e.textContent=t||''; e.className='compare-msg'+(k?' '+k:''); }
+
+  // 密码显示/隐藏切换
+  const pwdInput = document.getElementById('password');
+  const pwdToggle = document.getElementById('pwd-toggle');
+  pwdToggle.addEventListener('click', () => {
+    const isPwd = pwdInput.type === 'password';
+    pwdInput.type = isPwd ? 'text' : 'password';
+    pwdToggle.textContent = isPwd
+      ? (mmI18n.t('login.hide') || '隐藏')
+      : (mmI18n.t('login.show') || '显示');
+  });
+
   async function doAuth(mode){
     const email=document.getElementById('email').value.trim();
     const pw=document.getElementById('password').value;
     const nick=document.getElementById('nickname').value.trim();
+    // HTML5 校验
+    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      msg(mmI18n.t('login.err_email') || '请输入有效邮箱', 'err'); return;
+    }
+    if(pw.length < 8){
+      msg(mmI18n.t('login.err_pwd') || '密码至少 8 位', 'err'); return;
+    }
+    msg(mmI18n.t('common.processing') || '处理中…');
     try{
       const data=await api.post('/api/auth/'+mode,{email:email,password:pw,nickname:nick||undefined});
       setJwt(data.access_token);
       location.href='/';
-    }catch(e){ msg((e.message||'失败').replace(/^\d+ /,''),'err'); }
+    }catch(e){
+      const raw=(e.message||'失败').replace(/^\d+ /,'');
+      msg(mmI18n.t('login.err_'+raw) || raw, 'err');
+    }
   }
-  document.getElementById('btn-register').addEventListener('click',()=>doAuth('register'));
+  document.getElementById('auth-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    doAuth('register');
+  });
   document.getElementById('btn-login').addEventListener('click',()=>doAuth('login'));
   injectLangSwitch();
 </script>

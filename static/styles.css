@@ -4,9 +4,8 @@
    去玻璃拟态/去噪点/去常驻动画/去 glow 泛滥
    三镜三色:名人镜=旧铜 / 价值镜=青石 / 意识镜=钢蓝
    字体:Fraunces(可变衬线,按上下文动态用 opsz) + Noto Serif SC
+   注意:Google Fonts 通过各 HTML 头部 preconnect+link 加载,不再用 @import(避免阻塞渲染)
    ============================================================ */
-
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap');
 
 :root {
   /* 宣纸底色 */
@@ -70,6 +69,36 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+}
+
+/* ============================================================
+   可访问性:键盘焦点样式(WCAG 2.1 SC 2.4.7)
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* 鼠标点击不显示焦点环(仅键盘导航显示) */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* skip-link 跳到主内容 */
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 8px 16px;
+  z-index: 9999;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+}
+.skip-link:focus {
+  top: 0;
 }
 
 /* 极淡的纸纹 —— 不是噪点,是宣纸纤维感,极低透明度 */
@@ -2326,4 +2355,138 @@ h1, h2, h3 {
   .bc-title { font-size: 26px; }
   .task-prompt { font-size: 16px; }
   .streak-num .num { font-size: 34px; }
+}
+
+/* ============================================================
+   基础字号 —— 用 rem 单位支持浏览器缩放与无障碍
+   根字号 16px,移动端微调
+   ============================================================ */
+html { font-size: 16px; }
+@media (max-width: 480px) {
+  html { font-size: 15px; }
+}
+
+/* ============================================================
+   mmUI Toast —— 浮层通知,替代原生 alert
+   ============================================================ */
+.mm-toast-host {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  max-width: calc(100vw - 32px);
+}
+.mm-toast {
+  pointer-events: auto;
+  min-width: 240px;
+  max-width: 480px;
+  padding: 12px 20px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 1.6;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity .25s var(--ease), transform .25s var(--ease);
+  border-left: 3px solid var(--accent);
+}
+.mm-toast.show { opacity: 1; transform: translateY(0); }
+.mm-toast-warn { border-left-color: #c08020; }
+.mm-toast-error { border-left-color: var(--accent); }
+.mm-toast-info { border-left-color: var(--mirror); }
+
+/* mmUI inline error —— 在表单/容器内显示的错误提示 */
+.mm-inline-error {
+  margin: 8px 0;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  border-radius: 2px;
+  animation: mm-fade-in .2s var(--ease);
+}
+@keyframes mm-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   暗色模式 —— prefers-color-scheme: dark
+   反转宣纸为墨色背景,保留朱墨强调色
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:        #1a1714;
+    --paper-soft:   #232019;
+    --paper-deep:   #2a2620;
+    --paper-faint:  #15120f;
+    --paper-dim:    #322c24;
+
+    --ink:          #f4efe3;
+    --ink-soft:     #c9c1ad;
+    --ink-faint:    #8a857c;
+    --ink-ghost:    #5a5448;
+
+    --line:         #3a342a;
+    --line-soft:    #2a2620;
+
+    --accent-soft:  rgba(217, 92, 76, 0.10);
+    --accent-mid:   rgba(217, 92, 76, 0.22);
+  }
+  /* 暗色下调整三镜色为更亮的版本 */
+  [data-mirror="celebrity"] { --mirror: #c0954a; }
+  [data-mirror="value"]     { --mirror: #6e9482; }
+  [data-mirror="ideology"]  { --mirror: #6b88a5; }
+  /* 暗色下镜子装饰圆需要更暗的渐变 */
+  .mirror-disc { filter: brightness(0.85); }
+  /* 图片自动反色:确保 SVG 肖像在暗色下不过亮 */
+  .celebrity-portrait { filter: brightness(0.9); }
+}
+
+/* ============================================================
+   打印样式 —— 让报告/对比页可干净打印为 PDF
+   ============================================================ */
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 11pt;
+  }
+  .lang-switch,
+  .back-link,
+  .skip-link,
+  .take-header,
+  .actions,
+  .share-modal,
+  .loading-overlay,
+  .mm-toast-host,
+  .cmp-bar,
+  .bootcamp-cta,
+  #lang-switch { display: none !important; }
+  .container { max-width: 100% !important; padding: 0 !important; }
+  .mirror-disc,
+  .hero-divider { display: none !important; }
+  a { color: #000 !important; text-decoration: none !important; }
+  /* 报告主体保证一页打印 */
+  .report-body,
+  .cmp-detail { page-break-inside: avoid; }
+  /* 雷达图canvas 输出实际像素 */
+  #radar canvas { max-width: 100% !important; }
+}
+
+/* ============================================================
+   打印色强制 —— Webkit 浏览器默认不打印背景色,需显式声明
+   ============================================================ */
+@media print {
+  body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }

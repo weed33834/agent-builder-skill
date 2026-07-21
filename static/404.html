@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<meta name="mm-page" content="notfound">
+<title data-i18n="notfound.title">页面不存在 — 心镜</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  .nf-wrap {
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .nf-disc {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--paper-faint), var(--paper-deep));
+    border: 2px solid var(--mirror);
+    box-shadow: 0 4px 24px rgba(139, 106, 46, 0.18), inset 0 0 30px rgba(139, 106, 46, 0.1);
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .nf-disc::after {
+    content: '?';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 56px;
+    color: var(--mirror);
+    opacity: 0.6;
+  }
+  .nf-code {
+    font-family: var(--font-display);
+    font-size: 88px;
+    font-weight: 300;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -2px;
+    margin-bottom: 12px;
+  }
+  .nf-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    font-weight: 400;
+  }
+  .nf-sub {
+    color: var(--ink-faint);
+    font-size: 14px;
+    margin-bottom: 32px;
+    max-width: 380px;
+  }
+  .nf-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">跳到主内容</a>
+<div class="container">
+  <main id="main" class="nf-wrap">
+    <div class="nf-disc" aria-hidden="true"></div>
+    <div class="nf-code">404</div>
+    <h1 class="nf-title" data-i18n="notfound.title">镜子未照见此处</h1>
+    <p class="nf-sub" data-i18n="notfound.sub">你访问的页面不存在,或已被移动。回到镜子前,继续看见自己。</p>
+    <div class="nf-actions">
+      <a href="/" class="btn-primary" data-i18n="notfound.home">回到首页</a>
+      <a href="/history.html" class="btn-link" data-i18n="common.my_reports">我的报告</a>
+    </div>
+  </main>
+</div>
+<script src="/i18n.js"></script>
+</body>
+</html>

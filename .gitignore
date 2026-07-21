@@ -27,6 +27,10 @@ capture_*.py
 test_one.py
 /tmp/
 
+# E2E 测试输出(scripts/e2e_walkthrough.py 的截图)
+/e2e_*.png
+/tmp/e2e_*.log
+
 # 系统
 .DS_Store
 Thumbs.db

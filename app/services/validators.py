@@ -4,17 +4,19 @@
 校验失败抛 ValueError(含详细原因),路由层转为 422 响应。
 """
 
-from app.data import load_bank
+from app.data import filter_bank, load_bank
 from app.schemas.session import SubmitAnswersIn
 
 
-def validate_answers(assessment_type: str, payload: SubmitAnswersIn) -> None:
+def validate_answers(assessment_type: str, payload: SubmitAnswersIn, version: str = "standard") -> None:
     """校验提交的答案是否合法且完整(complete 时)。
 
+    version 决定按哪个版本过滤题库来校验完整性。
     Raises:
         ValueError: 答案非法或缺失时的详细原因。
     """
-    bank = load_bank(assessment_type)
+    full_bank = load_bank(assessment_type)
+    bank = filter_bank(full_bank, version)
     q_by_id = {q.id: q for q in bank.questions}
 
     # 检查重复 question_id

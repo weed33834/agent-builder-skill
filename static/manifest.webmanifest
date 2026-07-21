@@ -1,0 +1,21 @@
+{
+  "name": "心镜 MindMirror",
+  "short_name": "心镜",
+  "description": "通过名人镜、价值镜、意识镜三面镜子,以情境化答题与行为轨迹,看见真实的自己。",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f4efe3",
+  "theme_color": "#f4efe3",
+  "categories": ["lifestyle", "education", "health"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,14 +1,14 @@
 """会话路由 —— 开始/恢复/提交答案。"""
 
 import logging
-from typing import Literal
+from typing import Annotated, Literal
 
 import pendulum
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import select
 
 from app.core.deps import CurrentUser, DbSession
-from app.data import load_bank
+from app.data import filter_bank, load_bank
 from app.models.result import Result
 from app.models.session import AssessmentSession, SessionStatus
 from app.schemas.session import AnswerItem, SessionOut, SubmitAnswersIn
@@ -19,6 +19,10 @@ router = APIRouter(prefix="/api/sessions", tags=["sessions"])
 
 # #25 修复:统一约束 assessment_type 为已知枚举值
 AssessmentType = Literal["celebrity", "value", "ideology"]
+# 测评版本枚举:fast=快速 / standard=标准 / deep=深度
+SessionVersion = Literal["fast", "standard", "deep"]
+# 版本查询参数 —— 模块级 Query 实例,避免 B008
+VersionParam = Annotated[SessionVersion, Query(description="fast|standard|deep")]
 
 
 @router.post("")
@@ -27,8 +31,12 @@ async def start_session(
     user: CurrentUser,
     db: DbSession,
     restart: bool = False,
+    version: VersionParam = "standard",
 ) -> SessionOut:
-    """开始一次测评。若有未完成草稿默认恢复;restart=true 放弃草稿重开。"""
+    """开始一次测评。若有未完成草稿默认恢复;restart=true 放弃草稿重开。
+
+    version 决定题量:fast≈20 / standard≈40 / deep≈80,默认 standard。
+    """
     try:
         load_bank(assessment_type)
     except FileNotFoundError as e:
@@ -63,6 +71,7 @@ async def start_session(
     session = AssessmentSession(
         user_id=user.id,
         assessment_type=assessment_type,
+        version=version,
         started_at=pendulum.now(),
     )
     db.add(session)
@@ -87,7 +96,7 @@ async def submit_responses(
 
     # 服务端校验答案合法性(#3)
     try:
-        validate_answers(session.assessment_type, payload)
+        validate_answers(session.assessment_type, payload, session.version or "standard")
     except ValueError as e:
         raise HTTPException(422, str(e)) from e
 
@@ -103,7 +112,9 @@ async def submit_responses(
     }
     session.draft_answers = {**(session.draft_answers or {}), **draft}
     session.behavior_log = {**(session.behavior_log or {}), **behavior}
-    bank = load_bank(session.assessment_type)
+    # 按 session.version 过滤题库,计算 current_index
+    full_bank = load_bank(session.assessment_type)
+    bank = filter_bank(full_bank, session.version or "standard")
     session.current_index = min(len(session.draft_answers), len(bank.questions))
 
     if not payload.complete:
@@ -114,7 +125,7 @@ async def submit_responses(
     full_payload = _build_full_payload(session)
     # 再次校验完整性(草稿合并后必须覆盖全部题目)
     try:
-        validate_answers(session.assessment_type, full_payload)
+        validate_answers(session.assessment_type, full_payload, session.version or "standard")
     except ValueError as e:
         await db.commit()  # 先保存草稿
         raise HTTPException(422, str(e)) from e

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mindmirror"
-version = "0.1.0"
+version = "0.2.0"
 description = "心镜 MindMirror — 通过问卷与情境测评,看见真实的自己"
 requires-python = ">=3.12"
 dependencies = [
@@ -74,3 +74,8 @@ ignore_errors = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+
+[dependency-groups]
+dev = [
+    "playwright>=1.61.0",
+]

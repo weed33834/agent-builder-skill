@@ -34,6 +34,8 @@ async def init_db() -> None:
         await conn.run_sync(Base.metadata.create_all)
         # 本地 SQLite 增量迁移(无 Alembic):补齐 user 表新增列
         await _migrate_users(conn)
+        # 补齐 sessions 表 version 列(分层版本支持)
+        await _migrate_sessions(conn)
 
 
 async def _migrate_users(conn) -> None:
@@ -56,3 +58,17 @@ async def _migrate_users(conn) -> None:
         )
     if "password_hash" not in cols:
         await conn.execute(text("ALTER TABLE users ADD COLUMN password_hash VARCHAR(255)"))
+
+
+async def _migrate_sessions(conn) -> None:
+    """已有库缺 version 列时 ALTER 补列(SQLite 兼容)。"""
+
+    def _cols(sync_conn):
+        from sqlalchemy import inspect as _inspect
+
+        return {c["name"] for c in _inspect(sync_conn).get_columns("sessions")}
+
+    cols = await conn.run_sync(_cols)
+    if "version" not in cols:
+        await conn.execute(text("ALTER TABLE sessions ADD COLUMN version VARCHAR(16) DEFAULT 'standard'"))
+        await conn.execute(text("CREATE INDEX IF NOT EXISTS ix_sessions_version ON sessions(version)"))

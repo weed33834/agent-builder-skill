@@ -6,6 +6,38 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-21
+
+### Added
+
+- **题库分级扩充**:三镜各 80 题(共 240 题),支持 `fast`(20 题,tier 1)/ `standard`(40 题,tier 1+2)/ `deep`(80 题,全 tier)三版本,通过 URL `?version=` 切换
+- **Playwright E2E 全流程测试**:以普通用户视角真实点击走通三镜 × 三版本共 9 组,覆盖全 9 种题型(scale/dilemma/forced_choice/slider/allocation/auction/sort/matrix/iat),含 IAT 词库驱动正确分类作答
+- **PWA 离线支持**:Service Worker (`sw.js`) + Web App Manifest (`manifest.webmanifest`),可安装到桌面/移动端
+- **Open Graph 分享卡**:`og-card.svg` + 动态注入 `og:title` / `og:description` meta
+- **404 页面**:统一 404 模板,与站点视觉一致
+- **ECharts 本地化**:vendor 目录托管 echarts.min.js,避免 CDN 依赖
+- **首页 SEO 优化**:title / description / og 元数据动态注入
+- 新增 `.github/workflows/ci.yml`:最低程度 CI(仅 pytest + ruff,不启用 dependabot 与自动合并)
+
+### Changed
+
+- 题库 `tier` 分层模型:tier=1 进 fast、tier≤2 进 standard、全 tier 进 deep;同 tier 内按题型分组排序减少 section-intro 切换
+- 视觉系统从 Glassmorphism 2.0 收敛为「宣纸 × 墨 × 朱墨」古典美学,三镜专属色(旧铜/青石/钢蓝)
+- README 同步更新:题数 163→240、API 文档补 `version` 参数、新增 E2E 测试与 PWA 章节
+
+### Fixed
+
+- 修复 `meta[property=og:title]` CSS 选择器在浏览器中无效(改用引号包裹属性值)
+- 修复 take.js 中 scale/dilemma 作答后 300ms 延迟导致 E2E 检测时序错位
+- 修复 value.yaml tier=1 题目顺序错乱(sort/scale 交错),改为按 (tier, type) 稳定排序
+- 修复导航期间 `page.query_selector` 抛 "Execution context was destroyed",改为 try/except + URL 复检
+- 修复 `page.goto` 等待 networkidle 超时,统一改用 `domcontentloaded`
+- 修复 allocation 按钮 `#alloc-balance` 被 `.alloc-total.ok` 容器遮挡,改用 `force=True` 点击
+- 修复 IAT 题型作答卡住:通过 API 预加载题库构建 word→category 映射,直接点正确一侧;并修复进度 N/N 时误跳过最后一词的逻辑
+- 修复连续 IAT 题串题:检测 `.iat-area` 的 `data-q` 变化时退出内层循环,让主循环重建词映射
+
+## [0.1.1] - 2026-07-15
+
 ### Added
 
 - 重写 README,补全徽章、架构图、目录树、安装与使用文档

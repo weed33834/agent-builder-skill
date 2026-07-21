@@ -6,9 +6,10 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api import ROUTERS
@@ -52,6 +53,17 @@ async def health() -> dict:
     return {"status": "ok"}
 
 
+# /api/{path:path} fallback —— 拦截所有未匹配的 /api/ 请求,返回 JSON 404
+# 必须放在 StaticFiles mount 之前,否则 /api/nonexistent 会被 StaticFiles
+# 当作静态文件处理并返回 404.html(因为 html=True 模式有内置 404 fallback)
+@app.api_route(
+    "/api/{path:path}",
+    methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+)
+async def api_fallback(path: str) -> None:
+    raise HTTPException(status_code=404, detail=f"Not Found: /api/{path}")
+
+
 # 前端静态文件 —— 挂在根,API 走 /api 前缀
 # 注意:此 mount 是 catch-all,必须放在所有动态路由之后
 static_dir = Path(__file__).resolve().parent.parent / "static"
@@ -73,4 +85,19 @@ if static_dir.exists():
         return {"detail": "no index"}
 
     # 直接挂静态文件(覆盖默认 /)
+    # 注意:StaticFiles(html=True) 内置 404.html fallback,会自动返回 404.html
+    # 给所有未匹配的非 /api 路径,这就是前端 404 页面的实现方式
     app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
+
+    # 兜底异常处理 —— 处理 404.html 不存在等极端情况
+    @app.exception_handler(StarletteHTTPException)
+    async def custom_http_exception(request: Request, exc: StarletteHTTPException):
+        # API 请求一定返回 JSON
+        if request.url.path.startswith("/api"):
+            return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
+        # 前端 404:若有 404.html 则返回,否则 JSON
+        if exc.status_code == 404:
+            nf = static_dir / "404.html"
+            if nf.exists():
+                return HTMLResponse(nf.read_text(encoding="utf-8"), status_code=404)
+        return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)

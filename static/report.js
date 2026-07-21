@@ -5,6 +5,22 @@ const resultId = params.get('id');
 
 let _lastResult = null;
 let _radarChart = null;
+// 所有 echarts 实例集合,统一 resize/dispose,避免内存泄漏
+const _allCharts = new Set();
+// 全局 resize 监听只注册一次
+let _resizeHookInstalled = false;
+function _installResizeHook() {
+  if (_resizeHookInstalled) return;
+  _resizeHookInstalled = true;
+  // 防抖:避免拖拽窗口时频繁 resize
+  let timer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      _allCharts.forEach(c => { try { c.resize(); } catch (e) {} });
+    }, 150);
+  });
+}
 
 const INSIGHT_ORDER = ['decision_style', 'consistency', 'ambivalence', 'courage_index', 'time_pressure_effect', 'iat_bias'];
 
@@ -194,7 +210,7 @@ function doRender() {
 
 function drawRadar(entries) {
   // 销毁旧实例,避免重复 canvas
-  if (_radarChart) { try { _radarChart.dispose(); } catch (e) {} _radarChart = null; }
+  if (_radarChart) { try { _radarChart.dispose(); } catch (e) {} _allCharts.delete(_radarChart); _radarChart = null; }
   const el = document.getElementById('radar');
   if (!el) return;
   // 从 CSS 变量取色,保持与全站主题一致
@@ -208,6 +224,8 @@ function drawRadar(entries) {
 
   const chart = echarts.init(el, null, { renderer: 'canvas' });
   _radarChart = chart;
+  _allCharts.add(chart);
+  _installResizeHook();
   const radius = entries.length >= 10 ? '52%' : (entries.length >= 7 ? '58%' : '68%');
   chart.setOption({
     backgroundColor: 'transparent',
@@ -247,7 +265,6 @@ function drawRadar(entries) {
       }],
     }],
   });
-  window.addEventListener('resize', () => { try { chart.resize(); } catch (e) {} });
 }
 
 render();

@@ -2,6 +2,10 @@
 
 const params = new URLSearchParams(location.search);
 const type = params.get('type');
+// 测评版本:fast=快速 / standard=标准 / deep=深度;默认 standard
+// 通过 URL ?version=fast 传入,供首页版本选择器或测试用
+const version = ['fast', 'standard', 'deep'].includes(params.get('version'))
+  ? params.get('version') : 'standard';
 
 let bank, session, tracker;
 let currentIdx = 0;
@@ -54,8 +58,8 @@ function buildTypeIndex(questions) {
 async function init() {
   if (!type) { location.href = '/'; return; }
   [bank, session] = await Promise.all([
-    api.get(`/api/assessments/${type}/questions`),
-    api.post(`/api/sessions?assessment_type=${type}`),
+    api.get(`/api/assessments/${type}/questions?version=${version}`),
+    api.post(`/api/sessions?assessment_type=${type}&version=${version}`),
   ]);
   // 设置三镜主题色
   document.body.dataset.mirror = type;
@@ -567,7 +571,7 @@ function bindEvents(q) {
       const alloc = {};
       container.querySelectorAll('input[type=range]').forEach(i => { alloc[i.dataset.id] = +i.value; });
       const sum = Object.values(alloc).reduce((a, b) => a + b, 0);
-      if (sum !== total) { alert(mmI18n.t('take.alert_alloc_sum', { total, sum })); return; }
+      if (sum !== total) { mmUI.toast(mmI18n.t('take.alert_alloc_sum', { total, sum }), 'warn'); return; }
       recordAnswer(q, { allocation: alloc });
     });
   } else if (q.type === 'sort') {
@@ -650,7 +654,7 @@ function bindEvents(q) {
         if (row.dataset.val) ratings[row.dataset.id] = +row.dataset.val;
         else allDone = false;
       });
-      if (!allDone) { alert(mmI18n.t('take.alert_matrix_incomplete')); return; }
+      if (!allDone) { mmUI.toast(mmI18n.t('take.alert_matrix_incomplete'), 'warn'); return; }
       recordAnswer(q, { ratings });
     });
   } else if (q.type === 'auction') {
@@ -703,7 +707,7 @@ function bindEvents(q) {
       const bids = {};
       container.querySelectorAll('.auction-row').forEach(r => { bids[r.dataset.id] = +(r.querySelector('.val').textContent); });
       const sum = Object.values(bids).reduce((a, b) => a + b, 0);
-      if (sum > budget) { alert(mmI18n.t('take.alert_auction_over', { budget, sum })); return; }
+      if (sum > budget) { mmUI.toast(mmI18n.t('take.alert_auction_over', { budget, sum }), 'warn'); return; }
       recordAnswer(q, { bids });
     });
   } else if (q.type === 'iat') {
@@ -886,12 +890,12 @@ async function recordAnswer(q, answer, timeout = false) {
   renderQuestion();
 }
 
-// 草稿保存(被 recordAnswer await;失败时弹窗提示,随后继续渲染下一题)
+// 草稿保存(被 recordAnswer await;失败时 toast 提示,随后继续渲染下一题)
 async function saveDraft(answer) {
   try {
     await api.post(`/api/sessions/${session.id}/responses`, { answers: [answer], complete: false });
   } catch (e) {
-    alert(mmI18n.t('common.error_generic'));
+    mmUI.notifyError(e);
   }
 }
 
@@ -910,16 +914,17 @@ async function submitAll(complete) {
   `;
   document.body.appendChild(overlay);
   try {
-    const res = await api.post(`/api/sessions/${session.id}/responses`, { answers: payload, complete: true });
+    // 提交测评允许较长超时(后端要做评分计算)
+    const res = await api.post(`/api/sessions/${session.id}/responses`, { answers: payload, complete: true }, { timeout: 60000 });
     if (res && res.result_id) {
       location.href = `/report.html?id=${res.result_id}`;
     } else {
       overlay.remove();
-      alert(mmI18n.t('common.submit_failed'));
+      mmUI.toast(mmI18n.t('common.submit_failed'), 'error');
     }
   } catch (e) {
     overlay.remove();
-    alert(mmI18n.t('common.submit_failed'));
+    mmUI.notifyError(e, null, 'submit');
   }
 }
 

@@ -22,6 +22,8 @@ const MM_I18N_RESOURCES = {
       processing_sub: '请稍候,这通常需要 5-15 秒',
       error_generic: '出现了一点意外',
       submit_failed: '提交失败,请重试',
+      err_timeout: '请求超时,请稍后重试',
+      err_offline: '网络已断开,请检查连接',
       back_home: '回到首页',
       my_reports: '我的报告',
       about: '关于',
@@ -34,6 +36,30 @@ const MM_I18N_RESOURCES = {
       language: '语言',
       // 注意:此语言下题目内容仍为中文
       notice_i18n_partial: '当前为界面三语,题目内容仅提供中文版',
+    },
+    seo: {
+      site_name: '心镜 MindMirror',
+      default_description: '心镜 MindMirror —— 通过名人镜、价值镜、意识镜三面镜子,以情境化答题和行为轨迹,看见真实的自己。',
+      default_keywords: '心理测评,人格测试,MBTI,价值观,意识形态,名人灵魂匹配,自我探索,心镜',
+      home_title: '心镜 MindMirror — 看见真实的自己',
+      home_description: '通过名人镜、价值镜、意识镜三面镜子,以情境化答题与行为轨迹,看见真实的自己。',
+      take_title: '{name} — 心镜',
+      take_description: '正在作答心镜 {name},凭第一直觉选择最贴近你的选项。',
+      report_title: '你的心镜报告 — MindMirror',
+      report_description: '查看你的画像标签、维度详解、内在冲突与行为洞察。',
+      history_title: '镜中影像 — 心镜',
+      history_description: '回顾你曾经照见的每一面镜子,每一次凝视皆留下一道影像。',
+      bootcamp_title: '训练营 — 心镜',
+      bootcamp_description: '每日教官任务,磨砺你的特质,连续打卡赢铁血徽章。',
+      compare_title: '关系对比 — 心镜',
+      compare_description: '把对方的对比码贴进来,看看你们的反差与默契。',
+      about_title: '关于心镜 — MindMirror',
+      about_description: '心镜是一个开源的自我探索工具,基于情境化测评与行为轨迹分析。',
+      login_title: '登录 — 心镜',
+      login_description: '注册或登录心镜账户,同步训练进度与对比码。',
+      og_image: '/images/og-card.svg',
+      og_type: 'website',
+      twitter_card: 'summary_large_image',
     },
     home: {
       brand: '心镜',
@@ -169,7 +195,6 @@ const MM_I18N_RESOURCES = {
       retake: '复测',
       retake_hint: '重测同一面镜子,看看你是否变了',
     },
-  },
 
     bootcamp: {
       title: '训练营 — MindMirror',
@@ -225,6 +250,27 @@ const MM_I18N_RESOURCES = {
       invalid: '对比码无效或结果不存在。',
       copy_ok: '已复制,发给朋友吧。',
     },
+    notfound: {
+      title: '镜子未照见此处',
+      sub: '你访问的页面不存在,或已被移动。回到镜子前,继续看见自己。',
+      home: '回到首页',
+    },
+    login: {
+      title: '登录 — 心镜',
+      eyebrow: 'SIGN IN',
+      title_zh: '心镜账户',
+      sub: '注册或登录,训练进度与对比码将绑定账户。',
+      email_ph: '邮箱',
+      pwd_ph: '密码(至少 8 位)',
+      nick_ph: '昵称(注册可选)',
+      show: '显示',
+      hide: '隐藏',
+      register: '注册',
+      login: '登录',
+      err_email: '请输入有效邮箱',
+      err_pwd: '密码至少 8 位',
+    },
+  },
 
   en: {
     common: {
@@ -237,6 +283,8 @@ const MM_I18N_RESOURCES = {
       processing_sub: 'A moment please — usually takes 5–15 seconds',
       error_generic: 'Something went wrong',
       submit_failed: 'Submission failed, please retry',
+      err_timeout: 'Request timed out, please retry',
+      err_offline: 'Network offline, check your connection',
       back_home: 'Back to Home',
       my_reports: 'My Reports',
       about: 'About',
@@ -248,6 +296,30 @@ const MM_I18N_RESOURCES = {
       mirror_unused_sub: 'Your first reflection will be captured here',
       language: 'Language',
       notice_i18n_partial: 'Interface is trilingual; question content is Chinese-only in this build',
+    },
+    seo: {
+      site_name: 'MindMirror',
+      default_description: 'MindMirror — three mirrors (Celebrity, Value, Ideology) reveal who you truly are, through scenario-based questions and behavioral trajectories.',
+      default_keywords: 'personality test, MBTI, values, ideology, soul resonance, self-discovery, MindMirror',
+      home_title: 'MindMirror — See Truly',
+      home_description: 'Three mirrors — Celebrity, Value, Ideology — reveal who you truly are through scenario-based questions and behavioral trajectories.',
+      take_title: '{name} — MindMirror',
+      take_description: 'Taking the {name} mirror. Choose by first instinct what fits you best.',
+      report_title: 'Your MindMirror Report',
+      report_description: 'View your profile tags, dimension detail, inner conflicts and behavioral insights.',
+      history_title: 'Visions Past — MindMirror',
+      history_description: 'Every reflection leaves an image. Review the mirrors you have looked into.',
+      bootcamp_title: 'Bootcamp — MindMirror',
+      bootcamp_description: 'Daily drill from your instructor. Forge your traits, earn the Iron Badge.',
+      compare_title: 'Relational Compare — MindMirror',
+      compare_description: 'Paste a friend\'s compare code and see your contrast and harmony.',
+      about_title: 'About MindMirror',
+      about_description: 'MindMirror is an open-source self-discovery tool built on scenario-based assessments and behavioral trajectory analysis.',
+      login_title: 'Sign In — MindMirror',
+      login_description: 'Register or sign in to sync your bootcamp progress and compare codes.',
+      og_image: '/images/og-card.svg',
+      og_type: 'website',
+      twitter_card: 'summary_large_image',
     },
     home: {
       brand: 'MindMirror',
@@ -372,7 +444,7 @@ const MM_I18N_RESOURCES = {
       retake: 'Retake',
       retake_hint: 'Look into the same mirror again — have you changed?',
     },
-  },
+
     bootcamp: {
       title: 'Bootcamp — MindMirror',
       back: '← Back to Result',
@@ -427,6 +499,27 @@ const MM_I18N_RESOURCES = {
       invalid: 'Invalid code or result not found.',
       copy_ok: 'Copied — send it to a friend.',
     },
+    notfound: {
+      title: 'The mirror sees nothing here',
+      sub: 'The page does not exist or has been moved. Return to the mirror and keep discovering yourself.',
+      home: 'Back to home',
+    },
+    login: {
+      title: 'Sign In — MindMirror',
+      eyebrow: 'SIGN IN',
+      title_zh: 'MindMirror Account',
+      sub: 'Register or sign in — your training progress and compare code will be bound to your account.',
+      email_ph: 'Email',
+      pwd_ph: 'Password (min 8 chars)',
+      nick_ph: 'Nickname (optional for register)',
+      show: 'Show',
+      hide: 'Hide',
+      register: 'Register',
+      login: 'Sign In',
+      err_email: 'Please enter a valid email',
+      err_pwd: 'Password must be at least 8 characters',
+    },
+  },
 
   ja: {
     common: {
@@ -439,6 +532,8 @@ const MM_I18N_RESOURCES = {
       processing_sub: '少々お待ちください — 通常 5〜15 秒',
       error_generic: '予期しないエラー',
       submit_failed: '送信に失敗しました。再試行してください',
+      err_timeout: 'リクエストがタイムアウトしました。後でもう一度',
+      err_offline: 'ネットワークが切断されました',
       back_home: 'ホームへ戻る',
       my_reports: 'レポート',
       about: '心鏡とは',
@@ -450,6 +545,30 @@ const MM_I18N_RESOURCES = {
       mirror_unused_sub: '初めての凝視がここに留められる',
       language: '言語',
       notice_i18n_partial: 'インターフェースは三語対応、設問内容は中国語のみ',
+    },
+    seo: {
+      site_name: '心鏡 MindMirror',
+      default_description: '心鏡 MindMirror —— 名人鏡・価値鏡・意識鏡の三面鏡で、状況設定問題と行動軌跡を通じて本当の自分を見る。',
+      default_keywords: '心理測定,人格テスト,MBTI,価値観,イデオロギー,名人魂マッチ,自己探索,心鏡',
+      home_title: '心鏡 MindMirror — 本当の自分を見る',
+      home_description: '名人鏡・価値鏡・意識鏡の三面鏡で、状況設定問題と行動軌跡を通じて本当の自分を見る。',
+      take_title: '{name} — 心鏡',
+      take_description: '心鏡 {name} に回答中。直感で最も近い選択肢を選んでください。',
+      report_title: 'あなたの心鏡レポート — MindMirror',
+      report_description: 'プロフィールタグ、次元詳細、内面の葛藤、行動インサイトを確認。',
+      history_title: '鏡の中の影像 — 心鏡',
+      history_description: '一度でも覗き込んだ鏡を振り返る。すべての凝視が影像を残す。',
+      bootcamp_title: '訓練営 — 心鏡',
+      bootcamp_description: '毎日の教官任務。特性を鍛え、連続チェックインで鉄血バッジを獲得。',
+      compare_title: '関係対比 — 心鏡',
+      compare_description: '相手の対比コードを貼り付けて、あなたたちの対比と共鳴を見る。',
+      about_title: '心鏡について — MindMirror',
+      about_description: '心鏡は状況設定評価と行動軌跡分析に基づくオープンソースの自己探索ツール。',
+      login_title: 'サインイン — 心鏡',
+      login_description: '登録またはサインインして訓練進捗と対比コードを同期。',
+      og_image: '/images/og-card.svg',
+      og_type: 'website',
+      twitter_card: 'summary_large_image',
     },
     home: {
       brand: '心鏡',
@@ -574,7 +693,7 @@ const MM_I18N_RESOURCES = {
       retake: '再測',
       retake_hint: '同じ鏡をもう一度見る — 変わったかどうか',
     },
-  },
+
     bootcamp: {
       title: '訓練营 — MindMirror',
       back: '← 結果へ戻る',
@@ -629,6 +748,27 @@ const MM_I18N_RESOURCES = {
       invalid: 'コード無効、または結果なし。',
       copy_ok: 'コピー済み、友に送ろう。',
     },
+    notfound: {
+      title: '鏡はここを照らさない',
+      sub: 'ページが存在しない、または移動された。鏡に戻り、自分を見つめ続けよう。',
+      home: 'ホームへ戻る',
+    },
+    login: {
+      title: 'ログイン — MindMirror',
+      eyebrow: 'SIGN IN',
+      title_zh: 'MindMirror アカウント',
+      sub: '登録またはログイン — 訓練進度と比較コードがアカウントに紐づきます。',
+      email_ph: 'メール',
+      pwd_ph: 'パスワード(8文字以上)',
+      nick_ph: 'ニックネーム(登録時任意)',
+      show: '表示',
+      hide: '非表示',
+      register: '登録',
+      login: 'ログイン',
+      err_email: '有効なメールを入力してください',
+      err_pwd: 'パスワードは8文字以上必要です',
+    },
+  },
 };
 
 // ============================================================
@@ -718,6 +858,8 @@ function applyLang(lang) {
     });
     // 触发自定义事件,让页面 JS 同步状态(题目/报告内容等)
     document.dispatchEvent(new CustomEvent('mm:lang-changed', { detail: { lang } }));
+    // 同步刷新 SEO meta(切语言时 title/description/OG 都要更新)
+    _applySeoMeta();
   } finally {
     applyLang._busy = false;
   }
@@ -739,9 +881,72 @@ function initLang() {
   applyLang(saved);
 }
 
+// ============================================================
+// SEO meta 动态注入 —— 各 HTML 头部只需声明
+//   <meta name="mm-page" content="home">
+// 引擎会读取 seo.{page}_title / seo.{page}_description 自动生成
+//   <title>, <meta description>, OG, Twitter Card, canonical
+// 切换语言时也会同步刷新(在 applyLang 末尾调用 _applySeoMeta)
+// ============================================================
+function _setMeta(attr, key, val) {
+  if (!val) return;
+  let el = document.head.querySelector(`meta[${attr}="${key}"]`);
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, key);
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', val);
+}
+
+function _applySeoMeta() {
+  const pageEl = document.head.querySelector('meta[name="mm-page"]');
+  if (!pageEl) return;
+  const page = pageEl.getAttribute('content') || 'home';
+  const t = mmI18n.t.bind(mmI18n);
+  const title = t(`seo.${page}_title`) !== `seo.${page}_title`
+    ? t(`seo.${page}_title`)
+    : t('seo.home_title');
+  const desc = t(`seo.${page}_description`) !== `seo.${page}_description`
+    ? t(`seo.${page}_description`)
+    : t('seo.default_description');
+  const siteName = t('seo.site_name');
+  const ogImage = t('seo.og_image');
+  const ogType = t('seo.og_type');
+  const twitterCard = t('seo.twitter_card');
+
+  if (title && title !== `seo.${page}_title`) {
+    document.title = title;
+  }
+  _setMeta('name', 'description', desc);
+  _setMeta('name', 'keywords', t('seo.default_keywords'));
+  // Open Graph
+  _setMeta('property', 'og:title', title);
+  _setMeta('property', 'og:description', desc);
+  _setMeta('property', 'og:site_name', siteName);
+  _setMeta('property', 'og:type', ogType);
+  _setMeta('property', 'og:image', ogImage);
+  _setMeta('property', 'og:locale', mmI18n.lang === 'zh' ? 'zh_CN' : (mmI18n.lang === 'ja' ? 'ja_JP' : 'en_US'));
+  // Twitter Card
+  _setMeta('name', 'twitter:card', twitterCard);
+  _setMeta('name', 'twitter:title', title);
+  _setMeta('name', 'twitter:description', desc);
+  _setMeta('name', 'twitter:image', ogImage);
+  // canonical(若已存在则不覆盖)
+  if (!document.head.querySelector('link[rel="canonical"]')) {
+    const link = document.createElement('link');
+    link.rel = 'canonical';
+    link.href = location.origin + location.pathname;
+    document.head.appendChild(link);
+  }
+  // theme-color(为 PWA / 浏览器 chrome 着色)
+  _setMeta('name', 'theme-color', '#f4efe3');
+}
+
 // 自动初始化 —— DOM ready 时
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initLang);
+  document.addEventListener('DOMContentLoaded', () => { initLang(); _applySeoMeta(); });
 } else {
   initLang();
+  _applySeoMeta();
 }

@@ -15,7 +15,7 @@
   <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-0.118%2B-009688.svg">
   <img alt="SQLAlchemy" src="https://img.shields.io/badge/SQLAlchemy-2.0%20async-red.svg">
   <img alt="Pydantic" src="https://img.shields.io/badge/Pydantic-v2-e92063.svg">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-29%20passed-brightgreen.svg">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-29%20unit%20%2B%209%20e2e-brightgreen.svg">
   <img alt="Code Style" src="https://img.shields.io/badge/code%20style-ruff-black.svg">
   <img alt="Type Check" src="https://img.shields.io/badge/types-mypy-blue.svg">
   <img alt="PRs Welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
@@ -41,7 +41,8 @@
 
 ## ✨ 特性
 
-- 🎭 **三面镜子** — 名人镜 / 价值镜 / 意识镜,共 163 道题
+- 🎭 **三面镜子** — 名人镜 / 价值镜 / 意识镜,每镜 80 题,共 240 道题
+- 🔢 **三版本分级** — fast(20 题,5 分钟)/ standard(40 题,15 分钟)/ deep(80 题,30 分钟)
 - 🧩 **九种答题方法** — 量表、困境、滑块、强迫抉择、矩阵、拍卖、分配、排序、IAT
 - 📊 **行为轨迹计分** — 耗时、改主意次数、操作轨迹直接参与计算
 - ⚔️ **冲突检测** — 揪出跨题型的维度矛盾、IAT 内隐与外显分裂、犹豫模式
@@ -49,20 +50,34 @@
 - 🌐 **三语 i18n** — 中文 / English / 日本語,自研引擎无外部依赖
 - 🔒 **安全加固** — JWT + pbkdf2 哈希、限流、生产 fail closed、统一 404 防枚举
 - 📅 **留存飞轮** — 教官每日任务、连续打卡、铁血徽章
-- 🎨 **古典视觉** — Fraunces 可变衬线 + Noto Serif SC,Glassmorphism 2.0
+- 🎨 **古典视觉** — Fraunces 可变衬线 + Noto Serif SC,宣纸 × 墨 × 朱墨美学
+- 📴 **PWA 离线** — Service Worker + Web App Manifest,可装到桌面
+- 🧪 **E2E 全流程** — Playwright 真实用户点击,三镜 × 三版本全 9 组覆盖
 - 📦 **零构建前端** — 纯 HTML/JS/CSS,直接部署
 
 ## 🪞 三面镜子
 
-| 镜子 | 题数 | 题库规模 | 维度数 | 估时 |
-| :--- | :---: | :---: | :---: | :---: |
-| **名人镜** | 54 | 50 位历史名人 | 7 | 25 分钟 |
-| **价值镜** | 54 | — | 6 | 18 分钟 |
-| **意识镜** | 55 | 24 种意识形态 | 8 | 15 分钟 |
+| 镜子 | deep | standard | fast | 题库规模 | 维度数 |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **名人镜** | 80 | 40 | 20 | 50 位历史名人 | 7 |
+| **价值镜** | 80 | 40 | 20 | — | 6 |
+| **意识镜** | 80 | 40 | 20 | 24 种意识形态 | 8 |
 
 - **名人镜** — 与历史名人对望。从林肯的坚守到图灵的内向天才,测出你与谁的灵魂底色最相近。
 - **价值镜** — 价值坐标定位。从利他、公正、诚实到自律,刻画你的道德光谱。
 - **意识镜** — 政治光谱定位。经济轴与社会轴交叉,定位你与哪种意识形态最接近。
+
+### 三版本分级
+
+URL 参数 `?version=fast|standard|deep` 选择测评深度(默认 `standard`):
+
+| 版本 | 题数 | 估时 | 适用 |
+| :--- | :---: | :---: | :--- |
+| `fast` | 20 | ~5 分钟 | 快速体验、移动端入门 |
+| `standard` | 40 | ~15 分钟 | 标准测评(默认) |
+| `deep` | 80 | ~30 分钟 | 深度画像,含全部 IAT 内隐联想 |
+
+题库按 `tier` 分层(`tier=1` 进 fast,`tier≤2` 进 standard,全 tier 进 deep),同 tier 内按题型分组排序以减少 section-intro 切换。
 
 ## 🧩 九种答题方法
 
@@ -122,7 +137,7 @@ flowchart TB
 
     subgraph Data["数据层"]
         DB[(SQLite<br/>aiosqlite)]
-        YAML[(YAML 题库<br/>163 题 + 50 名人 + 24 意识形态)]
+        YAML[(YAML 题库<br/>240 题 + 50 名人 + 24 意识形态)]
     end
 
     Client --> API
@@ -171,10 +186,29 @@ fastapi dev app/main.py
 ### 跑测试
 
 ```bash
-uv run pytest tests/         # 29 个测试,全过
+uv run pytest tests/         # 29 个单元测试,全过
 uv run ruff check .          # 静态检查
 uv run mypy app/             # 类型检查
 ```
+
+### 跑 E2E 全流程测试(Playwright)
+
+```bash
+# 1. 启动开发服务器(独立终端)
+uv run fastapi dev app/main.py --host 0.0.0.0 --port 8765
+
+# 2. 装浏览器内核(仅首次)
+uv run playwright install chromium
+
+# 3. 跑全流程(三镜 × 三版本 = 9 组,真实点击)
+uv run python scripts/e2e_walkthrough.py
+
+# 也可只跑指定版本/镜子
+uv run python scripts/e2e_walkthrough.py deep          # 仅 deep 版三镜
+uv run python scripts/e2e_walkthrough.py fast celebrity  # 仅 celebrity 的 fast 版
+```
+
+E2E 脚本以普通用户视角,从首页 → 进入测评 → 逐题作答(全 9 种题型)→ 跳转结果页 → 检查渲染,全程收集 console 错误与网络失败。
 
 ## 📡 API 文档
 
@@ -183,8 +217,8 @@ uv run mypy app/             # 类型检查
 | `POST` | `/api/auth/register` | 注册(邮箱+密码) | — |
 | `POST` | `/api/auth/login` | 登录,返回 Bearer JWT | — |
 | `GET` | `/api/assessments` | 三面镜子元信息 | — |
-| `GET` | `/api/assessments/{type}/questions` | 取某面镜子完整题库 | — |
-| `POST` | `/api/sessions?assessment_type={type}` | 开始或恢复测评 | 可选 |
+| `GET` | `/api/assessments/{type}/questions` | 取某面镜子题库(支持 `?version=fast\|standard\|deep`) | — |
+| `POST` | `/api/sessions?assessment_type={type}&version={ver}` | 开始或恢复测评 | 可选 |
 | `POST` | `/api/sessions/{id}/responses` | 提交答案(`complete=true` 触发计分) | 可选 |
 | `GET` | `/api/sessions/{id}/result` | 按会话取结果 | 必须 |
 | `GET` | `/api/me/results` | 我的历史结果列表 | 必须 |
@@ -214,23 +248,31 @@ mindmirror/
 │   ├── services/          # 业务层:scoring/conflicts/insights/matchers/...
 │   └── main.py            # FastAPI 入口
 ├── data/
-│   ├── questions/         # 题库(3 镜 163 题,YAML 驱动)
+│   ├── questions/         # 题库(3 镜 × 80 题 = 240 题,YAML 驱动,tier 分层)
 │   ├── figures/           # 名人库(50 位)
 │   ├── ideologies/        # 意识形态库(24 种)
 │   └── training/          # 教官每日任务模板
 ├── static/                # 前端纯 HTML/JS/CSS + SVG 肖像
 │   ├── images/
 │   │   ├── logo.svg       # 项目 LOGO
+│   │   ├── og-card.svg    # Open Graph 分享卡
 │   │   └── celebrities/   # 50 位名人风格化 SVG 肖像
+│   ├── vendor/            # 第三方前端依赖(ECharts)
 │   ├── app.js             # API 客户端 + 行为采集
 │   ├── take.js            # 答题页(9 题型渲染)
 │   ├── report.js          # 报告页(ECharts 雷达图)
 │   ├── bootcamp.js        # 训练营状态机
 │   ├── compare.js         # 关系对比
 │   ├── i18n.js            # 三语引擎(中/EN/日)
-│   └── styles.css         # Glassmorphism 2.0 样式
+│   ├── sw.js              # Service Worker(PWA 离线)
+│   ├── manifest.webmanifest  # PWA Manifest
+│   └── styles.css         # 宣纸 × 墨 × 朱墨设计系统
+├── scripts/
+│   └── e2e_walkthrough.py # Playwright E2E 全流程测试
 ├── tests/                 # pytest,含安全门禁测试套件
-├── .github/               # Issue/PR 模板
+├── .github/
+│   ├── workflows/         # CI(仅 pytest + ruff,最低程度)
+│   └── ISSUE_TEMPLATE/    # Issue 模板 + PR 模板
 ├── AGENTS.md              # 协作规约
 ├── CONTRIBUTING.md        # 贡献指南
 ├── CODE_OF_CONDUCT.md     # 行为准则
@@ -280,6 +322,9 @@ mindmirror/
 - [x] 留存飞轮(教官每日任务 + 铁血徽章)
 - [x] 关系对比
 - [x] 三语 i18n
+- [x] 题库分级(fast/standard/deep 三版本,240 题)
+- [x] Playwright E2E 全流程测试(三镜 × 三版本 9 组)
+- [x] PWA 离线(Service Worker + Manifest)
 - [ ] wx 微信小程序登录(需 appid/secret 外部凭据)
 - [ ] 多实例限流迁移 Redis
 - [ ] 生产 Postgres + Alembic 迁移
@@ -297,7 +342,7 @@ mindmirror/
 
 | 数据集 | 数量 | 文件 |
 | :--- | :---: | :--- |
-| 题目总数 | 163 | `data/questions/*.yaml` |
+| 题目总数 | 240(3 镜 × 80 题,fast/standard/deep 三版本分级) | `data/questions/*.yaml` |
 | 历史名人 | 50 | `data/figures/celebrity.yaml` |
 | 意识形态 | 24 | `data/ideologies/ideology.yaml` |
 | 训练任务模板 | 10 | `data/training/mission_templates.yaml` |
