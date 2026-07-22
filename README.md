@@ -47,12 +47,15 @@
 - 📊 **行为轨迹计分** — 耗时、改主意次数、操作轨迹直接参与计算
 - ⚔️ **冲突检测** — 揪出跨题型的维度矛盾、IAT 内隐与外显分裂、犹豫模式
 - 🎯 **六维行为洞察** — 决策风格、一致性、纠结度、勇气指数、时间压力效应、内隐偏向
+- 🧑‍💼 **历史人物详情页** — 匹配到名人后点头像进详情页,亲切搞笑口吻的人物介绍、轶事、名言
+- 👤 **个人面板** — 账户信息 + 训练概览 + 最近报告 + 对比码入口
+- 📅 **今日认识** — 首页随机推荐 3 位历史人物,每次刷新不同
 - 🌐 **三语 i18n** — 中文 / English / 日本語,自研引擎无外部依赖
 - 🔒 **安全加固** — JWT + pbkdf2 哈希、限流、生产 fail closed、统一 404 防枚举
 - 📅 **留存飞轮** — 教官每日任务、连续打卡、铁血徽章
-- 🎨 **古典视觉** — Fraunces 可变衬线 + Noto Serif SC,宣纸 × 墨 × 朱墨美学
+- 🎨 **古典视觉** — Fraunces 可变衬线 + Noto Serif SC,宣纸 × 墨 × 朱墨美学,18 个原创 SVG 配图
 - 📴 **PWA 离线** — Service Worker + Web App Manifest,可装到桌面
-- 🧪 **E2E 全流程** — Playwright 真实用户点击,三镜 × 三版本全 9 组覆盖
+- 🧪 **E2E 全流程** — Playwright 真实用户点击 + API 级 9 流程 × 12 刁难场景
 - 📦 **零构建前端** — 纯 HTML/JS/CSS,直接部署
 
 ## 🪞 三面镜子
@@ -210,6 +213,18 @@ uv run python scripts/e2e_walkthrough.py fast celebrity  # 仅 celebrity 的 fas
 
 E2E 脚本以普通用户视角,从首页 → 进入测评 → 逐题作答(全 9 种题型)→ 跳转结果页 → 检查渲染,全程收集 console 错误与网络失败。
 
+### 跑 API 级 E2E 全流程测试
+
+```bash
+# 1. 启动开发服务器(独立终端)
+uv run fastapi dev app/main.py --host 0.0.0.0 --port 8765
+
+# 2. 跑 API 级 E2E(无需浏览器,纯 httpx)
+uv run python scripts/mm_api_e2e.py
+```
+
+覆盖 9 个完整答题流程(3 类型 × 3 版本)+ 12 个刁难场景(草稿恢复/双提交/非法答案/跨用户访问/分配总和错/拍卖超预算等)+ 18 个 SVG 资源 + 11 个 HTML 页面 + onthisday 随机性验证。
+
 ## 📡 API 文档
 
 | 方法 | 路径 | 说明 | 鉴权 |
@@ -230,6 +245,9 @@ E2E 脚本以普通用户视角,从首页 → 进入测评 → 逐题作答(全 
 | `GET` | `/api/missions/today` | 取今日任务(无则自动生成) | 必须 |
 | `POST` | `/api/missions/{mid}/tasks/{tid}/complete` | 切换任务完成态 | 必须 |
 | `GET` | `/api/missions/streak` | 连续天数 + 铁血徽章 | 必须 |
+| `GET` | `/api/figures` | 历史名人列表(轻量) | — |
+| `GET` | `/api/figures/{id}` | 历史名人详情(介绍/轶事/名言) | — |
+| `GET` | `/api/figures/onthisday` | 随机推荐 3 位名人 | — |
 
 完整请求/响应 schema 见 `/api/docs` Swagger UI。
 
@@ -239,7 +257,7 @@ E2E 脚本以普通用户视角,从首页 → 进入测评 → 逐题作答(全 
 mindmirror/
 ├── app/
 │   ├── api/
-│   │   ├── routes/        # 5 个路由文件:auth/assessments/sessions/results/missions
+│   │   ├── routes/        # 6 个路由文件:auth/assessments/sessions/results/missions/figures
 │   │   └── __init__.py    # router 注册
 │   ├── core/              # 配置/DB/安全/JWT/限流/依赖注入/日志
 │   ├── data/              # YAML 题库加载器
@@ -268,7 +286,8 @@ mindmirror/
 │   ├── manifest.webmanifest  # PWA Manifest
 │   └── styles.css         # 宣纸 × 墨 × 朱墨设计系统
 ├── scripts/
-│   └── e2e_walkthrough.py # Playwright E2E 全流程测试
+│   ├── e2e_walkthrough.py # Playwright E2E 全流程测试
+│   └── mm_api_e2e.py      # API 级 E2E(9 流程 + 12 刁难场景)
 ├── tests/                 # pytest,含安全门禁测试套件
 ├── .github/
 │   ├── workflows/         # CI(仅 pytest + ruff,最低程度)
@@ -325,6 +344,11 @@ mindmirror/
 - [x] 题库分级(fast/standard/deep 三版本,240 题)
 - [x] Playwright E2E 全流程测试(三镜 × 三版本 9 组)
 - [x] PWA 离线(Service Worker + Manifest)
+- [x] 历史人物详情页(亲切搞笑口吻介绍 + 轶事 + 名言)
+- [x] 个人面板(账户 + 训练 + 报告 + 对比码)
+- [x] 历史上的今天(首页随机推荐)
+- [x] 18 个原创 SVG 配图(宣纸×墨×朱墨美学)
+- [x] API 级 E2E(9 流程 + 12 刁难场景)
 - [ ] wx 微信小程序登录(需 appid/secret 外部凭据)
 - [ ] 多实例限流迁移 Redis
 - [ ] 生产 Postgres + Alembic 迁移
@@ -343,10 +367,11 @@ mindmirror/
 | 数据集 | 数量 | 文件 |
 | :--- | :---: | :--- |
 | 题目总数 | 240(3 镜 × 80 题,fast/standard/deep 三版本分级) | `data/questions/*.yaml` |
-| 历史名人 | 50 | `data/figures/celebrity.yaml` |
+| 历史名人 | 50(含时代/身份/标签/介绍/轶事) | `data/figures/celebrity.yaml` |
 | 意识形态 | 24 | `data/ideologies/ideology.yaml` |
 | 训练任务模板 | 10 | `data/training/mission_templates.yaml` |
 | 名人 SVG 肖像 | 50 | `static/images/celebrities/` |
+| 装饰 SVG 配图 | 18 | `static/images/` + `static/images/methods/` |
 
 ## 📜 声明
 

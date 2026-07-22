@@ -6,6 +6,36 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-22
+
+### Added
+
+- **历史人物详情页** (`figure.html` + `GET /api/figures` 列表 + `GET /api/figures/{id}` 详情):点击报告页名人头像跳转,展示亲切/皎洁/搞笑口吻的人物介绍、轶事、名言、时代标签
+- **个人面板** (`profile.html`):账户信息 + 训练概览(连续天数/最长/铁血徽章/当前特质)+ 最近 3 条报告 + 对比码入口,401 容错引导登录
+- **历史上的今天** (`GET /api/figures/onthisday`):首页"今日认识"区块,每次刷新随机推荐 3 位历史人物
+- **18 个 SVG 配图**:首页 hero 铜镜、三镜图标(铜镜/石镜/钢镜)、关于页 9 个方法图标、登录页侧立铜镜、对比页双镜对映、404 破碎铜镜、历史空状态空镜、个人面板铁血徽章(earned/locked 双态)
+- **API 级 E2E 测试** (`scripts/mm_api_e2e.py`):9 个完整答题流程(3 类型 × 3 版本)+ 12 个刁难场景(草稿恢复/双提交/非法答案/跨用户访问等)+ 18 个 SVG + 11 个 HTML 页面验证
+- **全站合规治理**:敏感词替换为委婉表达(刺杀→遇害、火刑→极刑、断头台→刑台等 16 类)
+- 50 位历史人物数据扩展:追加 `era` / `role` / `tags` / `intro` / `anecdote` 五个字段
+
+### Changed
+
+- Google Fonts 国内镜像:`fonts.googleapis.com` → `fonts.loli.net`,`fonts.gstatic.com` → `gstatic.loli.net`(9 个 HTML 文件)
+- 引导词语气软化(9 条 × 3 语 = 27 处):登录提示、错误提示、校验提示改为亲切口吻
+- i18n 三语补全 figure/profile 命名空间 + seo meta + common.profile
+- html lang 属性统一带区域子标签(zh-CN / en-US / ja-JP)
+
+### Fixed
+
+- 修复首页三镜卡片 SVG 被 i18n `applyLang()` 重渲染抹掉的 bug(去掉 `data-i18n` 属性)
+- 修复 bootcamp createGoal 必 422(传中文画像标签 → 改为 6 个固定特质枚举)
+- 修复 bootcamp source_figure 422(传显示名 → 改为取 matches[0].id)
+- 修复 bootcamp streak 显示 NaN/undefined(对齐 StreakOut schema `{current, longest, badge}`)
+- 修复 404 页无语言切换(加 `injectLangSwitch()`)
+- 修复关于页 EN/ja 数字错误(54→80 questions, 40→50 figures, 32→24 ideologies)
+- 修复关于页 ja Slider 中文混入("标记" → "示さ")
+- 404 页删冗余 nf-disc CSS 圆盘,保留更精致的破镜 SVG
+
 ## [0.2.0] - 2026-07-21
 
 ### Added
