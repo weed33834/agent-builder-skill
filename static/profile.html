@@ -282,8 +282,8 @@
             <div class="profile-kv-label">${escapeHtml(t('profile.iron_badge'))}</div>
             <div class="profile-kv-value text">
               ${badge
-                ? `<span class="badge-tag">${escapeHtml(t('profile.badge_earned'))}</span>`
-                : `<span class="badge-tag locked">${escapeHtml(t('profile.badge_locked'))}</span>`}
+                ? `<img src="/images/iron-badge.svg#earned" class="badge-img" alt="${escapeHtml(t('profile.badge_earned'))}" title="${escapeHtml(t('profile.badge_earned'))}" width="48" height="48">`
+                : `<img src="/images/iron-badge.svg#locked" class="badge-img badge-locked" alt="${escapeHtml(t('profile.badge_locked'))}" title="${escapeHtml(t('profile.badge_locked'))}" width="48" height="48">`}
             </div>
           </div>
         </div>

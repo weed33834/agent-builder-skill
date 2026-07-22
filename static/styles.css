@@ -2490,3 +2490,25 @@ html { font-size: 16px; }
 @media print {
   body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* ============================================================
+   SVG 配图 —— 宣纸 × 墨 × 朱墨 东方克制美学
+   ============================================================ */
+.mirror-card-icon { display: block; margin: 0 auto 12px; width: 48px; height: 48px; opacity: 0.85; }
+.hero-mirror-img { display: block; margin: 0 auto 32px; }
+.login-deco, .compare-deco { display: block; margin: 0 auto 24px; max-width: 100%; height: auto; }
+.method-icon { display: block; margin: 0 auto 16px; opacity: 0.7; }
+
+/* about.html 镜子列表:圆形容器内嵌图 */
+.mirror-list-icon img { display: block; }
+
+/* history.html 空状态:空镜图 */
+.empty-mirror-img { display: block; margin: 0 auto 32px; }
+
+/* 404 页:破镜插画 */
+.nf-illustration { display: block; margin: 0 auto 24px; max-width: 100%; height: auto; }
+
+/* profile.html 铁血徽章:img 替代文字 badge-tag */
+.badge-img { display: inline-block; width: 48px; height: 48px; vertical-align: middle; }
+.badge-img.badge-locked { filter: grayscale(0.7) opacity(0.7); }
+

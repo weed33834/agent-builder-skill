@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120">
+  <defs>
+    <radialGradient id="cm-surface" cx="40%" cy="34%" r="70%">
+      <stop offset="0%" stop-color="#f8f5ee"/>
+      <stop offset="70%" stop-color="#ece6d9"/>
+      <stop offset="100%" stop-color="#d0c9ba"/>
+    </radialGradient>
+    <linearGradient id="cm-beam" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8b2e1f" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#8b2e1f" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#8b2e1f" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 左镜(倾斜 -15°) -->
+  <g transform="translate(50 60) rotate(-15)">
+    <circle cx="0" cy="0" r="30" fill="#8b6a2e"/>
+    <circle cx="0" cy="0" r="26" fill="url(#cm-surface)"/>
+    <circle cx="0" cy="0" r="30" fill="none" stroke="#5a4520" stroke-width="1"/>
+    <path d="M -18 -14 Q -8 -22 8 -20" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- 右镜(倾斜 +15°,镜像) -->
+  <g transform="translate(150 60) rotate(15)">
+    <circle cx="0" cy="0" r="30" fill="#8b6a2e"/>
+    <circle cx="0" cy="0" r="26" fill="url(#cm-surface)"/>
+    <circle cx="0" cy="0" r="30" fill="none" stroke="#5a4520" stroke-width="1"/>
+    <path d="M -18 -14 Q -8 -22 8 -20" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- 中央朱墨光线 -->
+  <rect x="76" y="58" width="48" height="4" fill="url(#cm-beam)" rx="1"/>
+
+  <!-- 朱墨点(连接节点) -->
+  <circle cx="100" cy="60" r="2" fill="#8b2e1f" opacity="0.6"/>
+</svg>

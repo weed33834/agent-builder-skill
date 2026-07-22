@@ -170,7 +170,7 @@
     const list = order.map(t => mirrors.find(m => m.type === t)).filter(Boolean);
     document.getElementById('mirrors').innerHTML = list.map(m => `
       <a href="/take.html?type=${m.type}" class="mirror-card" data-type="${m.type}">
-        <div class="card-icon" data-i18n="home.mirrors.${m.type}.icon">${mmI18n.t(`home.mirrors.${m.type}.icon`)}</div>
+        <div class="card-icon"><img src="/images/mirror-${m.type}.svg" class="mirror-card-icon" alt="" width="48" height="48"></div>
         <h2 data-i18n="home.mirrors.${m.type}.title">${mmI18n.t(`home.mirrors.${m.type}.title`)}</h2>
         <p class="tagline" data-i18n="home.mirrors.${m.type}.tagline">${mmI18n.t(`home.mirrors.${m.type}.tagline`)}</p>
         <p class="desc" data-i18n="home.mirrors.${m.type}.desc">${mmI18n.t(`home.mirrors.${m.type}.desc`)}</p>

@@ -228,10 +228,12 @@ for (const lang of Object.keys(ABOUT_RES)) {
 function renderAboutLists() {
   const t = MM_I18N_RESOURCES[mmI18n.lang]?.about;
   if (!t) return;
+  // 三镜顺序与 index.html 一致:名人/价值/意识
+  const mirrorTypes = ['celebrity', 'value', 'ideology'];
   if (document.getElementById('mirror-list')) {
-    document.getElementById('mirror-list').innerHTML = t.mirrors.map(m => `
+    document.getElementById('mirror-list').innerHTML = t.mirrors.map((m, i) => `
       <li>
-        <span class="mirror-list-icon">${m.icon}</span>
+        <span class="mirror-list-icon"><img src="/images/mirror-${mirrorTypes[i]}.svg" alt="${m.icon}" width="32" height="32"></span>
         <div>
           <div class="mirror-list-title">${m.title}</div>
           <div class="mirror-list-desc">${m.desc}</div>
@@ -240,13 +242,17 @@ function renderAboutLists() {
     `).join('');
   }
   if (document.getElementById('method-grid')) {
-    document.getElementById('method-grid').innerHTML = t.methods.map(m => `
+    document.getElementById('method-grid').innerHTML = t.methods.map(m => {
+      // en 字段映射到 SVG 文件名:Scale→scale, Forced Choice→forced_choice, IAT→iat
+      const iconKey = m.en.toLowerCase().replace(/\s+/g, '_');
+      return `
       <div class="method-card">
+        <img src="/images/methods/${iconKey}.svg" class="method-icon" alt="" width="40" height="40">
         <div class="method-name">${m.name}</div>
         <div class="method-en">${m.en}</div>
         <div class="method-desc">${m.desc}</div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }
 }
 renderAboutLists();

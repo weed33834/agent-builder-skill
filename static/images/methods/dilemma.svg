@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- 困境:十字路口两条岔路 -->
+  <g stroke="#1a1714" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.7">
+    <!-- 主干道 -->
+    <line x1="32" y1="54" x2="32" y2="32"/>
+    <!-- 左岔路 -->
+    <path d="M 32 32 L 14 14"/>
+    <!-- 右岔路 -->
+    <path d="M 32 32 L 50 14"/>
+    <!-- 箭头(左) -->
+    <path d="M 14 14 L 18 14 M 14 14 L 14 18"/>
+    <!-- 箭头(右) -->
+    <path d="M 50 14 L 46 14 M 50 14 L 50 18"/>
+    <!-- 起点圆点 -->
+    <circle cx="32" cy="54" r="2" fill="#1a1714" stroke="none"/>
+    <!-- 分叉点 -->
+    <circle cx="32" cy="32" r="1.8" fill="#1a1714" stroke="none"/>
+  </g>
+</svg>
