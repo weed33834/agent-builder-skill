@@ -12,6 +12,15 @@ const MM_LANG_KEY = 'mm_lang';
 // ============================================================
 const MM_I18N_RESOURCES = {
   zh: {
+    nav: {
+      celebrity: '名人镜',
+      value: '价值镜',
+      ideology: '意识镜',
+      bootcamp: '训练营',
+      compare: '关系对比',
+      reports: '我的报告',
+      login: '登录',
+    },
     common: {
       back: '← 返回',
       exit: '← 退出',
@@ -91,6 +100,10 @@ const MM_I18N_RESOURCES = {
         },
       },
       enter: '入镜 →',
+      hero_lede: '三面镜子,九种方法,照见你在历史与价值坐标中的真实投影。',
+      start_cta: '开始第一次凝视',
+      about_cta: '了解心镜',
+      hero_trust: '无需注册 · 匿名 · 约 8 分钟',
     },
     take: {
       title_celebrity: '名人镜',
@@ -331,6 +344,15 @@ const MM_I18N_RESOURCES = {
   },
 
   en: {
+    nav: {
+      celebrity: 'Celebrity',
+      value: 'Value',
+      ideology: 'Ideology',
+      bootcamp: 'Bootcamp',
+      compare: 'Compare',
+      reports: 'Reports',
+      login: 'Login',
+    },
     common: {
       back: '← Back',
       exit: '← Exit',
@@ -409,6 +431,10 @@ const MM_I18N_RESOURCES = {
         },
       },
       enter: 'Enter →',
+      hero_lede: 'Three mirrors, nine methods — see your true projection across history and values.',
+      start_cta: 'Begin Your First Gaze',
+      about_cta: 'About MindMirror',
+      hero_trust: 'No signup · Anonymous · ~8 min',
     },
     take: {
       title_celebrity: 'Celebrity Mirror',
@@ -638,6 +664,15 @@ const MM_I18N_RESOURCES = {
   },
 
   ja: {
+    nav: {
+      celebrity: '名人鏡',
+      value: '価値鏡',
+      ideology: '意識鏡',
+      bootcamp: '訓練営',
+      compare: '関係対比',
+      reports: 'レポート',
+      login: 'ログイン',
+    },
     common: {
       back: '← 戻る',
       exit: '← 終了',
@@ -716,6 +751,10 @@ const MM_I18N_RESOURCES = {
         },
       },
       enter: '入鏡 →',
+      hero_lede: '三つの鏡、九つの方法で、歴史と価値の座標における真の投影を見る。',
+      start_cta: '最初の凝視を始める',
+      about_cta: '心鏡について',
+      hero_trust: '登録不要 · 匿名 · 約8分',
     },
     take: {
       title_celebrity: '名人鏡',

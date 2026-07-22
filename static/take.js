@@ -313,7 +313,7 @@ function renderDilemma(q) {
       <div class="options" data-q="${escapeHtml(q.id)}">
         ${q.options.map(o => `<div class="option" data-id="${escapeHtml(o.id)}">${escapeHtml(o.text)}</div>`).join('')}
       </div>
-      ${q.historical_figure ? `<p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-top:32px;letter-spacing:0.1em;text-align:center">${mmI18n.t('take.dilemma_historical', { figure: escapeHtml(q.historical_figure) })}</p>` : ''}
+      ${q.historical_figure ? `<p class="question-hint center mt">${mmI18n.t('take.dilemma_historical', { figure: escapeHtml(q.historical_figure) })}</p>` : ''}
     </div>`;
 }
 
@@ -321,7 +321,7 @@ function renderAllocation(q) {
   return `
     <div class="question-card">
       <div class="question-prompt">${escapeHtml(q.prompt)}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">${mmI18n.t('take.alloc_hint', { total: escapeHtml(q.total) })}</p>
+      <p class="question-hint">${mmI18n.t('take.alloc_hint', { total: escapeHtml(q.total) })}</p>
       <div data-q="${escapeHtml(q.id)}" class="alloc-list">
         ${q.targets.map(t => `
           <div class="alloc-row" data-id="${escapeHtml(t.id)}">
@@ -357,7 +357,7 @@ function renderSort(q) {
   return `
     <div class="question-card">
       <div class="question-prompt">${escapeHtml(q.prompt)}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">${mmI18n.t('take.sort_hint')}</p>
+      <p class="question-hint">${mmI18n.t('take.sort_hint')}</p>
       <div class="sort-list" data-q="${escapeHtml(q.id)}">
         ${shuffled.map((it, i) => `<div class="sort-item" data-id="${escapeHtml(it.id)}" draggable="true"><div class="sort-controls"><button class="sort-move" data-dir="up" aria-label="${mmI18n.t('take.sort_move_up')}">▲</button><button class="sort-move" data-dir="down" aria-label="${mmI18n.t('take.sort_move_down')}">▼</button></div><span class="order">${i+1}</span><span class="sort-text">${escapeHtml(it.text)}</span></div>`).join('')}
       </div>
@@ -369,7 +369,7 @@ function renderIAT(q) {
   return `
     <div class="question-card">
       <div class="question-prompt">${escapeHtml(q.prompt)}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--ink-faint);font-size:13px;text-align:center;letter-spacing:0.15em;margin-bottom:20px">${mmI18n.t('take.iat_hint')}</p>
+      <p class="question-hint small center">${mmI18n.t('take.iat_hint')}</p>
       <div class="iat-area" data-q="${escapeHtml(q.id)}">
         <div class="iat-labels">
           <span>← ${escapeHtml(q.left_label)}</span>
@@ -389,7 +389,7 @@ function renderSlider(q) {
   return `
     <div class="question-card">
       <div class="question-prompt">${escapeHtml(q.prompt)}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:40px;letter-spacing:0.1em;text-align:center">${mmI18n.t('take.slider_hint')}</p>
+      <p class="question-hint center">${mmI18n.t('take.slider_hint')}</p>
       <div class="slider-area" data-q="${escapeHtml(q.id)}">
         <div class="slider-value" id="slider-value">50</div>
         <div class="slider-track-wrap">
@@ -409,7 +409,7 @@ function renderForcedChoice(q) {
   return `
     <div class="question-card">
       <div class="question-prompt">${escapeHtml(q.prompt)}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:40px;letter-spacing:0.1em;text-align:center">${mmI18n.t('take.forced_choice_hint')}</p>
+      <p class="question-hint center">${mmI18n.t('take.forced_choice_hint')}</p>
       <div class="fc-area" data-q="${escapeHtml(q.id)}">
         <div class="fc-cards">
           ${q.sides.map((s, i) => `
@@ -419,7 +419,6 @@ function renderForcedChoice(q) {
             </div>
           `).join('')}
         </div>
-        <div class="fc-vs">VS</div>
       </div>
     </div>`;
 }
@@ -433,7 +432,7 @@ function renderMatrix(q) {
   return `
     <div class="question-card">
       <div class="question-prompt">${escapeHtml(q.prompt)}</div>
-      <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:14px;margin-bottom:32px;letter-spacing:0.1em">${mmI18n.t('take.matrix_hint')}</p>
+      <p class="question-hint">${mmI18n.t('take.matrix_hint')}</p>
       <div class="matrix-area" data-q="${escapeHtml(q.id)}">
         <div class="matrix-header">
           <span></span>
@@ -485,7 +484,7 @@ function renderAuction(q) {
             <div class="auction-bar"><div class="auction-bar-fill" style="width:0%"></div></div>
           </div>
         `).join('')}
-        <p style="font-family:var(--font-display);font-style:italic;color:var(--paper-faint);font-size:13px;margin-top:24px;letter-spacing:0.1em;text-align:center">${mmI18n.t('take.auction_hint')}</p>
+        <p class="question-hint small center mt">${mmI18n.t('take.auction_hint')}</p>
         <button class="btn-primary" id="auction-confirm" style="margin-top:32px;display:block;width:100%">${mmI18n.t('common.confirm')}</button>
       </div>
     </div>`;

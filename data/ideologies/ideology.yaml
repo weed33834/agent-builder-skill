@@ -39,7 +39,7 @@
   coords: {econ: 72, social: 25}
 - id: eco_socialism
   name: 生态社会主义
-  blurb: 反资本主义+环保+去中心化
+  blurb: 反思资本逻辑+环保+去中心化
   coords: {econ: 18, social: 25}
 - id: social_liberal
   name: 社会自由主义
@@ -51,7 +51,7 @@
   coords: {econ: 45, social: 60}
 - id: libertarian_socialism
   name: 自由意志社会主义
-  blurb: 反国家+反资本+工人自治
+  blurb: 弱国家+反思资本+工人自治
   coords: {econ: 20, social: 12}
 - id: market_socialism
   name: 市场社会主义
@@ -75,7 +75,7 @@
   coords: {econ: 55, social: 88}
 - id: neoconservatism
   name: 新保守主义
-  blurb: 强硬外交+民主推广+传统价值
+  blurb: 积极外交+价值倡导+传统秩序
   coords: {econ: 70, social: 68}
 - id: neoliberalism
   name: 新自由主义
@@ -96,7 +96,7 @@
 # (Proudhon 学派,学术纯词,非暴力主张)
 - id: mutualism
   name: 互助主义
-  blurb: 自愿协作+小生产者联合+反集中化
+  blurb: 自愿协作+小生产者联合+去集中化
   coords: {econ: 28, social: 10}
 # 垄断资本主义:填补原"寡头资本主义"删除后的政治经济学方向空白
 # (马克思主义政治经济学标准术语)

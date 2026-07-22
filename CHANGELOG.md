@@ -6,6 +6,30 @@
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-07-22
+
+### Changed
+
+- **前端 P0 重构**:颜色对比度经 WCAG AA 校准(--ink-faint #8a857c→#6f6a60,--ink-ghost #b5af9f→#8f8975),修复数十处正文不可读问题
+- **按钮层级强化**:primary 改实色填充 + hover 阴影微抬升,去斜体;secondary/link 保持描边
+- **全局站点头部** (`site-header.js`):10 个页面自动注入顶部导航栏(sticky + backdrop-blur),高亮当前页,品牌 logo + 6 项主导航 + 登录入口
+- **首页 Hero 重构**:左右分栏(桌面)/ 上下堆叠(移动),加入 `hero-mirror.svg` 主视觉 + 主 CTA「开始第一次凝视」+ 次 CTA + 信任标识
+- **答题页提示文字统一抽离**:9 处 inline style → `.question-hint` 类,颜色从几乎不可见的 `--paper-faint`(对比度 1.04:1)改为可读的 `--ink-faint`(4.6:1)
+- **sort 按钮触摸友好化**:9px/2px → 32×32px,达 Apple HIG 44px 触摸目标规范的 73%
+- hover 交互从 `padding-left` 位移改为 `transform: translateX`(GPU 加速,无 reflow)
+- image fallback 从朱墨"镜"字改为头肩剪影(消除廉价感)
+- 强迫抉择删除"VS"街机徽章,改为品牌菱形分隔符
+- 滑块删除 `°` 度数符号(语义错位)
+- 404 页删除冗余 `.nf-disc` CSS 圆盘死代码
+
+### Fixed
+
+- 意识形态库 4 处价值判断表述软化(反资本主义→反思资本逻辑、反国家→弱国家、反集中化→去集中化、民主推广→价值倡导),规避微信小程序审核风险
+
+### Added
+
+- i18n 三语新增 `nav` 命名空间(7 key) + `home.hero_lede/start_cta/about_cta/hero_trust`(3 语 × 4 key = 12 处)
+
 ## [0.3.0] - 2026-07-22
 
 ### Added

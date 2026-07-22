@@ -75,14 +75,18 @@
     width: 100%; height: 100%; object-fit: cover; display: block;
   }
   .onthisday-portrait.img-fallback {
-    background: linear-gradient(135deg, var(--accent-soft) 0%, var(--paper-faint) 100%);
+    background: var(--paper-soft);
   }
   .onthisday-portrait.img-fallback::before {
-    content: '镜';
-    position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-serif);
-    font-size: 24px; color: var(--accent); opacity: 0.5; z-index: 1;
+    content: '';
+    position: absolute;
+    left: 50%; top: 30%;
+    transform: translateX(-50%);
+    width: 42%; height: 50%;
+    background: var(--ink-ghost);
+    border-radius: 50% 50% 45% 45%;
+    opacity: 0.35;
+    z-index: 1;
   }
   .onthisday-name {
     font-family: var(--font-serif);
@@ -119,9 +123,21 @@
 <body>
 <div class="container">
   <header class="hero">
-    <div class="mirror-disc" id="hero-mirror"></div>
-    <h1 data-i18n="home.brand">心镜</h1>
-    <p class="subtitle" data-i18n="home.subtitle">MindMirror</p>
+    <div class="hero-grid">
+      <div class="hero-text">
+        <p class="hero-eyebrow">MIND MIRROR · 自我探索</p>
+        <h1 data-i18n="home.brand">心镜</h1>
+        <p class="hero-lede" data-i18n="home.hero_lede">三面镜子,九种方法,照见你在历史与价值坐标中的真实投影。</p>
+        <div class="hero-cta">
+          <a href="/take.html?type=celebrity" class="btn-primary" data-i18n="home.start_cta">开始第一次凝视</a>
+          <a href="/about.html" class="btn-secondary" data-i18n="home.about_cta">了解心镜</a>
+        </div>
+        <p class="hero-trust" data-i18n="home.hero_trust">无需注册 · 匿名 · 约 8 分钟</p>
+      </div>
+      <div class="hero-visual">
+        <img src="/images/hero-mirror.svg" alt="" width="320" height="320" aria-hidden="true" class="hero-mirror-img">
+      </div>
+    </div>
     <div class="hero-divider"><span></span></div>
     <p class="disclaimer" data-i18n="home.disclaimer">自我探索 · 仅供参考</p>
   </header>
@@ -140,17 +156,11 @@
         </div>
       </div>
     </section>
-    <div class="actions">
-      <a href="/history.html" class="btn-primary" data-i18n="common.my_reports">我的报告</a>
-      <a href="/profile.html" class="btn-link" data-i18n="common.profile">我的面板</a>
-      <a href="/compare.html" class="btn-link" data-i18n="common.compare">关系对比</a>
-      <a href="/login.html" class="btn-link" data-i18n="common.login">登录</a>
-      <a href="/about.html" class="btn-link" data-i18n="common.about">关于</a>
-    </div>
   </main>
 </div>
 
 <script src="/i18n.js"></script>
+<script src="/site-header.js"></script>
 <script src="/app.js"></script>
 <script>
   // HTML 转义 —— 防止名人数据(name/blurb/era 等)注入 XSS
