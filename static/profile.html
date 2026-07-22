@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mm-page" content="profile">
+<title data-i18n="profile.title">我的面板 — 心镜 MindMirror</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/favicon.svg">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.loli.net">
+<link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.loli.net/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  /* 个人面板专属 —— 复用全站 CSS 变量 */
+  .profile-hero { text-align: center; padding: 56px 0 48px; }
+  .profile-hero .mirror-disc { width: 80px; height: 80px; margin-bottom: 28px; }
+  .profile-hero h1 {
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 300;
+    letter-spacing: 0.14em;
+    margin-bottom: 12px;
+    color: var(--ink);
+    font-variation-settings: 'opsz' 144;
+    line-height: 1;
+    animation: reveal 0.6s var(--ease) 0.3s both;
+  }
+  .profile-hero .subtitle {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-faint);
+    letter-spacing: 0.4em;
+    margin-bottom: 20px;
+    font-variation-settings: 'opsz' 14;
+    animation: reveal 0.6s var(--ease) 0.4s both;
+  }
+  .profile-hero .disclaimer {
+    font-size: 11px;
+    color: var(--ink-ghost);
+    letter-spacing: 0.18em;
+    animation: reveal 0.6s var(--ease) 0.5s both;
+  }
+  /* 账户/训练概览 —— 键值网格 */
+  .profile-kv {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line-soft);
+    border: 1px solid var(--line);
+  }
+  .profile-kv-cell {
+    padding: 22px 20px;
+    background: var(--paper-soft);
+    text-align: center;
+  }
+  .profile-kv-label {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-variation-settings: 'opsz' 14;
+  }
+  .profile-kv-value {
+    font-family: var(--font-num);
+    font-size: 30px;
+    color: var(--ink);
+    line-height: 1;
+    font-variation-settings: 'opsz' 144;
+    word-break: break-word;
+  }
+  .profile-kv-value.text {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    font-weight: 500;
+    font-variation-settings: normal;
+  }
+  .profile-kv-value.muted { color: var(--ink-faint); }
+  .profile-kv-value .unit {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin-left: 4px;
+    font-weight: 300;
+  }
+  /* 铁血徽章小章 */
+  .badge-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+    font-variation-settings: 'opsz' 14;
+  }
+  .badge-tag.locked {
+    border-color: var(--ink-ghost);
+    color: var(--ink-ghost);
+    background: transparent;
+  }
+  /* 对比码入口 */
+  .profile-compare {
+    text-align: center;
+    padding: 16px 0;
+  }
+  .profile-login-required {
+    text-align: center;
+    padding: 80px 20px;
+  }
+  .profile-login-required .mirror-disc {
+    width: 72px; height: 72px; margin: 0 auto 28px;
+  }
+  .profile-login-required p {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    color: var(--ink-soft);
+    letter-spacing: 0.06em;
+    margin-bottom: 28px;
+  }
+  @media (max-width: 600px) {
+    .profile-hero h1 { font-size: 34px; }
+    .profile-kv { grid-template-columns: 1fr; }
+    .profile-kv-value { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="take-header">
+    <a href="/" class="back-link" data-i18n="common.back">← 返回</a>
+    <span class="title-label" data-i18n="profile.title">我的面板</span>
+  </div>
+
+  <header class="profile-hero">
+    <div class="mirror-disc"></div>
+    <h1 data-i18n="profile.hero_title">探索者档案</h1>
+    <p class="subtitle" data-i18n="profile.hero_sub">Explorer</p>
+    <p class="disclaimer" data-i18n="profile.hero_disc">你的每一次凝视,都在此留存</p>
+  </header>
+
+  <div id="profile-body">
+    <div class="history-loading">
+      <div class="mirror-disc"></div>
+      <p data-i18n="common.loading">加载中…</p>
+    </div>
+  </div>
+
+</div>
+
+<script src="/i18n.js"></script>
+<script src="/app.js"></script>
+<script>
+  function typeLabel(t) { return mmI18n.t(`history.type_labels.${t}`) || t; }
+
+  // HTML 转义 —— 防止服务端数据(昵称/摘要/特质等)注入 XSS
+  function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // 解码 JWT payload(取昵称/邮箱);失败返回 null
+  function decodeJwtPayload(jwt) {
+    try {
+      const parts = jwt.split('.');
+      if (parts.length !== 3) return null;
+      let p = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      while (p.length % 4) p += '=';
+      return JSON.parse(atob(p));
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function isAuthError(err) {
+    return err && err.message && err.message.startsWith('401');
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d)) return '';
+    return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  async function render() {
+    const el = document.getElementById('profile-body');
+    const t = mmI18n.t.bind(mmI18n);
+
+    // 并行调用三个端点,allSettled 容错
+    const [resultsR, streakR, goalR] = await Promise.allSettled([
+      api.get('/api/me/results'),
+      api.get('/api/missions/streak'),
+      api.get('/api/goals/me'),
+    ]);
+
+    // results 401 —— 未登录,显示登录提示
+    if (resultsR.status === 'rejected' && isAuthError(resultsR.reason)) {
+      el.innerHTML = `
+        <div class="profile-login-required">
+          <div class="mirror-disc"></div>
+          <p data-i18n="profile.login_required">登录后查看完整面板</p>
+          <a href="/login.html" class="btn-primary" data-i18n="profile.go_login">去登录</a>
+        </div>`;
+      applyLang(mmI18n.lang);
+      return;
+    }
+
+    const results = resultsR.status === 'fulfilled' ? (resultsR.value || []) : [];
+    const streak = streakR.status === 'fulfilled' ? streakR.value : null;
+    // goals/me 404 是正常情况(尚未设定目标)
+    const goal = (goalR.status === 'fulfilled') ? goalR.value : null;
+
+    // 昵称:从 JWT 解码(取邮箱本地部分),否则"探索者"
+    const jwt = getJwt();
+    const payload = jwt ? decodeJwtPayload(jwt) : null;
+    const email = payload && payload.email ? payload.email : '';
+    const nickname = email ? escapeHtml(email.split('@')[0]) : escapeHtml(t('profile.hero_sub'));
+
+    // 加入日期:取最早结果的 created_at(列表按 desc 排序,末尾即最早)
+    const joinedDate = results.length ? fmtDate(results[results.length - 1].created_at) : '—';
+    const total = results.length;
+
+    // 训练概览
+    const cur = streak ? streak.current : 0;
+    const longest = streak ? streak.longest : 0;
+    const badge = streak ? streak.badge : false;
+    const traitLabel = goal && goal.trait_label
+      ? escapeHtml(goal.trait_label)
+      : `<span class="muted">${escapeHtml(t('profile.no_goal'))}</span>`;
+
+    // 最近报告:取前 3 条
+    const recent = results.slice(0, 3);
+
+    // 最新对比码
+    const latestId = results.length ? results[0].id : '';
+
+    el.innerHTML = `
+      <section class="report-section">
+        <h3 data-i18n="profile.account_card">账户</h3>
+        <div class="profile-kv">
+          <div class="profile-kv-cell">
+            <div class="profile-kv-label">${escapeHtml(t('common.your_mirror'))}</div>
+            <div class="profile-kv-value text">${nickname}</div>
+          </div>
+          <div class="profile-kv-cell">
+            <div class="profile-kv-label">${escapeHtml(t('profile.joined'))}</div>
+            <div class="profile-kv-value">${escapeHtml(joinedDate)}</div>
+          </div>
+          <div class="profile-kv-cell">
+            <div class="profile-kv-label">${escapeHtml(t('profile.total_assessments'))}</div>
+            <div class="profile-kv-value">${total}</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="report-section">
+        <h3 data-i18n="profile.training_card">训练</h3>
+        <div class="profile-kv">
+          <div class="profile-kv-cell">
+            <div class="profile-kv-label">${escapeHtml(t('profile.streak_current'))}</div>
+            <div class="profile-kv-value">${cur}<span class="unit">${escapeHtml(t('bootcamp.streak_unit'))}</span></div>
+          </div>
+          <div class="profile-kv-cell">
+            <div class="profile-kv-label">${escapeHtml(t('profile.streak_longest'))}</div>
+            <div class="profile-kv-value">${longest}<span class="unit">${escapeHtml(t('bootcamp.streak_unit'))}</span></div>
+          </div>
+          <div class="profile-kv-cell">
+            <div class="profile-kv-label">${escapeHtml(t('profile.iron_badge'))}</div>
+            <div class="profile-kv-value text">
+              ${badge
+                ? `<span class="badge-tag">${escapeHtml(t('profile.badge_earned'))}</span>`
+                : `<span class="badge-tag locked">${escapeHtml(t('profile.badge_locked'))}</span>`}
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:20px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <span class="profile-kv-label" style="margin-bottom:0">${escapeHtml(t('profile.current_trait'))}</span>
+          <span style="font-family:var(--font-serif);font-size:16px;color:var(--ink-soft)">${traitLabel}</span>
+        </div>
+      </section>
+
+      <section class="report-section">
+        <h3 data-i18n="profile.recent_reports">最近报告</h3>
+        <div class="history-list">
+          ${recent.length ? recent.map((r, i) => {
+            const dateStr = fmtDate(r.created_at);
+            return `
+            <div class="history-item" style="animation-delay:${0.1 + i*0.06}s">
+              <a href="/report.html?id=${escapeHtml(r.id)}" class="history-main">
+                <div class="history-idx"><span class="num">${String(i+1).padStart(2,'0')}</span></div>
+                <div class="history-body">
+                  <div class="history-summary">${escapeHtml(r.summary)}</div>
+                  <div class="history-meta">
+                    <span class="meta-type">${escapeHtml(typeLabel(r.assessment_type))}</span>
+                    <span class="meta-sep">·</span>
+                    <span class="meta-date">${escapeHtml(dateStr)}</span>
+                  </div>
+                </div>
+                <span class="history-arrow">→</span>
+              </a>
+            </div>`;
+          }).join('') : `
+            <div class="empty-state">
+              <p style="font-family:var(--font-serif);font-size:16px;color:var(--ink-faint);letter-spacing:0.1em">${escapeHtml(t('profile.no_reports'))}</p>
+              <a href="/" class="btn-primary" style="margin-top:24px" data-i18n="home.enter">入镜 →</a>
+            </div>`}
+        </div>
+      </section>
+
+      <section class="report-section">
+        <h3 data-i18n="profile.compare_card">对比</h3>
+        <div class="profile-compare">
+          ${latestId ? `
+            <button class="btn-primary" id="copy-compare-btn" data-i18n="profile.copy_compare_code">复制最新对比码</button>
+            <p style="margin-top:12px;font-size:12px;color:var(--ink-faint);letter-spacing:0.1em;font-family:var(--font-num)">${escapeHtml(latestId)}</p>
+          ` : `
+            <p style="font-family:var(--font-serif);font-size:15px;color:var(--ink-faint)">${escapeHtml(t('profile.no_reports'))}</p>
+          `}
+        </div>
+      </section>
+    `;
+
+    // 绑定复制按钮
+    const copyBtn = document.getElementById('copy-compare-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(latestId);
+          copyBtn.textContent = mmI18n.t('profile.copied');
+          setTimeout(() => { copyBtn.textContent = mmI18n.t('profile.copy_compare_code'); }, 1800);
+        } catch (e) {
+          // 降级:选中文本
+          const ta = document.createElement('textarea');
+          ta.value = latestId;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (_) {}
+          ta.remove();
+          copyBtn.textContent = mmI18n.t('profile.copied');
+          setTimeout(() => { copyBtn.textContent = mmI18n.t('profile.copy_compare_code'); }, 1800);
+        }
+      });
+    }
+
+    applyLang(mmI18n.lang);
+  }
+
+  render();
+  injectLangSwitch();
+  // 语言切换时重新渲染(标签/特质/徽章文案随语言更新)
+  document.addEventListener('mm:lang-changed', () => render());
+</script>
+</body>
+</html>

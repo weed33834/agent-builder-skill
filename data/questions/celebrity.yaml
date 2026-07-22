@@ -412,7 +412,7 @@ questions:
     tier: 2
   - id: c_d6
     type: dilemma
-    prompt: 法庭判你死刑,给你逃跑机会,但你一直教导"遵守法律"。
+    prompt: 法庭判你极刑,给你逃跑机会,但你一直教导"遵守法律"。
     dimensions:
       - idealism
       - conscientiousness

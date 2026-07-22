@@ -8,10 +8,113 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/favicon.svg">
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap">
+<link rel="preconnect" href="https://fonts.loli.net">
+<link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.loli.net/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap">
 <link rel="stylesheet" href="/styles.css">
+<style>
+  /* 今日认识 —— 紧凑三栏名人卡 */
+  .onthisday-section { margin: 56px 0 0; animation: reveal 0.6s var(--ease) 0.5s both; }
+  .onthisday-head { text-align: center; margin-bottom: 28px; }
+  .onthisday-head h2 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    color: var(--ink);
+    margin-bottom: 8px;
+    font-variation-settings: 'opsz' 48;
+  }
+  .onthisday-head p {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-faint);
+    letter-spacing: 0.16em;
+    font-variation-settings: 'opsz' 14;
+  }
+  .onthisday-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .onthisday-card {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 18px;
+    text-decoration: none;
+    color: inherit;
+    background: var(--paper-soft);
+    border: 1px solid var(--line);
+    border-top: 2px solid var(--mirror-celebrity);
+    transition: all 0.3s var(--ease);
+  }
+  .onthisday-card:hover {
+    background: var(--paper-faint);
+    border-color: var(--ink-ghost);
+    transform: translateY(-3px);
+  }
+  .onthisday-portrait {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 16px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--paper-faint);
+    border: 1px solid var(--line-soft);
+    position: relative;
+  }
+  .onthisday-portrait::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(139, 46, 31, 0.08), rgba(0, 0, 0, 0.04));
+    pointer-events: none;
+  }
+  .onthisday-portrait img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .onthisday-portrait.img-fallback {
+    background: linear-gradient(135deg, var(--accent-soft) 0%, var(--paper-faint) 100%);
+  }
+  .onthisday-portrait.img-fallback::before {
+    content: '镜';
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-serif);
+    font-size: 24px; color: var(--accent); opacity: 0.5; z-index: 1;
+  }
+  .onthisday-name {
+    font-family: var(--font-serif);
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--ink);
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 0.04em;
+  }
+  .onthisday-era {
+    font-family: var(--font-num);
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-align: center;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+    font-variation-settings: 'opsz' 14;
+  }
+  .onthisday-blurb {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    text-align: center;
+  }
+  @media (max-width: 720px) {
+    .onthisday-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 960px) and (min-width: 721px) {
+    .onthisday-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
 </head>
 <body>
 <div class="container">
@@ -25,8 +128,21 @@
 
   <main>
     <div id="mirrors" class="mirrors-grid"></div>
+    <section class="onthisday-section">
+      <div class="onthisday-head">
+        <h2 data-i18n="home.onthisday_title">今日认识</h2>
+        <p data-i18n="home.onthisday_sub">与三位历史灵魂偶然相遇</p>
+      </div>
+      <div id="onthisday" class="onthisday-grid">
+        <div class="history-loading">
+          <div class="mirror-disc"></div>
+          <p data-i18n="common.loading">加载中…</p>
+        </div>
+      </div>
+    </section>
     <div class="actions">
       <a href="/history.html" class="btn-primary" data-i18n="common.my_reports">我的报告</a>
+      <a href="/profile.html" class="btn-link" data-i18n="common.profile">我的面板</a>
       <a href="/compare.html" class="btn-link" data-i18n="common.compare">关系对比</a>
       <a href="/login.html" class="btn-link" data-i18n="common.login">登录</a>
       <a href="/about.html" class="btn-link" data-i18n="common.about">关于</a>
@@ -37,6 +153,17 @@
 <script src="/i18n.js"></script>
 <script src="/app.js"></script>
 <script>
+  // HTML 转义 —— 防止名人数据(name/blurb/era 等)注入 XSS
+  function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   async function renderMirrors() {
     const mirrors = await api.get('/api/assessments');
     const order = ['celebrity', 'value', 'ideology'];
@@ -56,7 +183,35 @@
     `).join('');
     applyLang(mmI18n.lang);
   }
+
+  async function renderOnthisday() {
+    const el = document.getElementById('onthisday');
+    let figures;
+    try {
+      figures = await api.get('/api/figures/onthisday');
+    } catch (e) {
+      el.innerHTML = '';
+      return;
+    }
+    if (!figures || !figures.length) {
+      el.innerHTML = '';
+      return;
+    }
+    el.innerHTML = figures.map(f => `
+      <a href="/figure.html?id=${escapeHtml(f.id)}" class="onthisday-card">
+        <div class="onthisday-portrait">
+          <img src="${escapeHtml(f.image)}" alt="${escapeHtml(f.name)}"
+               onerror="this.parentNode.classList.add('img-fallback');this.style.display='none';">
+        </div>
+        <div class="onthisday-name">${escapeHtml(f.name)}</div>
+        <div class="onthisday-era">${escapeHtml(f.era)}</div>
+        <div class="onthisday-blurb">${escapeHtml(f.blurb)}</div>
+      </a>
+    `).join('');
+  }
+
   renderMirrors();
+  renderOnthisday();
   // 注入语言切换器
   injectLangSwitch();
 </script>

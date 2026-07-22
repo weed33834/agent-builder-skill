@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mm-page" content="figure">
+<title data-i18n="figure.title">人物志 — 心镜 MindMirror</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/favicon.svg">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.loli.net">
+<link rel="preconnect" href="https://gstatic.loli.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.loli.net/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  /* 人物详情页专属样式 —— 复用全站 CSS 变量与字体 */
+  .figure-hero {
+    text-align: center;
+    padding: 24px 0 32px;
+  }
+  .figure-portrait {
+    width: 160px;
+    height: 160px;
+    margin: 0 auto 24px;
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--paper-faint);
+    border: 1px solid var(--line-soft);
+    position: relative;
+  }
+  .figure-portrait::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(139, 46, 31, 0.08), rgba(0, 0, 0, 0.04));
+    pointer-events: none;
+  }
+  .figure-portrait img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .figure-portrait.img-fallback {
+    background: linear-gradient(135deg, var(--accent-soft) 0%, var(--paper-faint) 100%);
+  }
+  .figure-portrait.img-fallback::before {
+    content: '镜';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-size: 56px;
+    color: var(--accent);
+    opacity: 0.5;
+    z-index: 1;
+  }
+  .figure-name {
+    font-family: var(--font-serif);
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 8px;
+    letter-spacing: 0.04em;
+  }
+  .figure-subtitle {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-faint);
+    letter-spacing: 0.18em;
+    margin-bottom: 20px;
+  }
+  .figure-subtitle .sep { margin: 0 10px; opacity: 0.5; }
+  .figure-quote {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink-soft);
+    line-height: 1.7;
+    max-width: 560px;
+    margin: 0 auto 32px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
+    position: relative;
+  }
+  .figure-quote::before { content: '\201C'; margin-right: 4px; color: var(--accent); }
+  .figure-quote::after  { content: '\201D'; margin-left: 4px;  color: var(--accent); }
+  .figure-intro {
+    font-family: var(--font-serif);
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 2;
+    white-space: pre-line;
+    max-width: 640px;
+    margin: 0 auto 40px;
+    letter-spacing: 0.01em;
+  }
+  .figure-anecdote {
+    max-width: 640px;
+    margin: 0 auto 48px;
+    padding: 24px 28px;
+    background: var(--paper-faint);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+  }
+  .figure-anecdote-title {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .figure-anecdote-body {
+    font-family: var(--font-serif);
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.85;
+  }
+  .figure-actions {
+    text-align: center;
+    padding: 16px 0 48px;
+    border-top: 1px solid var(--line-soft);
+    margin-top: 24px;
+  }
+  .figure-loading {
+    text-align: center;
+    padding: 80px 0;
+  }
+  .figure-loading .mirror-disc {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+  }
+  .figure-loading p {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-faint);
+    letter-spacing: 0.2em;
+  }
+  .figure-error {
+    text-align: center;
+    padding: 80px 0;
+  }
+  .figure-error p {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    margin-bottom: 28px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="take-header">
+    <a href="/" class="back-link" data-i18n="figure.back">← 返回</a>
+    <span class="title-label" data-i18n="figure.title">人物志</span>
+  </div>
+
+  <div id="figure" class="figure-loading">
+    <div class="mirror-disc"></div>
+    <p data-i18n="common.loading">加载中…</p>
+  </div>
+
+</div>
+
+<script src="/i18n.js"></script>
+<script src="/app.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const figureId = params.get('id');
+  if (!figureId) { location.href = '/'; }
+
+  // HTML 转义 —— 防止 YAML 数据(name/intro/anecdote 等)注入 XSS
+  function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  async function render() {
+    const el = document.getElementById('figure');
+    if (!figureId) return;
+    let f;
+    try {
+      f = await api.get('/api/figures/' + encodeURIComponent(figureId));
+    } catch (e) {
+      el.className = 'figure-error';
+      el.innerHTML = `
+        <p>${escapeHtml(mmI18n.t('figure.not_found'))}</p>
+        <a href="/" class="btn-primary" data-i18n="common.back_home">回到首页</a>`;
+      applyLang(mmI18n.lang);
+      return;
+    }
+    const tags = f.tags || [];
+    const subtitle = [f.era, f.role].filter(Boolean)
+      .map(escapeHtml).join('<span class="sep">·</span>');
+    el.className = '';
+    el.innerHTML = `
+      <header class="figure-hero">
+        <div class="figure-portrait">
+          <img src="${escapeHtml(f.image)}" alt="${escapeHtml(f.name)}"
+               onerror="this.parentNode.classList.add('img-fallback');this.style.display='none';">
+        </div>
+        <h1 class="figure-name">${escapeHtml(f.name)}</h1>
+        ${subtitle ? `<div class="figure-subtitle">${subtitle}</div>` : ''}
+        ${tags.length ? `
+        <div class="profile-tags">
+          ${tags.map(t => `<span class="profile-tag">${escapeHtml(t)}</span>`).join('')}
+        </div>` : ''}
+        ${f.quote ? `<blockquote class="figure-quote">${escapeHtml(f.quote)}</blockquote>` : ''}
+      </header>
+
+      ${f.intro ? `<div class="figure-intro">${escapeHtml(f.intro)}</div>` : ''}
+
+      ${f.anecdote ? `
+      <section class="figure-anecdote">
+        <div class="figure-anecdote-title" data-i18n="figure.anecdote_title">一则轶事</div>
+        <div class="figure-anecdote-body">${escapeHtml(f.anecdote)}</div>
+      </section>` : ''}
+
+      <div class="figure-actions">
+        <a href="/" class="btn-primary" data-i18n="common.back_home">回到首页</a>
+        <a href="/history.html" class="btn-secondary" data-i18n="figure.view_reports">我的报告</a>
+      </div>
+    `;
+    // 应用本次注入的 data-i18n 文案
+    document.querySelectorAll('#figure [data-i18n]').forEach(el2 => {
+      const v = mmI18n.t(el2.dataset.i18n);
+      if (v !== el2.dataset.i18n) el2.textContent = v;
+    });
+  }
+
+  render();
+  injectLangSwitch();
+  // 语言切换时重新渲染(详情文案随语言更新)
+  document.addEventListener('mm:lang-changed', () => render());
+</script>
+</body>
+</html>

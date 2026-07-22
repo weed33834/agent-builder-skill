@@ -80,7 +80,7 @@ function doRender() {
           return `
           <div class="match-item ${i === 0 ? 'top' : ''}${hasImage ? ' with-image' : ''}">
             ${hasImage ? `
-              <div class="match-portrait">
+              <div class="match-portrait" data-figure-id="${escapeHtml(m.id)}" style="cursor:pointer">
                 <img src="${escapeHtml(m.image)}" alt="${escapeHtml(m.name)}" loading="lazy" onerror="this.parentNode.classList.add('img-fallback');this.style.display='none';">
               </div>` : ''}
             <div class="match-body">
@@ -228,6 +228,14 @@ function doRender() {
       }
     });
   }
+
+  // 名人画像点击 → 跳转人物详情页(仅 celebrity 且带 image 的 match-portrait 才有 data-figure-id)
+  document.querySelectorAll('.match-portrait[data-figure-id]').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.dataset.figureId;
+      if (id) location.href = `/figure.html?id=${encodeURIComponent(id)}`;
+    });
+  });
 
   if (dimEntries.length) drawRadar(dimEntries);
 }
