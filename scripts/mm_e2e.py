@@ -4,6 +4,7 @@
 前提:fastapi dev 已在 :8765 跑起来,chromium 已装。
 """
 import asyncio
+import contextlib
 from pathlib import Path
 
 from playwright.async_api import async_playwright
@@ -96,16 +97,13 @@ async def answer_one(page):
     elif qtype == "iat":
         # 交替按左右
         for _ in range(15):
-            btn = await page.query_selector("#iat-left")
             btn2 = await page.query_selector("#iat-right")
             # 看当前词
             word = await page.evaluate("() => { const w = document.getElementById('iat-word'); return w ? w.innerText.trim() : ''; }")
             if '完成' in word or '/' not in (await page.inner_text('#iat-progress')) if await page.query_selector('#iat-progress') else False:
                 pass
-            try:
+            with contextlib.suppress(Exception):
                 await page.wait_for_selector("#iat-word .iat-stim, #iat-word .iat-word-text", timeout=2000)
-            except Exception:
-                pass
             if btn2:
                 await btn2.click()
             await page.wait_for_timeout(120)
@@ -224,7 +222,7 @@ async def run_full_flow(browser, scenario):
             for e in errors[:5]:
                 print(f"    {e}")
         else:
-            print(f"  无页面错误")
+            print("  无页面错误")
         await ctx.close()
         return {"scenario": name, "errors": errors, "answered": answered}
     except Exception as e:
@@ -293,7 +291,6 @@ async def run_hard_case(browser, case_name):
             await page.goto(f"{BASE}/take.html?type=celebrity&version=fast", wait_until="networkidle")
             await page.wait_for_timeout(800)
             # 看是否有直接提交按钮
-            sub = await page.query_selector("button:has-text('提交'), button:has-text('Submit')")
             result["ok"] = True
             result["note"] = "无显式提交按钮(答完自动进)"
             await shot(page, "hard_empty_submit")

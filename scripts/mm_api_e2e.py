@@ -3,7 +3,6 @@
 用法:.venv/bin/python scripts/mm_api_e2e.py
 前提:fastapi dev 已在 :8765 跑起来。
 """
-import json
 import random
 import sys
 import uuid
@@ -436,7 +435,6 @@ def onthisday_randomness():
 
 def main():
     print(f"BASE = {BASE}")
-    client = Client()
 
     # 1. 全流程:3 类型 × 3 版本
     print("\n" + "=" * 60)
