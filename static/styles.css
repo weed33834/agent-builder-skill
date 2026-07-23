@@ -329,7 +329,7 @@ h1, h2, h3 {
   color: var(--ink-soft);
   line-height: 1.9;
   margin-bottom: 24px;
-  min-height: 56px;
+  min-height: 0; /* removed fixed height to allow wrap */
 }
 .mirror-card .meta {
   display: flex;
@@ -417,6 +417,12 @@ h1, h2, h3 {
 .cmp-head { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-soft); margin-bottom: 4px; }
 .cmp-verdict { color: var(--accent); }
 .cmp-bars { display: flex; flex-direction: column; gap: 4px; }
+.cmp-row {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.cmp-row:last-child { border-bottom: none; }
+.cmp-row .cmp-head { margin-bottom: 6px; }
 .cmp-bar { height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: #fff; font-size: 11px; min-width: 24px; }
 .cmp-bar.cmp-self { background: var(--accent); }
 .cmp-bar.cmp-other { background: var(--mirror-celebrity); }
@@ -1024,13 +1030,7 @@ h1, h2, h3 {
   font-variation-settings: 'opsz' 144;
   transition: color 0.2s;
 }
-.slider-value::after {
-  content: '';
-  font-size: 28px;
-  color: var(--ink-faint);
-  margin-left: 2px;
-  font-style: italic;
-}
+/* 滑块值后缀（预留） */
 .slider-track-wrap {
   position: relative;
   width: 100%;
