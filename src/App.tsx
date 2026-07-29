@@ -1,31 +1,37 @@
 /**
- * 阶段 0 占位入口 —— 仅验证脚手架 + scoring + 数据层 + store 可正常 import 和构建。
- * 阶段 1 接入 React Router 后替换为真实路由根。
+ * 路由根 —— MainLayout 包裹静态页(含 header/footer/mute);
+ * /take 与 /report 走独立全屏路由(聚焦态,无全局框)。
  */
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from '@/lib/query'
-import { assessments } from '@/lib/data'
+import { MainLayout } from '@/components/layout/MainLayout'
+import Home from '@/pages/Home'
+import Figures from '@/pages/Figures'
+import Figure from '@/pages/Figure'
+import About from '@/pages/About'
+import Privacy from '@/pages/Privacy'
+import Take from '@/pages/Take'
+import Report from '@/pages/Report'
+import NotFound from '@/pages/NotFound'
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8">
-        <h1 className="font-display text-4xl text-ink">心镜 MindMirror</h1>
-        <p className="text-ink-soft text-center max-w-md">
-          阶段 0 脚手架已就绪:React + TS + Vite + Tailwind + shadcn + TanStack Query + Zustand。
-          scoring.ts 已移植,数据层已配,store 已建。
-        </p>
-        <div className="flex flex-wrap gap-2 justify-center">
-          {assessments.map((a) => (
-            <span key={a.type} className="px-3 py-1 border border-line rounded text-sm text-ink-soft">
-              {a.title} · {a.question_count}题 · {a.estimated_minutes}分钟
-            </span>
-          ))}
-        </div>
-        <p className="text-ink-faint text-sm">
-          阶段 1 将接入 React Router,迁移 layout 组件与静态页。
-        </p>
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<MainLayout />}>
+            <Route index element={<Home />} />
+            <Route path="figures" element={<Figures />} />
+            <Route path="figure/:id" element={<Figure />} />
+            <Route path="about" element={<About />} />
+            <Route path="privacy" element={<Privacy />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+          <Route path="take/:type" element={<Take />} />
+          <Route path="report/:type" element={<Report />} />
+        </Routes>
+      </BrowserRouter>
     </QueryClientProvider>
   )
 }

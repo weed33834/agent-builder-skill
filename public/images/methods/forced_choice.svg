@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- 强迫抉择:天平两端 -->
+  <g stroke="#1a1714" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.7">
+    <!-- 立柱 -->
+    <line x1="32" y1="14" x2="32" y2="48"/>
+    <!-- 底座 -->
+    <line x1="22" y1="52" x2="42" y2="52"/>
+    <line x1="32" y1="48" x2="32" y2="52"/>
+    <!-- 横梁 -->
+    <line x1="14" y1="20" x2="50" y2="20"/>
+    <!-- 左盘吊绳 -->
+    <line x1="14" y1="20" x2="10" y2="32"/>
+    <line x1="14" y1="20" x2="18" y2="32"/>
+    <!-- 右盘吊绳 -->
+    <line x1="50" y1="20" x2="46" y2="32"/>
+    <line x1="50" y1="20" x2="54" y2="32"/>
+    <!-- 左盘 -->
+    <path d="M 6 32 Q 14 40 22 32" />
+    <!-- 右盘 -->
+    <path d="M 42 32 Q 50 40 58 32" />
+    <!-- 顶端圆点 -->
+    <circle cx="32" cy="14" r="1.5" fill="#1a1714" stroke="none"/>
+  </g>
+</svg>

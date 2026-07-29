@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- 量表:横线 + 刻度 -->
+  <g stroke="#1a1714" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7">
+    <!-- 主横线 -->
+    <line x1="10" y1="32" x2="54" y2="32"/>
+    <!-- 5 个刻度 -->
+    <line x1="12" y1="26" x2="12" y2="38"/>
+    <line x1="23" y1="28" x2="23" y2="36"/>
+    <line x1="34" y1="28" x2="34" y2="36"/>
+    <line x1="45" y1="28" x2="45" y2="36"/>
+    <line x1="52" y1="26" x2="52" y2="38"/>
+    <!-- 端点小圆点 -->
+    <circle cx="12" cy="32" r="1.5" fill="#1a1714" stroke="none"/>
+    <circle cx="52" cy="32" r="1.5" fill="#1a1714" stroke="none"/>
+  </g>
+</svg>

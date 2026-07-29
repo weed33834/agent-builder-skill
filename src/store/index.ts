@@ -35,7 +35,7 @@ export const useLangStore = create<LangState>()(
 interface MuteState {
   muted: boolean
   setMuted: (m: boolean) => void
-  toggleMute: () => void
+  toggleMute: () => boolean
 }
 
 export const useMuteStore = create<MuteState>()(
@@ -43,7 +43,7 @@ export const useMuteStore = create<MuteState>()(
     (set, get) => ({
       muted: false,
       setMuted: (muted) => set({ muted }),
-      toggleMute: () => set({ muted: !get().muted }),
+      toggleMute: () => { const next = !get().muted; set({ muted: next }); return next },
     }),
     {
       name: 'mindmirror_muted', // 沿用原 key

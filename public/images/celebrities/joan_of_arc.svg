@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+
+  <defs>
+    <radialGradient id="bg-joan_of_arc" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#3a2a2a" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#1a0808" stop-opacity="1"/>
+    </radialGradient>
+    <radialGradient id="face-joan_of_arc" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#e0c0a0"/>
+      <stop offset="100%" stop-color="#917c68"/>
+    </radialGradient>
+    <filter id="paint-joan_of_arc">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="88"/>
+      <feDisplacementMap in="SourceGraphic" scale="1.2"/>
+    </filter>
+  </defs>
+  <rect width="240" height="240" fill="url(#bg-joan_of_arc)"/>
+  <circle cx="120" cy="100" r="85" fill="none" stroke="#3a2a2a" stroke-width="1" opacity="0.4"/>
+  <path d="M 30 240 L 50 165 L 90 175 L 120 205 L 150 175 L 190 165 L 210 240 Z" fill="#5a4a4a"/>
+  <ellipse cx="120" cy="180" rx="30" ry="12" fill="#6a5c5c" opacity="0.7"/>
+  <rect x="105" y="160" width="30" height="25" fill="#b39980"/>
+  <ellipse cx="120" cy="110" rx="38" ry="45" fill="url(#face-joan_of_arc)"/>
+  <ellipse cx="120" cy="75" rx="35" ry="18" fill="#3a2a1a"/>
+  <ellipse cx="108" cy="108" rx="3" ry="2" fill="#1a1a1a"/>
+  <ellipse cx="132" cy="108" rx="3" ry="2" fill="#1a1a1a"/>
+  <path d="M 120 115 L 117 128 L 123 128 Z" fill="#9c8670" opacity="0.4"/>
+  <path d="M 113 138 Q 120 142 127 138" stroke="#706050" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 80 90 Q 75 50 120 45 Q 165 50 160 90 L 160 100 Q 120 90 80 100 Z" fill="#5a5a6a"/>
+  <rect x="80" y="85" width="80" height="8" fill="#3a3a4a"/>
+  <rect x="118" y="55" width="4" height="20" fill="#d4af37"/>
+  <rect x="110" y="62" width="20" height="4" fill="#d4af37"/>
+  <rect width="240" height="240" fill="#1a0808" opacity="0.05" filter="url(#paint-joan_of_arc)"/>
+  <rect x="0" y="218" width="240" height="22" fill="#1a0808" opacity="0.85"/>
+  <text x="120" y="234" text-anchor="middle" font-family="'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', 'Source Han Sans SC', 'WenQuanYi Micro Hei', 'Heiti SC', Georgia, serif" font-size="13" fill="#887f7f" font-weight="600" letter-spacing="2">圣女贞德</text>
+</svg>
