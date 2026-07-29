@@ -1,0 +1,101 @@
+/* ============================================================
+   心镜 MindMirror —— 设计系统 v3(从原项目 1:1 迁移)
+   美学:宣纸 × 墨 × 唯一强调色
+   字体:Fraunces(可变衬线) + Noto Serif SC + Noto Sans SC
+   Tailwind 负责布局/间距,本文件负责设计 token + 定制纹理/渐变
+   ============================================================ */
+
+:root {
+  /* 宣纸底色 */
+  --paper:        #f4efe3;
+  --paper-soft:   #ece6d9;
+  --paper-deep:   #e0d9cb;
+  --paper-faint:  #f8f5ee;
+  --paper-dim:    #d8d1c0;
+
+  /* 墨色文字(WCAG AA 校准) */
+  --ink:          #1a1714;   /* 14:1 主正文 */
+  --ink-soft:     #4a453e;   /* 8:1 次正文 */
+  --ink-faint:    #6f6a60;   /* 4.6:1 辅助正文 */
+  --ink-ghost:    #8f8975;   /* 3.0:1 装饰/分割 */
+
+  /* 线条 */
+  --line:         #d0c9ba;
+  --line-soft:    #e0d9cb;
+
+  /* 强调色 —— 朱墨 */
+  --accent:       #8b2e1f;
+  --accent-soft:  rgba(139, 46, 31, 0.06);
+  --accent-mid:   rgba(139, 46, 31, 0.15);
+
+  /* 三镜专属色 */
+  --mirror-celebrity: #8b6a2e;   /* 旧铜 */
+  --mirror-value:     #4a6b5c;   /* 青石 */
+  --mirror-ideology:  #3a5670;   /* 钢蓝 */
+  --mirror: var(--mirror-celebrity);
+
+  /* 字体栈 */
+  --font-display: 'Fraunces', 'Noto Serif SC', 'Songti SC', serif;
+  --font-serif:   'Noto Serif SC', 'Fraunces', serif;
+  --font-sans:    'Noto Sans SC', system-ui, sans-serif;
+  --font-num:     'Fraunces', 'Noto Serif SC', serif;
+
+  /* 缓动 */
+  --ease:       cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 暗色主题(原项目 [data-theme="dark"] 等价) */
+[data-theme="dark"] {
+  --paper:        #1a1714;
+  --paper-soft:   #232019;
+  --paper-deep:   #2a2620;
+  --paper-faint:  #15120f;
+  --paper-dim:    #322c24;
+
+  --ink:          #f4efe3;
+  --ink-soft:     #c9c1ad;
+  --ink-faint:    #8a857c;
+  --ink-ghost:    #5a5448;
+
+  --line:         #3a342a;
+  --line-soft:    #2a2620;
+
+  --accent-soft:  rgba(217, 92, 76, 0.10);
+  --accent-mid:   rgba(217, 92, 76, 0.22);
+}
+
+/* 三镜主题切换 */
+[data-mirror="celebrity"] { --mirror: var(--mirror-celebrity); }
+[data-mirror="value"]     { --mirror: var(--mirror-value); }
+[data-mirror="ideology"]  { --mirror: var(--mirror-ideology); }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 全局基础 —— 对齐原项目 body 样式 */
+@layer base {
+  * { box-sizing: border-box; }
+
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.75;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  /* 键盘焦点样式(WCAG 2.1 SC 2.4.7) */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  :focus:not(:focus-visible) { outline: none; }
+}
