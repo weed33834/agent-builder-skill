@@ -8,7 +8,7 @@ import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
 import { qk, fetchCelebrities } from '@/lib/query'
 import { FigureCard } from '@/components/ui/FigureCard'
-import { cn } from '@/lib/utils'
+import { cn, asset } from '@/lib/utils'
 
 export default function Figures() {
   const { t } = useI18n()
@@ -80,7 +80,10 @@ export default function Figures() {
         ) : error ? (
           <div className="fig-empty">{t('common.error_generic')}</div>
         ) : filtered.length === 0 ? (
-          <div className="fig-empty">{t('home.figures.no_match')}</div>
+          <div className="fig-empty">
+            <img src={asset('/images/empty-mirror.svg')} className="fig-empty-img" alt="" width={140} height={140} aria-hidden="true" />
+            {t('home.figures.no_match')}
+          </div>
         ) : (
           filtered.map((f) => <FigureCard key={f.id} figure={f} />)
         )}

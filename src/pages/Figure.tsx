@@ -72,7 +72,7 @@ export default function Figure() {
           src={f.photo || f.image}
           fallback={f.image}
           alt={f.name}
-          size={160}
+          size={192}
           className="figure-portrait"
         />
         <h1 className="figure-name">{f.name}</h1>

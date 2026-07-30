@@ -5,6 +5,7 @@
 import type { QuestionType } from '@/lib/types'
 import { useI18n } from '@/lib/i18n'
 import { play, vibrate } from '@/lib/audio'
+import { asset } from '@/lib/utils'
 
 interface SectionIntroProps {
   type: QuestionType
@@ -17,6 +18,7 @@ export function SectionIntro({ type, phaseNumber, onStart }: SectionIntroProps) 
   const name = t<string>(`take.type_label.${type}`)
   return (
     <div className="section-intro">
+      <img src={asset(`/images/methods/${type}.svg`)} className="section-icon" alt="" width={72} height={72} aria-hidden="true" />
       <div className="section-eyebrow">{t('take.section_label', { n: phaseNumber })}</div>
       <h2 className="section-title">{name}</h2>
       <p className="section-hint">{t('take.section_intro_default')}</p>

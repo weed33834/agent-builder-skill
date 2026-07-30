@@ -23,6 +23,7 @@ import { useDraftStore, useLastResultStore } from '@/store'
 import type { Answer, AnswerRecord, AssessmentType, AssessmentVersion, QuestionBank } from '@/lib/types'
 import { QuestionRouter } from '@/components/questions/QuestionRouter'
 import { SectionIntro } from '@/components/questions/SectionIntro'
+import { asset } from '@/lib/utils'
 
 type AnsRecord = AnswerRecord & { _timeout?: boolean }
 
@@ -260,7 +261,10 @@ export default function Take() {
             {q ? (
               <>
                 <span className="num">{currentIdx + 1}</span> / {total}
-                <span className="type-badge">{t<string>(`take.type_label.${q.type}`)} {posInType}/{typeCount}</span>
+                <span className="type-badge">
+                  <img src={asset(`/images/methods/${q.type}.svg`)} className="type-badge-icon" alt="" width={12} height={12} aria-hidden="true" />
+                  {t<string>(`take.type_label.${q.type}`)} {posInType}/{typeCount}
+                </span>
               </>
             ) : (
               <span className="num">{Math.min(currentIdx, total)} / {total}</span>
