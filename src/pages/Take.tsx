@@ -23,6 +23,7 @@ import { useDraftStore, useLastResultStore } from '@/store'
 import type { Answer, AnswerRecord, AssessmentType, AssessmentVersion, QuestionBank } from '@/lib/types'
 import { QuestionRouter } from '@/components/questions/QuestionRouter'
 import { SectionIntro } from '@/components/questions/SectionIntro'
+import { AnswerSheet } from '@/components/questions/AnswerSheet'
 import { asset } from '@/lib/utils'
 import {
   InkBlot,
@@ -73,6 +74,7 @@ export default function Take() {
   const [urgent, setUrgent] = useState(false)
   const [rhythm, setRhythm] = useState({ sec: 0, changes: 0 })
   const [draftCount, setDraftCount] = useState(0)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   // 稳定回调用的镜像 ref
   const idxRef = useRef(currentIdx); idxRef.current = currentIdx
@@ -235,6 +237,39 @@ export default function Take() {
     setAnswers([]); setCurrentIdx(0); setLastType(null); setPhase('running')
   }
 
+  // ---- 答题卡跳转 ----
+  const jumpTo = useCallback((idx: number) => {
+    if (!filteredBank) return
+    if (idx < 0 || idx >= filteredBank.questions.length) return
+    const targetQ = filteredBank.questions[idx]
+    // 跳到新题型时,需要重新触发 SectionIntro 吗?——不,已答过该题型则不显示
+    // 检查该题型是否已答过任何一题
+    const typeAnsweredBefore = filteredBank.questions.some((q, i) => q.type === targetQ.type && i < idx && answersRef.current[i])
+    setLastType(typeAnsweredBefore ? targetQ.type : null)
+    setCurrentIdx(idx)
+  }, [filteredBank])
+
+  // 上一题 / 下一题
+  const goPrev = useCallback(() => {
+    if (idxRef.current > 0) jumpTo(idxRef.current - 1)
+  }, [jumpTo])
+  const goNext = useCallback(() => {
+    if (filteredBank && idxRef.current < filteredBank.questions.length - 1) jumpTo(idxRef.current + 1)
+  }, [filteredBank, jumpTo])
+  // 下一道未答
+  const goNextUnanswered = useCallback(() => {
+    if (!filteredBank) return
+    const total = filteredBank.questions.length
+    for (let step = 1; step <= total; step++) {
+      const idx = (idxRef.current + step) % total
+      const a = answersRef.current[idx]
+      if (!a || (Object.keys(a.answer || {}).length === 0 && !a._timeout)) {
+        jumpTo(idx)
+        return
+      }
+    }
+  }, [filteredBank, jumpTo])
+
   // ---- 离开确认(草稿已实时存,二次确认防误触) ----
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -277,6 +312,17 @@ export default function Take() {
                   <img src={asset(`/images/methods/${q.type}.svg`)} className="type-badge-icon" alt="" width={12} height={12} aria-hidden="true" />
                   {t<string>(`take.type_label.${q.type}`)} {posInType}/{typeCount}
                 </span>
+                <button
+                  type="button"
+                  className="sheet-trigger"
+                  onClick={() => setSheetOpen(true)}
+                  aria-label={t('take.sheet_open')}
+                  title={t('take.sheet_open')}
+                >
+                  <span className="sheet-trigger-grid" aria-hidden="true">
+                    <span /><span /><span /><span /><span /><span /><span /><span /><span />
+                  </span>
+                </button>
               </>
             ) : (
               <span className="num">{Math.min(currentIdx, total)} / {total}</span>
@@ -372,6 +418,33 @@ export default function Take() {
           </div>
         )}
       </div>
+
+      {/* 题目导航栏:上一题 / 下一未答 / 下一题 */}
+      {phase === 'running' && !showIntro && q && (
+        <div className="q-nav">
+          <button type="button" className="q-nav-btn" onClick={goPrev} disabled={currentIdx === 0}>
+            <span aria-hidden="true">←</span> {t('take.prev')}
+          </button>
+          <button type="button" className="q-nav-btn q-nav-primary" onClick={goNextUnanswered}>
+            {t('take.next_unanswered')}
+          </button>
+          <button type="button" className="q-nav-btn" onClick={goNext} disabled={currentIdx >= total - 1}>
+            {t('take.next')} <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      )}
+
+      {/* 答题卡抽屉 */}
+      {filteredBank && (
+        <AnswerSheet
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          bank={filteredBank}
+          currentIdx={currentIdx}
+          answers={answers}
+          onJump={jumpTo}
+        />
+      )}
     </div>
   )
 }

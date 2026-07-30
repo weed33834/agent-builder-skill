@@ -74,6 +74,9 @@ const RES: ResTree = {
       alert_auction_over: '总出价不能超过预算 {budget} 哦(现在是 {sum})。',
       draft_resume_title: '上次进行到第 {n} 题', draft_resume_sub: '是否继续上次未完成的凝视',
       draft_continue: '继续作答', draft_restart: '重新开始', load_failed: '题库加载失败', load_failed_sub: '网络似乎不太稳定,请检查连接后重试',
+      sheet_title: '答题卡', sheet_open: '答题卡', sheet_random: '随机跳一题(剩 {n} 题)', sheet_review: '随机回顾一题',
+      sheet_timed: '超时 {n} 题', sheet_jump: '跳到第 {n} 题', sheet_hint: '点击题号可跳转 · 已答为实色,未答为描边,当前题高亮',
+      prev: '上一题', next: '下一题', next_unanswered: '下一未答',
     },
     report: {
       back: '← 返回',
@@ -234,6 +237,9 @@ const RES: ResTree = {
       alert_auction_over: 'Total bids can\'t go over the budget of {budget} (you\'re at {sum} right now).',
       draft_resume_title: 'You were on question {n}', draft_resume_sub: 'Continue your previous reflection?',
       draft_continue: 'Continue', draft_restart: 'Start Over', load_failed: 'Failed to load questions', load_failed_sub: 'The network seems unstable. Check your connection and retry.',
+      sheet_title: 'Answer Sheet', sheet_open: 'Answer Sheet', sheet_random: 'Jump to a random one ({n} left)', sheet_review: 'Review a random one',
+      sheet_timed: '{n} timed out', sheet_jump: 'Jump to question {n}', sheet_hint: 'Tap a number to jump · filled = answered, outlined = pending, highlighted = current',
+      prev: 'Previous', next: 'Next', next_unanswered: 'Next unanswered',
     },
     report: {
       back: '← Back',
@@ -394,6 +400,9 @@ const RES: ResTree = {
       alert_auction_over: '入札合計は予算 {budget} を超えられません（いま {sum} です）。',
       draft_resume_title: '前回は第 {n} 問まで進んでいました', draft_resume_sub: '前回の凝視を続けますか',
       draft_continue: '続ける', draft_restart: 'やり直す', load_failed: '問題の読み込みに失敗しました', load_failed_sub: 'ネットワークが不安定のようです。接続を確認して再試行してください',
+      sheet_title: '解答カード', sheet_open: '解答カード', sheet_random: 'ランダムに跳ぶ（残 {n} 問）', sheet_review: 'ランダムに見直す',
+      sheet_timed: '{n} 問タイムアウト', sheet_jump: '第 {n} 問へ跳ぶ', sheet_hint: '番号をタップで跳べます · 塗り=回答済み、枠線=未回答、ハイライト=現在',
+      prev: '前の問', next: '次の問', next_unanswered: '次の未回答',
     },
     report: {
       back: '← 戻る',
