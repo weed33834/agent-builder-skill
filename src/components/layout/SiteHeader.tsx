@@ -70,6 +70,19 @@ export function SiteHeader() {
           )}
           aria-label={t('common.main_nav')}
         >
+          {/* 全部测评 —— 板块总览入口(最显眼) */}
+          <NavLink
+            to="/sections"
+            className={({ isActive }) =>
+              cn(
+                'nav-link inline-block px-3.5 py-1.5 text-[13px] tracking-[0.08em] rounded no-underline',
+                isActive ? 'text-accent font-medium' : 'text-ink-faint hover:text-ink hover:bg-paper-soft',
+              )
+            }
+          >
+            {t('nav.all_sections')}
+          </NavLink>
+
           {/* 测评下拉 —— 仅桌面端展开式,移动端平铺 */}
           <div className="nav-dropdown relative md:block" ref={dropdownRef}>
             <button
@@ -101,6 +114,13 @@ export function SiteHeader() {
                     {t(`nav.${a.type}`)}
                   </NavLink>
                 ))}
+                <div className="nav-dropdown-sep h-px bg-line my-1" />
+                <NavLink
+                  to="/take-galgame"
+                  className="nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] text-ink-faint hover:text-ink hover:bg-paper-soft rounded no-underline"
+                >
+                  {t('nav.galgame')}
+                </NavLink>
               </div>
             )}
             {/* 移动端:navOpen 时直接平铺测评链接(不依赖 dropdownOpen) */}
@@ -115,6 +135,13 @@ export function SiteHeader() {
                     {t(`nav.${a.type}`)}
                   </NavLink>
                 ))}
+                <div className="nav-dropdown-sep h-px bg-line my-1" />
+                <NavLink
+                  to="/take-galgame"
+                  className="nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] text-ink-faint hover:text-ink hover:bg-paper-soft rounded no-underline"
+                >
+                  {t('nav.galgame')}
+                </NavLink>
               </div>
             )}
           </div>
@@ -130,6 +157,19 @@ export function SiteHeader() {
             }
           >
             {t('nav.figures')}
+          </NavLink>
+
+          {/* 登录 / 注册 —— 桌面端靠右,移动端随面板展开 */}
+          <NavLink
+            to="/auth"
+            className={({ isActive }) =>
+              cn(
+                'nav-link inline-block px-3.5 py-1.5 text-[13px] tracking-[0.08em] rounded no-underline md:ml-auto',
+                isActive ? 'text-accent font-medium' : 'text-ink-faint hover:text-ink hover:bg-paper-soft',
+              )
+            }
+          >
+            {t('auth.tab_login')}
           </NavLink>
 
           {/* 关于 / 隐私 —— 移动端补全入口(桌面端在 footer 已有,这里移动端补) */}

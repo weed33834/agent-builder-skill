@@ -6,8 +6,10 @@ import type { CSSProperties } from 'react'
 
 type OrnProps = { className?: string; style?: CSSProperties; color?: string }
 
-/* 水墨晕染圆 —— 大面积背景留白处放置,营造意境 */
-export function InkBlot({ className, style, color = 'var(--accent)' }: OrnProps) {
+/* 水墨晕染圆 —— 大面积背景留白处放置,营造意境。
+ * breathing=true 时三层圆做缓慢呼吸(半径脉动),适合常驻装饰。
+ * 不传 breathing 时行为与原版完全一致,向后兼容。 */
+export function InkBlot({ className, style, color = 'var(--accent)', breathing = false }: OrnProps & { breathing?: boolean }) {
   return (
     <svg className={className} style={style} viewBox="0 0 200 200" fill="none" aria-hidden="true">
       <defs>
@@ -17,9 +19,15 @@ export function InkBlot({ className, style, color = 'var(--accent)' }: OrnProps)
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </radialGradient>
       </defs>
-      <circle cx="100" cy="100" r="92" fill="url(#ink-grad)" />
-      <circle cx="100" cy="100" r="60" fill="none" stroke={color} strokeOpacity="0.12" strokeWidth="0.5" />
-      <circle cx="100" cy="100" r="40" fill="none" stroke={color} strokeOpacity="0.18" strokeWidth="0.5" strokeDasharray="2 4" />
+      <circle cx="100" cy="100" r="92" fill="url(#ink-grad)">
+        {breathing && <animate attributeName="r" values="92;98;92" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" keyTimes="0;0.5;1" />}
+      </circle>
+      <circle cx="100" cy="100" r="60" fill="none" stroke={color} strokeOpacity="0.12" strokeWidth="0.5">
+        {breathing && <animate attributeName="r" values="60;64;60" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" keyTimes="0;0.5;1" />}
+      </circle>
+      <circle cx="100" cy="100" r="40" fill="none" stroke={color} strokeOpacity="0.18" strokeWidth="0.5" strokeDasharray="2 4">
+        {breathing && <animate attributeName="r" values="40;43;40" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" keyTimes="0;0.5;1" />}
+      </circle>
     </svg>
   )
 }
@@ -152,7 +160,9 @@ export function CalligraphyColumn({ className, style, color = 'var(--accent)', c
   )
 }
 
-/* 浮动粒子 —— 微动装饰点,营造氛围 */
+/* 浮动粒子 —— 微动装饰点,营造氛围。
+ * 增强版:每个粒子叠加正弦水平摆动 + 多段垂直起伏 + 半径脉动,
+ * 比纯直线漂浮更有机自然。接口不变,向后兼容。 */
 export function FloatingParticles({ className, style, color = 'var(--accent)' }: OrnProps) {
   const particles = [
     { x: 20, y: 30, r: 1.5, d: 0 },
@@ -168,22 +178,50 @@ export function FloatingParticles({ className, style, color = 'var(--accent)' }:
   ]
   return (
     <svg className={className} style={style} viewBox="0 0 240 120" fill="none" aria-hidden="true">
-      {particles.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r={p.r} fill={color} opacity={0.25}>
-          <animate
-            attributeName="cy"
-            values={`${p.y};${p.y - 8};${p.y}`}
-            dur={`${4 + p.d}s`}
-            repeatCount="indefinite"
-          />
-          <animate
-            attributeName="opacity"
-            values="0.1;0.4;0.1"
-            dur={`${3 + p.d}s`}
-            repeatCount="indefinite"
-          />
-        </circle>
-      ))}
+      {particles.map((p, i) => {
+        const amp = 4 + (i % 3) * 2       // 水平摆幅
+        const vAmp = 6 + (i % 2) * 4      // 垂直起伏幅度
+        const dur = 5 + p.d               // 主周期
+        const xDur = 3.5 + p.d * 0.8      // 水平周期(与垂直不同步,产生正弦感)
+        return (
+          <circle key={i} cx={p.x} cy={p.y} r={p.r} fill={color} opacity={0.25}>
+            {/* 垂直:5 段起伏,模拟波浪 */}
+            <animate
+              attributeName="cy"
+              values={`${p.y};${p.y - vAmp * 0.5};${p.y - vAmp};${p.y - vAmp * 0.3};${p.y}`}
+              dur={`${dur}s`}
+              repeatCount="indefinite"
+              calcMode="spline"
+              keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"
+              keyTimes="0;0.25;0.5;0.75;1"
+            />
+            {/* 水平:正弦摆动,与垂直周期不同步 */}
+            <animate
+              attributeName="cx"
+              values={`${p.x};${p.x + amp};${p.x};${p.x - amp};${p.x}`}
+              dur={`${xDur}s`}
+              repeatCount="indefinite"
+              calcMode="spline"
+              keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"
+              keyTimes="0;0.25;0.5;0.75;1"
+            />
+            {/* 透明度:呼吸脉动 */}
+            <animate
+              attributeName="opacity"
+              values="0.1;0.4;0.15;0.35;0.1"
+              dur={`${3 + p.d}s`}
+              repeatCount="indefinite"
+            />
+            {/* 半径:微脉动,增加生命感 */}
+            <animate
+              attributeName="r"
+              values={`${p.r};${p.r * 1.4};${p.r}`}
+              dur={`${dur + 1}s`}
+              repeatCount="indefinite"
+            />
+          </circle>
+        )
+      })}
     </svg>
   )
 }

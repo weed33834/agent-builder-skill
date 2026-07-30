@@ -17,8 +17,13 @@ const Figures = lazy(() => import('@/pages/Figures'))
 const Figure = lazy(() => import('@/pages/Figure'))
 const About = lazy(() => import('@/pages/About'))
 const Privacy = lazy(() => import('@/pages/Privacy'))
+const Sections = lazy(() => import('@/pages/Sections'))
+const SectionDetail = lazy(() => import('@/pages/SectionDetail'))
+const Auth = lazy(() => import('@/pages/Auth'))
 const Take = lazy(() => import('@/pages/Take'))
 const Report = lazy(() => import('@/pages/Report'))
+const TakeGalgame = lazy(() => import('@/pages/TakeGalgame'))
+const GalgameReport = lazy(() => import('@/pages/GalgameReport'))
 
 function RouteFallback() {
   return (
@@ -39,6 +44,9 @@ export default function App() {
           <Routes>
             <Route element={<MainLayout />}>
               <Route index element={<Home />} />
+              <Route path="sections" element={<Sections />} />
+              <Route path="section/:id" element={<SectionDetail />} />
+              <Route path="auth" element={<Auth />} />
               <Route path="figures" element={<Figures />} />
               <Route path="figure/:id" element={<Figure />} />
               <Route path="about" element={<About />} />
@@ -47,6 +55,8 @@ export default function App() {
             </Route>
             <Route path="take/:type" element={<Take />} />
             <Route path="report/:type" element={<Report />} />
+            <Route path="take-galgame" element={<TakeGalgame />} />
+            <Route path="report-galgame" element={<GalgameReport />} />
           </Routes>
         </Suspense>
       </BrowserRouter>
