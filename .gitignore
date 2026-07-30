@@ -28,4 +28,5 @@ playwright-report/
 *.njsproj
 *.sln
 *.sw?
-data
+# 仅忽略根目录的 data/(脚本生成产物),不要误伤 src/data/ 源码
+/data/
