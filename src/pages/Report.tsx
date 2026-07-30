@@ -6,6 +6,7 @@
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
+import confetti from 'canvas-confetti'
 import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
 import { assessments } from '@/lib/data'
@@ -15,6 +16,20 @@ import { Button } from '@/components/ui/Button'
 import { RadarChart } from '@/components/RadarChart'
 import { ShareModal } from '@/components/ShareModal'
 import { asset } from '@/lib/utils'
+import {
+  InkBlot,
+  SealStamp,
+  CalligraphyColumn,
+  BrushStroke,
+  ScrollDivider,
+  AuspiciousCloud,
+  MeanderBorder,
+  LotusPattern,
+  MoonPhases,
+  TrinityMirror,
+  MountainLayers,
+} from '@/components/ui/Ornaments'
+import { RoughCircle, RoughConstellation } from '@/components/ui/RoughInk'
 import type { AssessmentType, ComputeResult, Conflict, Insight, Match } from '@/lib/types'
 
 const INSIGHT_ORDER = ['decision_style', 'consistency', 'ambivalence', 'courage_index', 'time_pressure_effect', 'iat_bias'] as const
@@ -75,6 +90,34 @@ export default function Report() {
       setAnimate(true)
       play('complete')
       vibrate([20, 30, 20])
+      // 克制的朱墨飞溅:仅 2 次,颜色限定三镜色 + 朱墨,数量少,契合东方美学
+      const colors = ['#8b2e1f', '#8b6a2e', '#4a6b5c', '#3a5670', '#c0954a']
+      confetti({
+        particleCount: 36,
+        spread: 60,
+        startVelocity: 28,
+        gravity: 0.85,
+        scalar: 0.8,
+        ticks: 120,
+        colors,
+        origin: { y: 0.35 },
+        shapes: ['circle'],
+        disableForReducedMotion: true,
+      })
+      window.setTimeout(() => {
+        confetti({
+          particleCount: 22,
+          spread: 80,
+          startVelocity: 22,
+          gravity: 0.9,
+          scalar: 0.7,
+          ticks: 100,
+          colors,
+          origin: { y: 0.4 },
+          shapes: ['circle'],
+          disableForReducedMotion: true,
+        })
+      }, 280)
     }, 650)
     return () => {
       window.clearTimeout(id)
@@ -84,11 +127,15 @@ export default function Report() {
 
   if (!decoded || !type || !r) {
     return (
-      <div className="container" style={{ maxWidth: 560, padding: '120px 40px', textAlign: 'center' }}>
-        <div className="result-error">
+      <div className="container" style={{ maxWidth: 560, padding: '120px 40px', textAlign: 'center', position: 'relative' }}>
+        <InkBlot color="var(--accent)" style={{ position: 'absolute', top: '20px', right: '-40px', width: '280px', height: '280px', pointerEvents: 'none', opacity: 0.3, zIndex: 0 }} />
+        <InkBlot color="var(--mirror-value)" style={{ position: 'absolute', bottom: '20px', left: '-40px', width: '240px', height: '240px', pointerEvents: 'none', opacity: 0.25, zIndex: 0 }} />
+        <CalligraphyColumn chars={['镜', '破', '难', '圆']} color="var(--accent)" style={{ position: 'absolute', top: '40px', left: '20px', width: '40px', height: '140px', opacity: 0.4, pointerEvents: 'none', zIndex: 0 }} />
+        <div className="result-error" style={{ position: 'relative', zIndex: 1 }}>
           <div className="result-error-seal">印</div>
-          <h3 className="result-error-title">{t('report.error_title')}</h3>
+          <h3 className="result-error-title art-title" style={{ fontFamily: 'var(--font-art)' }}>{t('report.error_title')}</h3>
           <p className="result-error-desc">{t('report.error_desc')}</p>
+          <BrushStroke color="var(--accent)" style={{ width: '180px', height: '20px', margin: '16px auto', opacity: 0.5 }} />
           <Button to="/">{t('report.error_back')}</Button>
         </div>
       </div>
@@ -159,12 +206,25 @@ export default function Report() {
   const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
 
   return (
-    <div className="container" style={{ maxWidth: 860 }}>
+    <div className="container" style={{ maxWidth: 860, position: 'relative' }}>
+      {/* 全局背景装饰:水墨晕染 */}
+      <InkBlot color="var(--mirror)" style={{ position: 'absolute', top: '40px', right: '-80px', width: '320px', height: '320px', pointerEvents: 'none', opacity: 0.3, zIndex: 0 }} />
+      <InkBlot color="var(--mirror)" style={{ position: 'absolute', top: '600px', left: '-80px', width: '260px', height: '260px', pointerEvents: 'none', opacity: 0.2, zIndex: 0 }} />
+
+      {/* 书法竖排装饰,填补左右空白 */}
+      <CalligraphyColumn chars={['明', '镜', '照', '心']} color="var(--mirror)" style={{ position: 'absolute', top: '60px', left: '0px', width: '40px', height: '140px', opacity: 0.4, pointerEvents: 'none', zIndex: 0 }} />
+      <CalligraphyColumn chars={['真', '我', '如', '见']} color="var(--accent)" style={{ position: 'absolute', top: '60px', right: '0px', width: '40px', height: '140px', opacity: 0.4, pointerEvents: 'none', zIndex: 0 }} />
+
       {/* ===== Hero ===== */}
-      <div className="report-hero">
-        <div className="mirror-disc" {...(clarity ? { 'data-clarity': clarity } : {})} />
+      <div className="report-hero" style={{ position: 'relative', zIndex: 1 }}>
+        <SealStamp char="镜" color="var(--mirror)" style={{ position: 'absolute', top: '12px', right: '12px', width: '52px', height: '52px', opacity: 0.5, pointerEvents: 'none' }} />
+        {/* rough.js 手绘圆环,围绕镜面 */}
+        <div style={{ position: 'relative', display: 'inline-block', marginBottom: '8px' }}>
+          <RoughCircle color="var(--mirror)" seed={type === 'celebrity' ? 101 : type === 'value' ? 202 : 303} style={{ position: 'absolute', top: '-12px', left: '-12px', width: 'calc(100% + 24px)', height: 'calc(100% + 24px)', pointerEvents: 'none', opacity: 0.5 }} />
+          <div className="mirror-disc" {...(clarity ? { 'data-clarity': clarity } : {})} />
+        </div>
         <div className="report-eyebrow">{titleInfo.eyebrow}</div>
-        <h2 className="report-title">{titleInfo.title}</h2>
+        <h2 className="report-title art-title" style={{ fontFamily: 'var(--font-art)' }}>{titleInfo.title}</h2>
         <div className="hero-divider"><span /></div>
         {tags.length ? (
           <div className="profile-tags">
@@ -174,11 +234,18 @@ export default function Report() {
           <p className="profile-empty">{t('report.tags_empty')}</p>
         )}
         <p className="report-summary">{r.summary}</p>
+        {/* 飘带 */}
+        <BrushStroke color="var(--mirror)" style={{ width: '180px', height: '20px', margin: '16px auto 0', opacity: 0.4 }} />
+      </div>
+
+      {/* 装饰条:回纹边框 */}
+      <div style={{ textAlign: 'center', margin: '24px 0 32px', position: 'relative', zIndex: 1 }}>
+        <MeanderBorder color="var(--mirror)" style={{ width: '100%', maxWidth: '400px', height: '12px' }} />
       </div>
 
       {/* ===== 核心匹配 ===== */}
-      <section className="report-section">
-        <h3>{t('report.sec_matches')}</h3>
+      <section className="report-section" style={{ position: 'relative', zIndex: 1 }}>
+        <h3 className="art-title" style={{ fontFamily: 'var(--font-art)' }}>{t('report.sec_matches')}</h3>
         <div className="match-list">
           {(r.matches || []).map((m: Match, i) => {
             const isCelebrity = type === 'celebrity'
@@ -214,8 +281,8 @@ export default function Report() {
 
       {/* ===== 维度详解 ===== */}
       {dimEntries.length > 0 && (
-        <section className="report-section">
-          <h3>{t('report.sec_dimensions')}</h3>
+        <section className="report-section" style={{ position: 'relative', zIndex: 1 }}>
+          <h3 className="art-title" style={{ fontFamily: 'var(--font-art)' }}>{t('report.sec_dimensions')}</h3>
           <RadarChart entries={dimEntries} />
           <div className="dim-grid">
             {dimEntries.map(([k, v]) => {
@@ -247,10 +314,15 @@ export default function Report() {
         </section>
       )}
 
+      {/* 莲瓣纹分隔装饰 */}
+      <div style={{ textAlign: 'center', margin: '32px 0', position: 'relative', zIndex: 1, opacity: 0.6 }}>
+        <LotusPattern color="var(--mirror)" style={{ width: '280px', height: '60px' }} />
+      </div>
+
       {/* ===== 内在冲突 ===== */}
       {r.conflicts && r.conflicts.length > 0 && (
-        <section className="report-section">
-          <h3>{t('report.sec_conflicts')}</h3>
+        <section className="report-section" style={{ position: 'relative', zIndex: 1 }}>
+          <h3 className="art-title" style={{ fontFamily: 'var(--font-art)' }}>{t('report.sec_conflicts')}</h3>
           <div className="conflict-list">
             {r.conflicts.map((c: Conflict, i) => {
               const sev = Math.min(3, Math.max(1, +c.severity || 1))
@@ -269,9 +341,14 @@ export default function Report() {
         </section>
       )}
 
+      {/* 卷轴分隔装饰 */}
+      <div style={{ textAlign: 'center', margin: '32px 0', position: 'relative', zIndex: 1 }}>
+        <ScrollDivider color="var(--mirror)" style={{ width: '280px', height: '16px' }} />
+      </div>
+
       {/* ===== 行为洞察 ===== */}
-      <section className="report-section">
-        <h3>{t('report.sec_insights')}</h3>
+      <section className="report-section" style={{ position: 'relative', zIndex: 1 }}>
+        <h3 className="art-title" style={{ fontFamily: 'var(--font-art)' }}>{t('report.sec_insights')}</h3>
         <div className="insight-list">
           {INSIGHT_ORDER.filter((k) => r.insights && r.insights[k]).map((k) => {
             const v: Insight = r.insights[k]
@@ -300,28 +377,36 @@ export default function Report() {
         </div>
       </section>
 
+      {/* 月相图装饰,代表"自我周期" */}
+      <div style={{ textAlign: 'center', margin: '32px 0', position: 'relative', zIndex: 1, opacity: 0.6 }}>
+        <MoonPhases color="var(--mirror)" style={{ width: '280px', height: '28px' }} />
+      </div>
+
       {/* ===== 镜象名片 ===== */}
-      <section className="mirror-card-share" aria-label={t('growth.card_cta')}>
+      <section className="mirror-card-share" aria-label={t('growth.card_cta')} style={{ position: 'relative', overflow: 'visible' }}>
+        <AuspiciousCloud color="var(--mirror)" style={{ position: 'absolute', top: '-30px', left: '50%', transform: 'translateX(-50%)', width: '140px', height: '40px', opacity: 0.4, pointerEvents: 'none' }} />
         <div className="mcs-disc"><div className="mirror-disc" /></div>
         <div className="mcs-body">
           <div className="mcs-eyebrow">{eyebrow}</div>
-          <h3 className="mcs-title">{subjectName}</h3>
-          {poetic && <p className="mcs-poetic">{poetic}</p>}
+          <h3 className="mcs-title art-title" style={{ fontFamily: 'var(--font-art)' }}>{subjectName}</h3>
+          {poetic && <p className="mcs-poetic art-brush" style={{ fontFamily: 'var(--font-crazy)' }}>{poetic}</p>}
           <Button variant="secondary" onClick={() => setShareOpen(true)}>{t('growth.card_cta')}</Button>
         </div>
       </section>
 
       {/* ===== 基于你的镜象(推荐) ===== */}
       {recoInner && (
-        <section className="report-section growth-reco">
-          <h3>{t('growth.reco_title')}</h3>
+        <section className="report-section growth-reco" style={{ position: 'relative', zIndex: 1 }}>
+          <h3 className="art-title" style={{ fontFamily: 'var(--font-art)' }}>{t('growth.reco_title')}</h3>
           <div className="reco-inner">{recoInner}</div>
+          {/* 手绘星图,代表"你的星图" */}
+          <RoughConstellation color="var(--mirror)" seed={type === 'celebrity' ? 41 : type === 'value' ? 42 : 43} style={{ width: '100%', maxWidth: '400px', height: '80px', margin: '16px auto 0', opacity: 0.5 }} />
         </section>
       )}
 
       {/* ===== 继续照见 ===== */}
-      <section className="report-section growth-next">
-        <h3>{t('growth.next_title')}</h3>
+      <section className="report-section growth-next" style={{ position: 'relative', zIndex: 1 }}>
+        <h3 className="art-title" style={{ fontFamily: 'var(--font-art)' }}>{t('growth.next_title')}</h3>
         <p className="growth-next-sub">{t('growth.next_sub')}</p>
         <div className="mirror-next-grid">
           {otherMirrors.map((m) => {
@@ -336,10 +421,17 @@ export default function Report() {
             )
           })}
         </div>
+        {/* 三镜合一装饰 */}
+        <div style={{ textAlign: 'center', marginTop: '24px', opacity: 0.5 }}>
+          <TrinityMirror style={{ width: '160px', height: '60px' }} />
+        </div>
       </section>
 
+      {/* 远山层叠底部装饰 */}
+      <MountainLayers color="var(--ink-ghost)" style={{ width: '100%', maxWidth: '600px', height: '80px', margin: '24px auto 0', display: 'block', position: 'relative', zIndex: 1 }} />
+
       {/* ===== 操作 ===== */}
-      <div className="actions">
+      <div className="actions" style={{ position: 'relative', zIndex: 1 }}>
         <Button variant="primary" onClick={() => setShareOpen(true)}>{t('report.btn_share')}</Button>
         <Button variant="secondary" to={`/take/${type}`}>{t('report.btn_retake')}</Button>
         <Button variant="secondary" to="/">{t('report.back_home')}</Button>

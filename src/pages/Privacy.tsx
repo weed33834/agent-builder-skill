@@ -1,11 +1,13 @@
 /**
  * 隐私政策页 —— 复刻原 privacy.html(纯中文硬编码,未走 i18n,与原项目一致)。
+ * 增强:艺术字体标题 + 卡片化段落 + 装饰元素 + 装饰条。
  */
 import { Link } from 'react-router-dom'
 import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
 import { Button } from '@/components/ui/Button'
 import { asset } from '@/lib/utils'
+import { InkBlot, SealStamp, RoundSeal, BrushStroke, ScrollDivider, CalligraphyColumn } from '@/components/ui/Ornaments'
 
 export default function Privacy() {
   const { t } = useI18n()
@@ -18,17 +20,29 @@ export default function Privacy() {
         <span className="title-label">隐私政策</span>
       </div>
 
-      <header className="hero">
-        <div className="mirror-disc" />
-        <h1>隐私政策</h1>
-        <p className="subtitle">Privacy Policy</p>
+      <header className="hero" style={{ position: 'relative', overflow: 'visible' }}>
+        <InkBlot color="var(--mirror-value)" style={{ position: 'absolute', top: '-40px', right: '-60px', width: '320px', height: '320px', pointerEvents: 'none', opacity: 0.4, zIndex: 0 }} />
+        <SealStamp char="密" style={{ position: 'absolute', top: '12px', right: '12px', width: '52px', height: '52px', opacity: 0.5, pointerEvents: 'none' }} />
+        <CalligraphyColumn chars={['隐', '私', '为', '先']} color="var(--mirror-value)" style={{ position: 'absolute', top: '20px', left: '-20px', width: '40px', height: '140px', opacity: 0.5, pointerEvents: 'none' }} />
+        <div className="mirror-disc" style={{ position: 'relative', zIndex: 1 }} />
+        <h1 className="art-title" style={{ position: 'relative', zIndex: 1 }}>隐私政策</h1>
+        <p className="subtitle" style={{ position: 'relative', zIndex: 1 }}>Privacy Policy</p>
         <div className="hero-divider"><span /></div>
         <p className="disclaimer">最后更新：2026 年 7 月</p>
       </header>
 
       <main>
+        {/* 顶部装饰条 */}
+        <div style={{ textAlign: 'center', margin: '16px 0 32px' }}>
+          <BrushStroke color="var(--mirror-value)" style={{ width: '200px', height: '20px', opacity: 0.6 }} />
+          <div style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: '11px', color: 'var(--ink-faint)', letterSpacing: '0.32em', marginTop: '6px', textTransform: 'uppercase' }}>Privacy First · 隐私优先</div>
+        </div>
+
         <section className="about-section">
-          <h2 className="about-section-title">我们收集哪些数据</h2>
+          <div className="about-section-icon-wrap">
+            <span className="art-seal" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--line)', borderRadius: '50%', background: 'var(--paper-faint)', color: 'var(--accent)', fontSize: '20px' }}>壹</span>
+            <h2 className="about-section-title art-title">我们收集哪些数据</h2>
+          </div>
           <div>
             <p>心镜（MindMirror）是一款以答题方式照见自我的工具。我们只在为你生成「镜像报告」与维持服务运转所必需的最小范围内收集数据：</p>
             <ul className="privacy-list">
@@ -42,7 +56,10 @@ export default function Privacy() {
         </section>
 
         <section className="about-section">
-          <h2 className="about-section-title">我们为何收集这些数据</h2>
+          <div className="about-section-icon-wrap">
+            <span className="art-seal" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--line)', borderRadius: '50%', background: 'var(--paper-faint)', color: 'var(--accent)', fontSize: '20px' }}>贰</span>
+            <h2 className="about-section-title art-title">我们为何收集这些数据</h2>
+          </div>
           <div>
             <ul className="privacy-list">
               <li>生成并保存你的镜像报告、匹配结果与历史记录；</li>
@@ -55,7 +72,10 @@ export default function Privacy() {
         </section>
 
         <section className="about-section">
-          <h2 className="about-section-title">数据留存期限</h2>
+          <div className="about-section-icon-wrap">
+            <span className="art-seal" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--line)', borderRadius: '50%', background: 'var(--paper-faint)', color: 'var(--accent)', fontSize: '20px' }}>叁</span>
+            <h2 className="about-section-title art-title">数据留存期限</h2>
+          </div>
           <div>
             <ul className="privacy-list">
               <li><strong>测评作答与结果：</strong>在你的账号存续期间保存，以便你随时回看历史报告。</li>
@@ -66,8 +86,16 @@ export default function Privacy() {
           </div>
         </section>
 
+        {/* 卷轴分隔装饰 */}
+        <div style={{ textAlign: 'center', margin: '24px 0' }}>
+          <ScrollDivider color="var(--mirror-value)" style={{ width: '280px', height: '16px' }} />
+        </div>
+
         <section className="about-section">
-          <h2 className="about-section-title">你的数据权利与操作方式</h2>
+          <div className="about-section-icon-wrap">
+            <span className="art-seal" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--line)', borderRadius: '50%', background: 'var(--paper-faint)', color: 'var(--accent)', fontSize: '20px' }}>肆</span>
+            <h2 className="about-section-title art-title">你的数据权利与操作方式</h2>
+          </div>
           <div>
             <p>心镜是<strong>纯前端应用</strong>：你的作答与结果<strong>只保存在你自己的浏览器本地（localStorage）</strong>，我们没有服务器数据库，不收集、不存储、也无法看到你的任何作答数据。因此：</p>
             <ul className="privacy-list">
@@ -79,7 +107,10 @@ export default function Privacy() {
         </section>
 
         <section className="about-section">
-          <h2 className="about-section-title">Cookie 与浏览器本地存储</h2>
+          <div className="about-section-icon-wrap">
+            <span className="art-seal" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--line)', borderRadius: '50%', background: 'var(--paper-faint)', color: 'var(--accent)', fontSize: '20px' }}>伍</span>
+            <h2 className="about-section-title art-title">Cookie 与浏览器本地存储</h2>
+          </div>
           <div>
             <p>心镜主要使用浏览器的<strong>本地存储（localStorage）</strong>而非传统 Cookie 来维持你的体验。具体保存的内容包括：</p>
             <ul className="privacy-list">
@@ -95,7 +126,10 @@ export default function Privacy() {
         </section>
 
         <section className="about-section" id="contact">
-          <h2 className="about-section-title">联系方式</h2>
+          <div className="about-section-icon-wrap">
+            <span className="art-seal" style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--line)', borderRadius: '50%', background: 'var(--paper-faint)', color: 'var(--accent)', fontSize: '20px' }}>陆</span>
+            <h2 className="about-section-title art-title">联系方式</h2>
+          </div>
           <div>
             <p>如果你对本隐私政策、你的数据权利，或任何与隐私相关的问题有疑问，欢迎联系我们：</p>
             <ul className="privacy-list">
@@ -106,8 +140,14 @@ export default function Privacy() {
           </div>
         </section>
 
-        <div className="section-seal">
-          <img src={asset('/images/seal.svg')} alt="" aria-hidden="true" />
+        {/* 底部装饰:飘带 + 双印章 */}
+        <div style={{ textAlign: 'center', margin: '40px 0 16px' }}>
+          <BrushStroke color="var(--mirror-value)" style={{ width: '220px', height: '24px', opacity: 0.6 }} />
+        </div>
+        <div className="section-seal" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+          <RoundSeal char="密" color="var(--mirror-value)" style={{ width: '48px', height: '48px', opacity: 0.8 }} />
+          <img src={asset('/images/seal.svg')} alt="" aria-hidden="true" style={{ width: '28px', height: '28px', opacity: 0.5 }} />
+          <SealStamp char="心" style={{ width: '48px', height: '48px', opacity: 0.8 }} />
         </div>
         <div className="actions">
           <Button to="/">{t('common.back_home')}</Button>
