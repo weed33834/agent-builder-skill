@@ -9,6 +9,7 @@ import { assessments } from '@/lib/data'
 import { qk, fetchCelebrities } from '@/lib/query'
 import { Button } from '@/components/ui/Button'
 import { FigureCard } from '@/components/ui/FigureCard'
+import { asset } from '@/lib/utils'
 import type { Celebrity } from '@/lib/types'
 
 type MirrorRes = { icon: string; title: string; tagline: string; desc: string }
@@ -39,7 +40,7 @@ export default function Home() {
             <p className="hero-trust">{t('home.hero_trust')}</p>
           </div>
           <div className="hero-visual">
-            <img src="/images/hero-mirror.svg" className="hero-mirror-img" width={320} height={320} alt="" aria-hidden="true" />
+            <img src={asset('/images/hero-mirror.svg')} className="hero-mirror-img" width={320} height={320} alt="" aria-hidden="true" />
           </div>
         </div>
         <div className="hero-divider"><span /></div>
@@ -53,7 +54,7 @@ export default function Home() {
             return (
               <Link key={a.type} to={`/take/${a.type}`} className="mirror-card" data-type={a.type}>
                 <div className="card-icon">
-                  <img src={`/images/mirror-${a.type}.svg`} className="mirror-card-icon" width={48} height={48} alt="" />
+                  <img src={asset(`/images/mirror-${a.type}.svg`)} className="mirror-card-icon" width={48} height={48} alt="" />
                 </div>
                 <h2>{m.title}</h2>
                 <p className="tagline">{m.tagline}</p>

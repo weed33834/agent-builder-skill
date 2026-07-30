@@ -8,7 +8,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useI18n } from '@/lib/i18n'
 import { assessments } from '@/lib/data'
 import { LangSwitch } from './LangSwitch'
-import { cn } from '@/lib/utils'
+import { cn, asset } from '@/lib/utils'
 
 export function SiteHeader() {
   const { t } = useI18n()
@@ -45,7 +45,7 @@ export function SiteHeader() {
     <header className="site-header sticky top-0 z-[100] bg-paper/92 backdrop-blur border-b border-line-soft">
       <div className="site-header-inner mx-auto flex items-center gap-6 px-6 h-14" style={{ maxWidth: 1200 }}>
         <Link to="/" className="brand flex items-center gap-2 shrink-0 no-underline">
-          <img src="/images/logo.svg" alt="心镜" width={28} height={28} />
+          <img src={asset('/images/logo.svg')} alt="心镜" width={28} height={28} />
           <span className="brand-name font-display text-lg font-medium tracking-[0.06em] text-ink">心镜</span>
         </Link>
 

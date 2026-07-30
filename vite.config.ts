@@ -3,8 +3,13 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'node:path'
 
+// GitHub Pages 项目站点部署在 /mindmirror/ 子路径,需把 base 与 PWA 资源路径对齐。
+// 本地/其它静态托管默认根路径 '/';CI 通过 VITE_BASE 环境变量注入子路径。
+const base = process.env.VITE_BASE || '/'
+
 // https://vite.dev/config/
 export default defineConfig({
+  base,
   plugins: [
     react(),
     // PWA:Service Worker(Workbox)+ Web App Manifest,保留原项目「零后端、可离线」卖点。
@@ -20,27 +25,27 @@ export default defineConfig({
         short_name: '心镜',
         description: '通过名人镜、价值镜、意识镜三面镜子,以情境化答题与行为轨迹,看见真实的自己。',
         lang: 'zh-CN',
-        start_url: '/',
-        scope: '/',
+        start_url: base,
+        scope: base,
         display: 'standalone',
         orientation: 'portrait-primary',
         background_color: '#f4efe3',
         theme_color: '#f4efe3',
         categories: ['lifestyle', 'education', 'health'],
         icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: '/icons/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: base + 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: base + 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: base + 'icons/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,woff2}'],
         navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/images\//],
+        navigateFallbackDenylist: [new RegExp('^' + base.replace(/\/$/, '') + '/images/')],
         runtimeCaching: [
           {
             // 同源图片(名人照/意识形态图/方法图标):cache-first,按需缓存并设上限
-            urlPattern: ({ url }) => url.pathname.startsWith('/images/'),
+            urlPattern: ({ url }) => url.pathname.startsWith(base + 'images/'),
             handler: 'CacheFirst',
             options: {
               cacheName: 'mm-images',

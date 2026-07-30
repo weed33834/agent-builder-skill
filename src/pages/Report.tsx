@@ -14,6 +14,7 @@ import { play, vibrate } from '@/lib/audio'
 import { Button } from '@/components/ui/Button'
 import { RadarChart } from '@/components/RadarChart'
 import { ShareModal } from '@/components/ShareModal'
+import { asset } from '@/lib/utils'
 import type { AssessmentType, ComputeResult, Conflict, Insight, Match } from '@/lib/types'
 
 const INSIGHT_ORDER = ['decision_style', 'consistency', 'ambivalence', 'courage_index', 'time_pressure_effect', 'iat_bias'] as const
@@ -181,7 +182,7 @@ export default function Report() {
         <div className="match-list">
           {(r.matches || []).map((m: Match, i) => {
             const isCelebrity = type === 'celebrity'
-            const imgUrl = isCelebrity ? (m.photo || m.image || '') : (m.image || m.photo || '')
+            const imgUrl = asset(isCelebrity ? (m.photo || m.image || '') : (m.image || m.photo || ''))
             const hasImage = !!imgUrl
             return (
               <div className={`match-item${i === 0 ? ' top' : ''}${hasImage ? ' with-image' : ''}`} key={m.id || i}>
@@ -328,7 +329,7 @@ export default function Report() {
             const tagline = t<string>(`home.mirrors.${m.type}.tagline`) || ''
             return (
               <Link className="mirror-next-card" to={`/take/${m.type}`} key={m.type}>
-                <img className="mirror-next-icon" src={`/images/mirror-${m.type}.svg`} alt="" width={40} height={40} onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                <img className="mirror-next-icon" src={asset(`/images/mirror-${m.type}.svg`)} alt="" width={40} height={40} onError={(e) => { e.currentTarget.style.display = 'none' }} />
                 <span className="mirror-next-title">{title}</span>
                 {tagline && <span className="mirror-next-tagline">{tagline}</span>}
               </Link>

@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '@/lib/i18n'
 import { toast } from '@/lib/toast'
+import { asset } from '@/lib/utils'
 import type { ComputeResult, AssessmentType, Match } from '@/lib/types'
 
 interface Props {
@@ -97,7 +98,7 @@ async function buildShareCard(
   const rad = 150
 
   // 圆形头像(有图裁切,无图落色块)
-  const photoSrc = top ? top.photo || top.image || '' : ''
+  const photoSrc = top ? asset(top.photo || top.image || '') : ''
   let img: HTMLImageElement | null = null
   if (photoSrc) {
     img = await loadImage(photoSrc)

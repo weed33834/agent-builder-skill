@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
 import { Button } from '@/components/ui/Button'
+import { asset } from '@/lib/utils'
 
 export default function Privacy() {
   const { t } = useI18n()
@@ -106,7 +107,7 @@ export default function Privacy() {
         </section>
 
         <div className="section-seal">
-          <img src="/images/seal.svg" alt="" aria-hidden="true" />
+          <img src={asset('/images/seal.svg')} alt="" aria-hidden="true" />
         </div>
         <div className="actions">
           <Button to="/">{t('common.back_home')}</Button>

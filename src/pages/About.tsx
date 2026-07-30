@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
 import { Button } from '@/components/ui/Button'
+import { asset } from '@/lib/utils'
 
 type MirrorListItem = { icon: string; title: string; desc: string }
 type MethodItem = { name: string; en: string; desc: string }
@@ -33,19 +34,19 @@ export default function About() {
 
       <main>
         <section className="about-section">
-          <img className="about-section-icon" src="/images/hero-mirror.svg" alt="" />
+          <img className="about-section-icon" src={asset('/images/hero-mirror.svg')} alt="" />
           <h2 className="about-section-title">{t('about.sec_concept')}</h2>
           <div dangerouslySetInnerHTML={{ __html: t<string>('about.concept_body') }} />
         </section>
 
         <section className="about-section">
-          <img className="about-section-icon" src="/images/mirror-celebrity.svg" alt="" />
+          <img className="about-section-icon" src={asset('/images/mirror-celebrity.svg')} alt="" />
           <h2 className="about-section-title">{t('about.sec_mirrors')}</h2>
           <ul className="mirror-list">
             {mirrors.map((m, i) => (
               <li key={i}>
                 <span className="mirror-list-icon">
-                  <img src={`/images/mirror-${MIRROR_TYPES[i]}.svg`} alt={m.title} width={32} height={32} />
+                  <img src={asset(`/images/mirror-${MIRROR_TYPES[i]}.svg`)} alt={m.title} width={32} height={32} />
                 </span>
                 <div>
                   <div className="mirror-list-title">{m.title}</div>
@@ -57,13 +58,13 @@ export default function About() {
         </section>
 
         <section className="about-section">
-          <img className="about-section-icon" src="/images/methods/scale.svg" alt="" />
+          <img className="about-section-icon" src={asset('/images/methods/scale.svg')} alt="" />
           <h2 className="about-section-title">{t('about.sec_methods')}</h2>
           <div className="method-grid">
             {methods.map((m) => (
               <div className="method-card" key={m.en}>
                 <img
-                  src={`/images/methods/${m.en.toLowerCase().replace(/\s+/g, '_')}.svg`}
+                  src={asset(`/images/methods/${m.en.toLowerCase().replace(/\s+/g, '_')}.svg`)}
                   className="method-icon"
                   width={40}
                   height={40}
@@ -78,25 +79,25 @@ export default function About() {
         </section>
 
         <section className="about-section">
-          <img className="about-section-icon" src="/images/methods/sort.svg" alt="" />
+          <img className="about-section-icon" src={asset('/images/methods/sort.svg')} alt="" />
           <h2 className="about-section-title">{t('about.sec_behavior')}</h2>
           <div dangerouslySetInnerHTML={{ __html: t<string>('about.behavior_body') }} />
         </section>
 
         <section className="about-section">
-          <img className="about-section-icon" src="/images/seal.svg" alt="" />
+          <img className="about-section-icon" src={asset('/images/seal.svg')} alt="" />
           <h2 className="about-section-title">{t('about.sec_privacy')}</h2>
           <div dangerouslySetInnerHTML={{ __html: t<string>('about.privacy_body') }} />
         </section>
 
         <section className="about-section">
-          <img className="about-section-icon" src="/images/mountains.svg" alt="" />
+          <img className="about-section-icon" src={asset('/images/mountains.svg')} alt="" />
           <h2 className="about-section-title">{t('about.sec_boundary')}</h2>
           <div dangerouslySetInnerHTML={{ __html: t<string>('about.boundary_body') }} />
         </section>
 
         <div className="section-seal">
-          <img src="/images/seal.svg" alt="" aria-hidden="true" />
+          <img src={asset('/images/seal.svg')} alt="" aria-hidden="true" />
         </div>
         <div className="actions">
           <Button to="/">{t('common.back_home')}</Button>

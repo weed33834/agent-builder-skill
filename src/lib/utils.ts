@@ -24,3 +24,15 @@ export function truncate(text: string | null | undefined, maxLen = 24): string {
   if (!text || text.length <= maxLen) return text || ''
   return text.slice(0, maxLen) + '…'
 }
+
+/**
+ * public/ 静态资源路径前缀:跟随 vite base(import.meta.env.BASE_URL)。
+ * 本地 '/',GitHub Pages 等子路径托管 '/mindmirror/'。
+ * 用于 TSX 中以字符串拼接的图片引用(CSS url() 由 Vite 自动 rebase,无需此函数)。
+ * 已是绝对 URL(http(s)://、协议相对 //、data:/blob:)的路径原样返回,避免误改。
+ */
+export function asset(path: string): string {
+  if (!path) return path
+  if (/^(https?:)?\/\//i.test(path) || path.startsWith('data:') || path.startsWith('blob:')) return path
+  return import.meta.env.BASE_URL.replace(/\/$/, '') + path
+}

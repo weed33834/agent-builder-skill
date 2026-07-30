@@ -28,10 +28,13 @@ function RouteFallback() {
   )
 }
 
+// basename 跟随 vite base:本地 '/',GitHub Pages '/mindmirror'。去掉末尾斜杠以符合 RR 约定。
+const routerBasename = import.meta.env.BASE_URL.replace(/\/$/, '')
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <BrowserRouter basename={routerBasename}>
         <Suspense fallback={<RouteFallback />}>
           <Routes>
             <Route element={<MainLayout />}>
