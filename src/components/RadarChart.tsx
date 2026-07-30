@@ -1,11 +1,23 @@
 /**
  * 雷达图 —— 移植自原 report.js drawRadar,改用 echarts-for-react。
  * 从 CSS 变量取色,保持与全站水墨主题一致;维度名走 i18n。
+ *
+ * 按需引入 echarts 核心(仅 RadarChart + Tooltip + CanvasRenderer),
+ * 避免打包整库(1.14MB → ~200KB),通过 echarts={echarts} 注入 echarts-for-react。
  */
 import { useMemo } from 'react'
-import ReactECharts from 'echarts-for-react'
+import * as echarts from 'echarts/core'
+import { RadarChart as EChartsRadar } from 'echarts/charts'
+import { TooltipComponent } from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
+// 用 core 入口而非默认导出:默认导出内部 `import * as echarts from 'echarts'` 会拉入整库(1.14MB);
+// core 仅接受 echarts 作为 prop,配合上面的按需 use 实现树摇。
+// 走 esm 子路径(包 module 字段仅对主入口生效,子路径需显式指定 esm/ 以避免 CJS interop 问题)。
+import EChartsReactCore from 'echarts-for-react/esm/core'
 import type { EChartsOption } from 'echarts'
 import { useI18n } from '@/lib/i18n'
+
+echarts.use([EChartsRadar, TooltipComponent, CanvasRenderer])
 
 interface Props {
   entries: [string, number][]   // [dim_key, score 0-100]
@@ -81,7 +93,7 @@ export function RadarChart({ entries }: Props) {
 
   return (
     <div className="chart-container">
-      <ReactECharts option={option} opts={{ renderer: 'canvas' }} style={{ height: '100%', width: '100%' }} />
+      <EChartsReactCore echarts={echarts} option={option} opts={{ renderer: 'canvas' }} style={{ height: '100%', width: '100%' }} />
     </div>
   )
 }
