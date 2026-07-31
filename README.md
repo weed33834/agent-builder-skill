@@ -30,3 +30,15 @@ If you are developing a production application, we recommend enabling type-aware
 ```
 
 See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+
+## Mirrors / 镜像
+
+This repository is primarily hosted on **GitHub** and mirrored to GitCode and Gitee for accessibility.
+
+| Platform | URL |
+|----------|-----|
+| **GitHub** (primary) | https://github.com/weed33834/mindmirror |
+| GitCode (mirror) | https://gitcode.com/badhope/mindmirror |
+| Gitee (mirror) | https://gitee.com/badhope/mindmirror |
+
+> Content is synchronized manually across platforms. GitHub is the canonical source.
