@@ -8,7 +8,7 @@
  * 草稿/最近结果走 Zustand 持久化(localStorage,无后端)。
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
@@ -24,15 +24,8 @@ import type { Answer, AnswerRecord, AssessmentType, AssessmentVersion, QuestionB
 import { QuestionRouter } from '@/components/questions/QuestionRouter'
 import { SectionIntro } from '@/components/questions/SectionIntro'
 import { AnswerSheet } from '@/components/questions/AnswerSheet'
+import { TopBar } from '@/components/layout/TopBar'
 import { asset } from '@/lib/utils'
-import {
-  InkBlot,
-  SealStamp,
-  CalligraphyColumn,
-  AuspiciousCloud,
-  MeanderBorder,
-} from '@/components/ui/Ornaments'
-import { RoughCircle } from '@/components/ui/RoughInk'
 
 type AnsRecord = AnswerRecord & { _timeout?: boolean }
 
@@ -287,19 +280,12 @@ export default function Take() {
   const posInType = q ? (typeIndex.idx[q.type]?.indexOf(currentIdx) ?? -1) + 1 : 0
   const typeCount = q ? typeIndex.count[q.type] || 0 : 0
   const phaseNumber = q ? typeIndex.order.indexOf(q.type) + 1 : 0
-  const mirrorName = type ? t<string>(`take.title_${type}`) : ''
   const timerRatio = q && q.time_limit_sec ? remaining / q.time_limit_sec : 0
 
   return (
     <div className="container" style={{ position: 'relative' }}>
-      {/* 全局背景装饰:水墨晕染,极淡不干扰答题 */}
-      <InkBlot color="var(--mirror)" style={{ position: 'absolute', top: '60px', right: '-80px', width: '320px', height: '320px', pointerEvents: 'none', opacity: 0.18, zIndex: 0 }} />
-      <InkBlot color="var(--mirror)" style={{ position: 'absolute', bottom: '40px', left: '-80px', width: '260px', height: '260px', pointerEvents: 'none', opacity: 0.14, zIndex: 0 }} />
-
-      <div className="take-header" style={{ position: 'relative', zIndex: 1 }}>
-        <Link to="/" className="back-link">{t('common.exit')}</Link>
-        <span className="title-label art-title" style={{ fontFamily: 'var(--font-art)' }}>{mirrorName}</span>
-      </div>
+      {/* 独立顶部条:取代原本内联的 .take-header,保持聚焦态无站点头部但仍有面包屑与返回 */}
+      <TopBar sectionKey={`take.title_${type || 'celebrity'}`} />
 
       {phase !== 'submitting' && (
         <>
@@ -309,7 +295,7 @@ export default function Take() {
               <>
                 <span className="num">{currentIdx + 1}</span> / {total}
                 <span className="type-badge">
-                  <img src={asset(`/images/methods/${q.type}.svg`)} className="type-badge-icon" alt="" width={12} height={12} aria-hidden="true" />
+                  <img src={asset(`/images/methods/${q.type}.jpg`)} className="type-badge-icon" alt="" width={12} height={12} aria-hidden="true" />
                   {t<string>(`take.type_label.${q.type}`)} {posInType}/{typeCount}
                 </span>
                 <button
@@ -357,18 +343,13 @@ export default function Take() {
       <div id="question-area" style={{ position: 'relative', zIndex: 1 }}>
         {phase === 'loading' && (
           <div className="figure-loading" style={{ position: 'relative' }}>
-            <InkBlot color="var(--mirror)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '280px', height: '280px', pointerEvents: 'none', opacity: 0.4, zIndex: 0 }} />
             <div className="mirror-disc" style={{ position: 'relative', zIndex: 1 }} />
             <p style={{ position: 'relative', zIndex: 1 }}>{t('common.loading')}</p>
-            {/* 祥云装饰,填补底部空白 */}
-            <AuspiciousCloud color="var(--mirror)" style={{ width: '160px', height: '60px', marginTop: '24px', opacity: 0.5, position: 'relative', zIndex: 1 }} />
           </div>
         )}
 
         {phase === 'error' && (
           <div className="load-error" role="alert" style={{ position: 'relative' }}>
-            <InkBlot color="var(--accent)" style={{ position: 'absolute', top: '-40px', right: '-40px', width: '240px', height: '240px', pointerEvents: 'none', opacity: 0.3, zIndex: 0 }} />
-            <SealStamp char="惑" color="var(--accent)" style={{ position: 'absolute', top: '12px', right: '12px', width: '48px', height: '48px', opacity: 0.5, pointerEvents: 'none', zIndex: 1 }} />
             <p className="load-error-title art-title" style={{ position: 'relative', zIndex: 1 }}>{t('take.load_failed')}</p>
             <p className="load-error-desc" style={{ position: 'relative', zIndex: 1 }}>{t('take.load_failed_sub')}</p>
             <button className="btn-primary" type="button" onClick={() => location.reload()} style={{ position: 'relative', zIndex: 1 }}>{t('common.retry')}</button>
@@ -377,8 +358,6 @@ export default function Take() {
 
         {phase === 'draft-resume' && (
           <div className="loading-overlay draft-resume" style={{ position: 'fixed' }}>
-            <InkBlot color="var(--mirror)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '360px', height: '360px', pointerEvents: 'none', opacity: 0.4, zIndex: 0 }} />
-            <CalligraphyColumn chars={['续', '旧', '如', '初']} color="var(--mirror)" style={{ position: 'absolute', top: '20px', left: '20px', width: '40px', height: '140px', opacity: 0.5, pointerEvents: 'none', zIndex: 0 }} />
             <div className="mirror-disc" data-clarity="low" style={{ position: 'relative', zIndex: 1 }} />
             <p style={{ position: 'relative', zIndex: 1 }}>{t('take.draft_resume_title', { n: draftCount })}</p>
             <p className="loading-sub" style={{ position: 'relative', zIndex: 1 }}>{t('take.draft_resume_sub')}</p>
@@ -386,20 +365,14 @@ export default function Take() {
               <button className="btn-primary" type="button" onClick={continueDraft}>{t('take.draft_continue')}</button>
               <button className="btn-link" type="button" onClick={restartDraft}>{t('take.draft_restart')}</button>
             </div>
-            <MeanderBorder color="var(--mirror)" style={{ width: '240px', height: '12px', marginTop: '24px', opacity: 0.6, position: 'relative', zIndex: 1 }} />
           </div>
         )}
 
         {phase === 'submitting' && (
           <div className="loading-overlay" style={{ position: 'fixed' }}>
-            <InkBlot color="var(--mirror)" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '360px', height: '360px', pointerEvents: 'none', opacity: 0.5, zIndex: 0 }} />
-            <CalligraphyColumn chars={['心', '镜', '初', '成']} color="var(--mirror)" style={{ position: 'absolute', top: '20px', left: '20px', width: '40px', height: '140px', opacity: 0.5, pointerEvents: 'none', zIndex: 0 }} />
-            <CalligraphyColumn chars={['镜', '照', '真', '我']} color="var(--accent)" style={{ position: 'absolute', top: '20px', right: '20px', width: '40px', height: '140px', opacity: 0.5, pointerEvents: 'none', zIndex: 0 }} />
             <div className="mirror-disc" data-clarity="high" style={{ position: 'relative', zIndex: 1 }} />
             <p className="art-title" style={{ position: 'relative', zIndex: 1, fontFamily: 'var(--font-art)' }}>{t('common.processing')}</p>
             <p className="loading-sub" style={{ position: 'relative', zIndex: 1 }}>{t('common.processing_sub')}</p>
-            {/* 手绘同心圆,营造"成像中"的视觉 */}
-            <RoughCircle color="var(--mirror)" seed={7} style={{ width: '120px', height: '120px', marginTop: '24px', opacity: 0.5, position: 'relative', zIndex: 1 }} />
           </div>
         )}
 

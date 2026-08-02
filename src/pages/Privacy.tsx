@@ -7,7 +7,7 @@ import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
 import { Button } from '@/components/ui/Button'
 import { asset } from '@/lib/utils'
-import { InkBlot, SealStamp, RoundSeal, BrushStroke, ScrollDivider, CalligraphyColumn } from '@/components/ui/Ornaments'
+// 装饰已精简 — 保持内容清晰
 
 export default function Privacy() {
   const { t } = useI18n()
@@ -15,15 +15,7 @@ export default function Privacy() {
 
   return (
     <div className="container">
-      <div className="take-header">
-        <Link to="/" className="back-link">{t('common.back')}</Link>
-        <span className="title-label">隐私政策</span>
-      </div>
-
       <header className="hero" style={{ position: 'relative', overflow: 'visible' }}>
-        <InkBlot color="var(--mirror-value)" style={{ position: 'absolute', top: '-40px', right: '-60px', width: '320px', height: '320px', pointerEvents: 'none', opacity: 0.4, zIndex: 0 }} />
-        <SealStamp char="密" style={{ position: 'absolute', top: '12px', right: '12px', width: '52px', height: '52px', opacity: 0.5, pointerEvents: 'none' }} />
-        <CalligraphyColumn chars={['隐', '私', '为', '先']} color="var(--mirror-value)" style={{ position: 'absolute', top: '20px', left: '-20px', width: '40px', height: '140px', opacity: 0.5, pointerEvents: 'none' }} />
         <div className="mirror-disc" style={{ position: 'relative', zIndex: 1 }} />
         <h1 className="art-title" style={{ position: 'relative', zIndex: 1 }}>隐私政策</h1>
         <p className="subtitle" style={{ position: 'relative', zIndex: 1 }}>Privacy Policy</p>
@@ -32,11 +24,6 @@ export default function Privacy() {
       </header>
 
       <main>
-        {/* 顶部装饰条 */}
-        <div style={{ textAlign: 'center', margin: '16px 0 32px' }}>
-          <BrushStroke color="var(--mirror-value)" style={{ width: '200px', height: '20px', opacity: 0.6 }} />
-          <div style={{ fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: '11px', color: 'var(--ink-faint)', letterSpacing: '0.32em', marginTop: '6px', textTransform: 'uppercase' }}>Privacy First · 隐私优先</div>
-        </div>
 
         <section className="about-section">
           <div className="about-section-icon-wrap">
@@ -85,11 +72,6 @@ export default function Privacy() {
             <p className="privacy-note">当你注销账号或要求我们删除数据时，我们会在合理期限内（通常为收到请求后 30 天内）删除你的作答结果、画像与邮箱等个人数据；法律另有留存要求的除外。</p>
           </div>
         </section>
-
-        {/* 卷轴分隔装饰 */}
-        <div style={{ textAlign: 'center', margin: '24px 0' }}>
-          <ScrollDivider color="var(--mirror-value)" style={{ width: '280px', height: '16px' }} />
-        </div>
 
         <section className="about-section">
           <div className="about-section-icon-wrap">
@@ -140,16 +122,7 @@ export default function Privacy() {
           </div>
         </section>
 
-        {/* 底部装饰:飘带 + 双印章 */}
-        <div style={{ textAlign: 'center', margin: '40px 0 16px' }}>
-          <BrushStroke color="var(--mirror-value)" style={{ width: '220px', height: '24px', opacity: 0.6 }} />
-        </div>
-        <div className="section-seal" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-          <RoundSeal char="密" color="var(--mirror-value)" style={{ width: '48px', height: '48px', opacity: 0.8 }} />
-          <img src={asset('/images/seal.svg')} alt="" aria-hidden="true" style={{ width: '28px', height: '28px', opacity: 0.5 }} />
-          <SealStamp char="心" style={{ width: '48px', height: '48px', opacity: 0.8 }} />
-        </div>
-        <div className="actions">
+        <div className="actions" style={{ marginTop: '32px' }}>
           <Button to="/">{t('common.back_home')}</Button>
           <Button variant="secondary" to="/about">{t('common.about_brand')}</Button>
         </div>

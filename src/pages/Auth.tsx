@@ -16,14 +16,7 @@ import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
 import { toast } from '@/lib/toast'
 import { Button } from '@/components/ui/Button'
-import {
-  InkBlot,
-  SealStamp,
-  BrushStroke,
-  ScrollDivider,
-  CalligraphyColumn,
-  CornerFlourish,
-} from '@/components/ui/Ornaments'
+// 装饰已精简 — 保持内容清晰
 
 type Mode = 'login' | 'register'
 
@@ -80,20 +73,13 @@ export default function Auth() {
 
   return (
     <div className="container" style={{ position: 'relative' }}>
-      {/* 背景装饰 */}
-      <InkBlot style={{ position: 'absolute', top: '40px', right: '-60px', width: '320px', height: '320px', pointerEvents: 'none', opacity: 0.3, zIndex: 0 }} />
-      <InkBlot color="var(--mirror-value)" style={{ position: 'absolute', bottom: '60px', left: '-80px', width: '260px', height: '260px', pointerEvents: 'none', opacity: 0.2, zIndex: 0 }} />
-      <CalligraphyColumn chars={['入', '镜', '留', '影']} style={{ position: 'absolute', top: '24px', left: '-16px', width: '40px', height: '140px', opacity: 0.45, pointerEvents: 'none', zIndex: 0 }} />
-
       <header className="hero" style={{ position: 'relative', zIndex: 1, paddingBottom: 24 }}>
-        <SealStamp char="入" style={{ position: 'absolute', top: '12px', right: '12px', width: '48px', height: '48px', opacity: 0.5, pointerEvents: 'none' }} />
         <div className="mirror-disc" style={{ width: 72, height: 72, marginBottom: 18 }} />
         <p className="hero-eyebrow">MIND MIRROR · {t('auth.eyebrow')}</p>
         <h1 className="art-title" style={{ fontSize: 48 }}>{t('auth.title')}</h1>
         <p className="hero-title-en">{t('auth.subtitle')}</p>
         <p className="hero-lede" style={{ maxWidth: 520, margin: '14px auto 0' }}>{t('auth.lede')}</p>
         <div className="hero-divider"><span /></div>
-        <BrushStroke style={{ width: '180px', height: '18px', margin: '0 auto', opacity: 0.5 }} />
       </header>
 
       {/* 正在开发中提示条 */}
@@ -110,9 +96,6 @@ export default function Auth() {
       </motion.div>
 
       <div className="auth-card" style={{ position: 'relative', zIndex: 1 }}>
-        <CornerFlourish style={{ position: 'absolute', top: '8px', left: '8px', width: '32px', height: '32px', opacity: 0.35, pointerEvents: 'none' }} />
-        <CornerFlourish style={{ position: 'absolute', bottom: '8px', right: '8px', width: '32px', height: '32px', opacity: 0.35, pointerEvents: 'none', transform: 'rotate(180deg)' }} />
-
         {/* Tab 切换 */}
         <div className="auth-tabs" role="tablist">
           {(['login', 'register'] as Mode[]).map((m) => (
@@ -135,8 +118,6 @@ export default function Auth() {
             </button>
           ))}
         </div>
-
-        <ScrollDivider style={{ width: '240px', height: '12px', margin: '0 auto 20px', opacity: 0.5 }} />
 
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <AnimatePresence mode="wait">

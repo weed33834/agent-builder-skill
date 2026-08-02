@@ -10,9 +10,29 @@ import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
 import { categories } from '@/data/categories'
 import { assessments } from '@/lib/data'
+import { galgameMeta } from '@/data/galgame'
 import { asset } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
-import { InkBlot, SealStamp, BrushStroke, TrinityMirror, MountainLayers } from '@/components/ui/Ornaments'
+import { MountainLayers } from '@/components/ui/Ornaments'
+
+interface CardMeta {
+  type: string
+  question_count: number
+}
+
+/** 板块下所有可点测评(含 galgame 等独立路由) */
+function resolveLiveCards(catAssessments: string[]): CardMeta[] {
+  const cards: CardMeta[] = []
+  for (const at of catAssessments) {
+    if (at === 'galgame') {
+      cards.push({ type: 'galgame', question_count: galgameMeta.question_count })
+      continue
+    }
+    const a = assessments.find((x) => x.type === at)
+    if (a) cards.push({ type: a.type, question_count: a.question_count })
+  }
+  return cards
+}
 
 export default function Sections() {
   const { t } = useI18n()
@@ -20,34 +40,21 @@ export default function Sections() {
 
   return (
     <div className="container" style={{ position: 'relative' }}>
-      {/* 背景装饰 */}
-      <InkBlot style={{ position: 'absolute', top: '20px', right: '-60px', width: '320px', height: '320px', pointerEvents: 'none', opacity: 0.3, zIndex: 0 }} />
-      <InkBlot color="var(--mirror-value)" style={{ position: 'absolute', bottom: '40px', left: '-80px', width: '260px', height: '260px', pointerEvents: 'none', opacity: 0.2, zIndex: 0 }} />
-
       <header className="hero" style={{ position: 'relative', zIndex: 1, paddingBottom: 32 }}>
-        <SealStamp char="镜" style={{ position: 'absolute', top: '12px', right: '12px', width: '52px', height: '52px', opacity: 0.5, pointerEvents: 'none' }} />
         <div className="mirror-disc" style={{ width: 72, height: 72, marginBottom: 20 }} />
         <p className="hero-eyebrow">MIND MIRROR · 全部测评</p>
         <h1 className="art-title" style={{ fontSize: 56 }}>{t('sections.title')}</h1>
         <p className="hero-title-en">All Assessments</p>
         <p className="hero-lede" style={{ maxWidth: 560, margin: '16px auto 0' }}>{t('sections.lede')}</p>
         <div className="hero-divider"><span /></div>
-        <BrushStroke style={{ width: '200px', height: '20px', margin: '0 auto', opacity: 0.5 }} />
       </header>
-
-      {/* 三镜合一装饰 */}
-      <div style={{ textAlign: 'center', margin: '8px 0 40px', opacity: 0.6, position: 'relative', zIndex: 1 }}>
-        <TrinityMirror style={{ width: '160px', height: '60px' }} />
-      </div>
 
       {/* 板块网格 */}
       <div className="sections-grid">
         {categories.map((cat, i) => {
-          // 该板块下已实现的测评(从 assessments 元数据查)
-          const liveAssessments = cat.assessments
-            .map((at) => assessments.find((a) => a.type === at))
-            .filter((a): a is NonNullable<typeof a> => !!a)
-          const totalQuestions = liveAssessments.reduce((s, a) => s + a.question_count, 0)
+          // 该板块下已实现的测评(含 galgame 等独立路由,不会落入 0/0)
+          const liveCards = resolveLiveCards(cat.assessments)
+          const totalQuestions = liveCards.reduce((s, a) => s + a.question_count, 0)
 
           return (
             <motion.div
@@ -65,7 +72,7 @@ export default function Sections() {
                   <span className="section-card-num">No.0{i + 1}</span>
                   {/* 图标区 */}
                   <div className="section-card-icon-wrap">
-                    <img src={asset(`/images/sections/${cat.icon}.svg`)} alt="" width={56} height={56} onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                    <img src={asset(`/images/sections/${cat.icon}.jpg`)} alt="" width={56} height={56} onError={(e) => { e.currentTarget.style.display = 'none' }} />
                   </div>
                   <div className="section-card-body">
                     <p className="section-card-subtitle">{cat.subtitle}</p>
@@ -74,7 +81,7 @@ export default function Sections() {
                     <p className="section-card-desc">{cat.desc}</p>
                   </div>
                   <div className="section-card-meta">
-                    <span><span className="num">{liveAssessments.length}</span> {t('sections.units')}</span>
+                    <span><span className="num">{liveCards.length}</span> {t('sections.units')}</span>
                     <span><span className="num">{totalQuestions}</span> {t('common.questions')}</span>
                     <span className="section-card-enter">{t('home.enter')}</span>
                   </div>
@@ -83,7 +90,7 @@ export default function Sections() {
                 <div className="section-card-link section-card-locked" aria-disabled="true">
                   <span className="section-card-num">No.0{i + 1}</span>
                   <div className="section-card-icon-wrap">
-                    <img src={asset(`/images/sections/${cat.icon}.svg`)} alt="" width={56} height={56} onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                    <img src={asset(`/images/sections/${cat.icon}.jpg`)} alt="" width={56} height={56} onError={(e) => { e.currentTarget.style.display = 'none' }} />
                   </div>
                   <div className="section-card-body">
                     <p className="section-card-subtitle">{cat.subtitle}</p>

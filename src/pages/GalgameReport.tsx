@@ -10,9 +10,11 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import confetti from 'canvas-confetti'
 import { useDocumentMeta } from '@/lib/seo'
+import { useI18n } from '@/lib/i18n'
 import { play, vibrate } from '@/lib/audio'
 import { toast } from '@/lib/toast'
 import { useLastResultStore } from '@/store'
+import { TopBar } from '@/components/layout/TopBar'
 import {
   GALGAME_QUESTIONS,
   GALGAME_DIM_ORDER,
@@ -185,6 +187,7 @@ export default function GalgameReport() {
   if (!decoded || !r || !title) {
     return (
       <div className="neon-report-wrap">
+        <TopBar sectionKey="common.error_generic" />
         <div className="neon-error">
           <div className="neon-title-emoji" aria-hidden="true">💾</div>
           <h2 className="neon-error-title">数据损坏 / DATA CORRUPTED</h2>
@@ -221,6 +224,8 @@ export default function GalgameReport() {
 
   return (
     <div className="neon-report-wrap">
+      <TopBar sectionKey="nav.galgame" />
+
       {/* ===== Hero ===== */}
       <section className="neon-hero">
         <div className="neon-hero-eyebrow">GALGAME 资历档案 // TIER {title.tier}</div>

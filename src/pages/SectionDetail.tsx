@@ -81,11 +81,11 @@ export default function SectionDetail() {
       style={{ position: 'relative', '--cat-accent': cat.accent } as React.CSSProperties}
     >
       {/* 背景装饰 */}
-      <InkBlot color={cat.accent} style={{ position: 'absolute', top: '20px', right: '-60px', width: '320px', height: '320px', pointerEvents: 'none', opacity: 0.28, zIndex: 0 }} />
-      <InkBlot color="var(--mirror-value)" style={{ position: 'absolute', bottom: '60px', left: '-80px', width: '240px', height: '240px', pointerEvents: 'none', opacity: 0.18, zIndex: 0 }} />
+      <InkBlot style={{ position: 'absolute', top: '20px', right: '-60px', width: '320px', height: '320px', pointerEvents: 'none', opacity: 0.28, zIndex: 0 }} />
+      <InkBlot style={{ position: 'absolute', bottom: '60px', left: '-80px', width: '240px', height: '240px', pointerEvents: 'none', opacity: 0.18, zIndex: 0 }} />
 
       <header className="hero" style={{ position: 'relative', zIndex: 1, paddingBottom: 28 }}>
-        <SealStamp char={cat.title.charAt(0)} color={cat.accent} style={{ position: 'absolute', top: '12px', right: '12px', width: '52px', height: '52px', opacity: 0.5, pointerEvents: 'none' }} />
+        <SealStamp style={{ position: 'absolute', top: '12px', right: '12px', width: '52px', height: '52px', opacity: 0.5, pointerEvents: 'none' }} />
         {/* 板块图标环 */}
         <div style={{ position: 'relative', width: 88, height: 88, margin: '0 auto 18px' }}>
           <ConcentricRings color={cat.accent} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.6 }} />
@@ -94,7 +94,7 @@ export default function SectionDetail() {
             background: `radial-gradient(circle, ${cat.accent}22 0%, transparent 70%)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <img src={asset(`/images/sections/${cat.icon}.svg`)} alt="" width={40} height={40} onError={(e) => { e.currentTarget.style.display = 'none' }} />
+            <img src={asset(`/images/sections/${cat.icon}.jpg`)} alt="" width={40} height={40} onError={(e) => { e.currentTarget.style.display = 'none' }} />
           </div>
         </div>
         <p className="hero-eyebrow" style={{ color: cat.accent }}>{cat.subtitle.toUpperCase()} · 板块</p>
@@ -134,7 +134,7 @@ export default function SectionDetail() {
                 <Link to={a.route} className={`mirror-card${isGalgame ? ' mirror-card-neon' : ''}`} data-type={a.type} style={{ '--cat-accent': accent } as React.CSSProperties}>
                   <span className="mirror-card-num">No.{String(i + 1).padStart(2, '0')}</span>
                   <div className="card-icon">
-                    <img src={asset(`/images/mirror-${a.type}.svg`)} className="mirror-card-icon" width={48} height={48} alt="" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                    <img src={asset(`/images/mirror-${a.type}.jpg`)} className="mirror-card-icon" width={48} height={48} alt="" onError={(e) => { e.currentTarget.style.display = 'none' }} />
                   </div>
                   <span className="art-seal" style={{ position: 'absolute', top: '48px', right: '20px', fontSize: '22px', color: accent, opacity: 0.5 }}>{numCN}</span>
                   <h2>{t(`home.mirrors.${a.type}.title`)}</h2>

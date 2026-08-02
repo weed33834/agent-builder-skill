@@ -56,7 +56,7 @@ export function DailyPanel() {
           whileHover={{ y: -4 }}
         >
           <InkBlot style={{ position: 'absolute', top: '-50px', right: '-50px', width: '220px', height: '220px', pointerEvents: 'none', opacity: 0.35, zIndex: 0 }} />
-          <SealStamp char="言" style={{ position: 'absolute', bottom: '14px', right: '16px', width: '40px', height: '40px', opacity: 0.45, pointerEvents: 'none', zIndex: 0 }} />
+          <SealStamp style={{ position: 'absolute', bottom: '14px', right: '16px', width: '40px', height: '40px', opacity: 0.45, pointerEvents: 'none', zIndex: 0 }} />
           <span className="daily-quote-mark" aria-hidden="true">「</span>
 
           <p className="daily-quote-label">{t('daily.quote_label')}</p>
@@ -93,7 +93,7 @@ export function DailyPanel() {
           transition={{ delay: 0.2, duration: 0.5, ease: EASE }}
           whileHover={{ y: -4 }}
         >
-          <InkBlot color="var(--mirror)" style={{ position: 'absolute', bottom: '-60px', left: '-50px', width: '200px', height: '200px', pointerEvents: 'none', opacity: 0.25, zIndex: 0 }} />
+          <InkBlot style={{ position: 'absolute', bottom: '-60px', left: '-50px', width: '200px', height: '200px', pointerEvents: 'none', opacity: 0.25, zIndex: 0 }} />
 
           <div className="daily-history-head">
             <span className="daily-history-label">{t('daily.history_label')}</span>

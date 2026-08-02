@@ -14,8 +14,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { useDocumentMeta } from '@/lib/seo'
+import { useI18n } from '@/lib/i18n'
 import { play, vibrate } from '@/lib/audio'
 import { useLastResultStore } from '@/store'
+import { TopBar } from '@/components/layout/TopBar'
 import {
   GALGAME_QUESTIONS,
   GALGAME_DIM_ORDER,
@@ -278,8 +280,8 @@ export default function TakeGalgame() {
 
   return (
     <div className="neon-take-wrap">
+      <TopBar sectionKey="nav.galgame" />
       <div className="neon-take-header">
-        <Link to="/" className="neon-back">← 退出</Link>
         <span className="neon-take-title">GALGAME // 资历测评</span>
       </div>
 

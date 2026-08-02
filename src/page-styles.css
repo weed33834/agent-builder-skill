@@ -3,6 +3,73 @@
    (orig-styles.css 未收录,这里补齐以保证 1:1 视觉)
    ============================================================ */
 
+/* ---------- 首页 onthisday(今日认识)区块 ----------
+   类名:onthisday-section / onthisday-head / onthisday-grid
+   卡片复用 .onthisday-card(在 orig-styles.css 内已定义) */
+.onthisday-section {
+  margin: 56px 0 24px;
+  position: relative;
+  z-index: 1;
+}
+.onthisday-head {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.onthisday-head .section-title-deco {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+.onthisday-head .title-deco-line {
+  flex: 0 0 48px;
+  height: 1px;
+  background: var(--line);
+}
+.onthisday-head h2 {
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.12em;
+  margin: 0;
+}
+.onthisday-head p {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  color: var(--ink-faint);
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+.onthisday-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: stretch;
+  position: relative;
+  z-index: 1;
+}
+.onthisday-grid > a,
+.onthisday-grid > div {
+  display: block;
+  height: 100%;
+}
+@media (max-width: 768px) {
+  .onthisday-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .onthisday-section { margin: 40px 0 16px; }
+  .onthisday-head h2 { font-size: 22px; }
+}
+@media (max-width: 480px) {
+  .onthisday-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .onthisday-head .title-deco-line { flex: 0 0 24px; }
+}
+
 /* ---------- figures 浏览页 ---------- */
 .fig-hero { text-align: center; padding: 8px 0 24px; }
 .fig-eyebrow { font-family: var(--font-sans); font-size: 12px; letter-spacing: 0.32em; color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
@@ -771,14 +838,15 @@
    ============================================================ */
 .auth-notice {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  max-width: 560px;
+  align-items: center;
+  gap: 12px;
+  max-width: 520px;
   margin: 0 auto 24px;
-  padding: 14px 18px;
-  background: var(--accent-soft);
-  border: 1px dashed var(--accent);
-  border-radius: 4px;
+  padding: 12px 16px;
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 2px;
 }
 .auth-notice-badge {
   flex-shrink: 0;
@@ -790,7 +858,7 @@
   padding: 3px 10px;
   border-radius: 2px;
   text-transform: uppercase;
-  margin-top: 2px;
+  white-space: nowrap;
 }
 .auth-notice-text {
   font-family: var(--font-serif);
@@ -798,6 +866,7 @@
   line-height: 1.75;
   color: var(--ink-soft);
   margin: 0;
+  flex: 1;
 }
 
 .auth-card {
@@ -2172,10 +2241,10 @@ body[data-galgame="1"]::after {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url('/images/patterns/paper-fiber.svg');
-  background-size: 220px;
-  background-repeat: repeat;
-  opacity: 0.03;
+  background-image: url('/images/paper-texture_1.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0.06;
   pointer-events: none;
   z-index: 0;
 }

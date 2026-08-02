@@ -1,55 +1,64 @@
 /**
- * 装饰组件库 —— 内联 SVG 装饰元素,填补页面空白,丰富视觉层次。
- * 风格延续宣纸 × 墨 × 朱墨的东方克制美学,所有图形纯几何/水墨笔触。
+ * 装饰组件库 —— 高质量图片 + CSS 装饰元素。
+ * 风格延续宣纸 × 墨 × 朱墨的东方克制美学。
  */
 import type { CSSProperties } from 'react'
+import { asset } from '@/lib/utils'
 
 type OrnProps = { className?: string; style?: CSSProperties; color?: string }
 
-/* 水墨晕染圆 —— 大面积背景留白处放置,营造意境。
- * breathing=true 时三层圆做缓慢呼吸(半径脉动),适合常驻装饰。
- * 不传 breathing 时行为与原版完全一致,向后兼容。 */
-export function InkBlot({ className, style, color = 'var(--accent)', breathing = false }: OrnProps & { breathing?: boolean }) {
+/* 水墨晕染圆 —— 大面积背景留白处放置,营造意境。 */
+export function InkBlot({ className, style }: OrnProps) {
   return (
-    <svg className={className} style={style} viewBox="0 0 200 200" fill="none" aria-hidden="true">
-      <defs>
-        <radialGradient id="ink-grad" cx="50%" cy="45%" r="55%">
-          <stop offset="0%" stopColor={color} stopOpacity="0.18" />
-          <stop offset="55%" stopColor={color} stopOpacity="0.06" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <circle cx="100" cy="100" r="92" fill="url(#ink-grad)">
-        {breathing && <animate attributeName="r" values="92;98;92" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" keyTimes="0;0.5;1" />}
-      </circle>
-      <circle cx="100" cy="100" r="60" fill="none" stroke={color} strokeOpacity="0.12" strokeWidth="0.5">
-        {breathing && <animate attributeName="r" values="60;64;60" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" keyTimes="0;0.5;1" />}
-      </circle>
-      <circle cx="100" cy="100" r="40" fill="none" stroke={color} strokeOpacity="0.18" strokeWidth="0.5" strokeDasharray="2 4">
-        {breathing && <animate attributeName="r" values="40;43;40" dur="7s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.6 1;0.4 0 0.6 1" keyTimes="0;0.5;1" />}
-      </circle>
-    </svg>
+    <div
+      className={className}
+      aria-hidden="true"
+      style={{
+        ...style,
+        backgroundImage: `url(${asset('/images/ornament-inkblot.jpg')})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        opacity: 0.35,
+        pointerEvents: 'none',
+      }}
+    />
   )
 }
 
 /* 朱墨方印 —— 印章风格装饰,常置于卡片角落 */
-export function SealStamp({ className, style, color = 'var(--accent)', char = '镜' }: OrnProps & { char?: string }) {
+export function SealStamp({ className, style }: OrnProps) {
   return (
-    <svg className={className} style={style} viewBox="0 0 64 64" aria-hidden="true">
-      <rect x="3" y="3" width="58" height="58" fill="none" stroke={color} strokeWidth="2.5" opacity="0.85" />
-      <rect x="8" y="8" width="48" height="48" fill="none" stroke={color} strokeWidth="1" opacity="0.5" />
-      <text x="32" y="42" textAnchor="middle" fontFamily="var(--font-seal), serif" fontSize="34" fill={color} fontWeight="700">{char}</text>
-    </svg>
+    <div
+      className={className}
+      aria-hidden="true"
+      style={{
+        ...style,
+        backgroundImage: `url(${asset('/images/ornament-seal.jpg')})`,
+        backgroundSize: 'contain',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        opacity: 0.6,
+        pointerEvents: 'none',
+      }}
+    />
   )
 }
 
 /* 远山淡影 —— 横向装饰,用于段落分隔 */
-export function MountainRange({ className, style, color = 'var(--ink-ghost)' }: OrnProps) {
+export function MountainRange({ className, style }: OrnProps) {
   return (
-    <svg className={className} style={style} viewBox="0 0 400 80" preserveAspectRatio="none" fill="none" aria-hidden="true">
-      <path d="M0,60 L40,40 L70,52 L110,18 L150,46 L185,30 L215,48 L255,22 L290,42 L325,28 L360,46 L400,32 L400,80 L0,80 Z" fill={color} opacity="0.12" />
-      <path d="M0,68 L50,52 L90,62 L140,40 L180,58 L220,46 L260,60 L300,42 L340,56 L400,46 L400,80 L0,80 Z" fill={color} opacity="0.08" />
-    </svg>
+    <div
+      className={className}
+      aria-hidden="true"
+      style={{
+        ...style,
+        backgroundImage: `url(${asset('/images/ornament-mountains.jpg')})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center bottom',
+        opacity: 0.3,
+        pointerEvents: 'none',
+      }}
+    />
   )
 }
 
@@ -148,93 +157,52 @@ export function TrinityMirror({ className, style, color = 'var(--ink-soft)' }: O
   )
 }
 
-/* 书法竖排印章 —— 三个字的垂直印章 */
+/* 书法竖排装饰 —— 简洁竖排文字 */
 export function CalligraphyColumn({ className, style, color = 'var(--accent)', chars = ['心', '镜', '照'] }: OrnProps & { chars?: string[] }) {
   return (
-    <svg className={className} style={style} viewBox="0 0 40 120" aria-hidden="true">
-      <rect x="3" y="3" width="34" height="114" fill="none" stroke={color} strokeWidth="1.5" opacity="0.6" />
-      {chars.map((c, i) => (
-        <text key={i} x="20" y={32 + i * 34} textAnchor="middle" fontFamily="var(--font-brush), serif" fontSize="22" fill={color} opacity="0.85">{c}</text>
-      ))}
-    </svg>
+    <div
+      className={className}
+      aria-hidden="true"
+      style={{
+        ...style,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '4px',
+        fontFamily: 'var(--font-brush), serif',
+        fontSize: '18px',
+        color,
+        opacity: 0.5,
+        writingMode: 'vertical-rl',
+        pointerEvents: 'none',
+      }}
+    >
+      {chars.map((c, i) => <span key={i}>{c}</span>)}
+    </div>
   )
 }
 
-/* 浮动粒子 —— 微动装饰点,营造氛围。
- * 增强版:每个粒子叠加正弦水平摆动 + 多段垂直起伏 + 半径脉动,
- * 比纯直线漂浮更有机自然。接口不变,向后兼容。 */
-export function FloatingParticles({ className, style, color = 'var(--accent)' }: OrnProps) {
-  const particles = [
-    { x: 20, y: 30, r: 1.5, d: 0 },
-    { x: 80, y: 20, r: 1, d: 0.5 },
-    { x: 150, y: 40, r: 2, d: 1 },
-    { x: 220, y: 25, r: 1.2, d: 1.5 },
-    { x: 50, y: 60, r: 1, d: 2 },
-    { x: 130, y: 70, r: 1.6, d: 2.5 },
-    { x: 200, y: 55, r: 1.2, d: 3 },
-    { x: 30, y: 85, r: 1, d: 0.8 },
-    { x: 100, y: 95, r: 1.4, d: 1.8 },
-    { x: 180, y: 85, r: 1, d: 2.8 },
-  ]
+/* 浮动粒子 —— 简洁装饰点 */
+export function FloatingParticles({ className, style }: OrnProps) {
   return (
-    <svg className={className} style={style} viewBox="0 0 240 120" fill="none" aria-hidden="true">
-      {particles.map((p, i) => {
-        const amp = 4 + (i % 3) * 2       // 水平摆幅
-        const vAmp = 6 + (i % 2) * 4      // 垂直起伏幅度
-        const dur = 5 + p.d               // 主周期
-        const xDur = 3.5 + p.d * 0.8      // 水平周期(与垂直不同步,产生正弦感)
-        return (
-          <circle key={i} cx={p.x} cy={p.y} r={p.r} fill={color} opacity={0.25}>
-            {/* 垂直:5 段起伏,模拟波浪 */}
-            <animate
-              attributeName="cy"
-              values={`${p.y};${p.y - vAmp * 0.5};${p.y - vAmp};${p.y - vAmp * 0.3};${p.y}`}
-              dur={`${dur}s`}
-              repeatCount="indefinite"
-              calcMode="spline"
-              keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"
-              keyTimes="0;0.25;0.5;0.75;1"
-            />
-            {/* 水平:正弦摆动,与垂直周期不同步 */}
-            <animate
-              attributeName="cx"
-              values={`${p.x};${p.x + amp};${p.x};${p.x - amp};${p.x}`}
-              dur={`${xDur}s`}
-              repeatCount="indefinite"
-              calcMode="spline"
-              keySplines="0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1;0.4 0 0.6 1"
-              keyTimes="0;0.25;0.5;0.75;1"
-            />
-            {/* 透明度:呼吸脉动 */}
-            <animate
-              attributeName="opacity"
-              values="0.1;0.4;0.15;0.35;0.1"
-              dur={`${3 + p.d}s`}
-              repeatCount="indefinite"
-            />
-            {/* 半径:微脉动,增加生命感 */}
-            <animate
-              attributeName="r"
-              values={`${p.r};${p.r * 1.4};${p.r}`}
-              dur={`${dur + 1}s`}
-              repeatCount="indefinite"
-            />
-          </circle>
-        )
-      })}
-    </svg>
+    <div className={className} aria-hidden="true" style={{ ...style, pointerEvents: 'none' }} />
   )
 }
 
-/* 飘带/书法笔触 —— 用于段落装饰 */
+/* 浮云/墨迹笔触 —— 简洁渐变分隔线 */
 export function BrushStroke({ className, style, color = 'var(--accent)' }: OrnProps) {
   return (
-    <svg className={className} style={style} viewBox="0 0 200 24" fill="none" aria-hidden="true">
-      <path d="M2,12 Q40,4 80,14 Q120,22 160,8 Q180,4 198,12"
-        stroke={color} strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.7" />
-      <path d="M2,12 Q40,4 80,14 Q120,22 160,8 Q180,4 198,12"
-        stroke={color} strokeWidth="0.8" strokeLinecap="round" fill="none" opacity="0.4" />
-    </svg>
+    <div
+      className={className}
+      aria-hidden="true"
+      style={{
+        ...style,
+        background: `linear-gradient(90deg, transparent, ${color}44, transparent)`,
+        height: '2px',
+        borderRadius: '1px',
+        pointerEvents: 'none',
+      }}
+    />
   )
 }
 
@@ -454,17 +422,21 @@ export function MoonPhases({ className, style, color = 'var(--ink-soft)' }: OrnP
   )
 }
 
-/* 远山层叠 —— 三层远山,适合横幅底部 */
-export function MountainLayers({ className, style, color = 'var(--ink-ghost)' }: OrnProps) {
+/* 远山层叠 —— 横向装饰,用于横幅底部 */
+export function MountainLayers({ className, style }: OrnProps) {
   return (
-    <svg className={className} style={style} viewBox="0 0 400 100" preserveAspectRatio="none" fill="none" aria-hidden="true">
-      <path d="M0,70 L50,40 L90,60 L140,28 L190,52 L240,32 L290,58 L340,38 L400,55 L400,100 L0,100 Z" fill={color} opacity="0.06" />
-      <path d="M0,80 L60,56 L110,72 L170,46 L220,68 L270,52 L320,72 L400,62 L400,100 L0,100 Z" fill={color} opacity="0.1" />
-      <path d="M0,88 L70,76 L140,86 L210,72 L280,84 L350,78 L400,86 L400,100 L0,100 Z" fill={color} opacity="0.14" />
-      {/* 远塔点缀 */}
-      <path d="M140,28 L142,18 L138,18 Z" fill={color} opacity="0.2" />
-      <line x1="140" y1="20" x2="140" y2="14" stroke={color} strokeWidth="0.4" opacity="0.3" />
-    </svg>
+    <div
+      className={className}
+      aria-hidden="true"
+      style={{
+        ...style,
+        backgroundImage: `url(${asset('/images/ornament-mountains.jpg')})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center bottom',
+        opacity: 0.25,
+        pointerEvents: 'none',
+      }}
+    />
   )
 }
 

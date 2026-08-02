@@ -42,7 +42,7 @@ export function useDocumentMeta({ page, vars }: MetaOpts) {
     // og_image/og_type/twitter_card 在 i18n 中未定义,直接用默认值;
     // og:image 路径需带 vite base(GitHub Pages 子路径 /mindmirror/),否则 404。
     const origin = window.location.origin
-    const ogImage = import.meta.env.BASE_URL + 'images/og-card.svg'
+    const ogImage = import.meta.env.BASE_URL + 'images/og-card.jpg'
     const ogType = 'website'
     const twitterCard = 'summary_large_image'
     const ogImageUrl = new URL(ogImage, origin).href

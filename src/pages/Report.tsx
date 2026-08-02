@@ -15,21 +15,8 @@ import { play, vibrate } from '@/lib/audio'
 import { Button } from '@/components/ui/Button'
 import { RadarChart } from '@/components/RadarChart'
 import { ShareModal } from '@/components/ShareModal'
+import { TopBar } from '@/components/layout/TopBar'
 import { asset } from '@/lib/utils'
-import {
-  InkBlot,
-  SealStamp,
-  CalligraphyColumn,
-  BrushStroke,
-  ScrollDivider,
-  AuspiciousCloud,
-  MeanderBorder,
-  LotusPattern,
-  MoonPhases,
-  TrinityMirror,
-  MountainLayers,
-} from '@/components/ui/Ornaments'
-import { RoughCircle, RoughConstellation } from '@/components/ui/RoughInk'
 import type { AssessmentType, ComputeResult, Conflict, Insight, Match } from '@/lib/types'
 
 const INSIGHT_ORDER = ['decision_style', 'consistency', 'ambivalence', 'courage_index', 'time_pressure_effect', 'iat_bias'] as const
@@ -128,9 +115,10 @@ export default function Report() {
   if (!decoded || !type || !r) {
     return (
       <div className="container" style={{ maxWidth: 560, padding: '120px 40px', textAlign: 'center', position: 'relative' }}>
-        <InkBlot color="var(--accent)" style={{ position: 'absolute', top: '20px', right: '-40px', width: '280px', height: '280px', pointerEvents: 'none', opacity: 0.3, zIndex: 0 }} />
-        <InkBlot color="var(--mirror-value)" style={{ position: 'absolute', bottom: '20px', left: '-40px', width: '240px', height: '240px', pointerEvents: 'none', opacity: 0.25, zIndex: 0 }} />
-        <CalligraphyColumn chars={['镜', '破', '难', '圆']} color="var(--accent)" style={{ position: 'absolute', top: '40px', left: '20px', width: '40px', height: '140px', opacity: 0.4, pointerEvents: 'none', zIndex: 0 }} />
+        <TopBar sectionKey="common.error_generic" />
+        <InkBlot style={{ position: 'absolute', top: '20px', right: '-40px', width: '280px', height: '280px', pointerEvents: 'none', opacity: 0.3, zIndex: 0 }} />
+        <InkBlot style={{ position: 'absolute', bottom: '20px', left: '-40px', width: '240px', height: '240px', pointerEvents: 'none', opacity: 0.25, zIndex: 0 }} />
+        <CalligraphyColumn chars={['镜', '破', '难', '圆']} color="var(--accent)" style={{ position: 'absolute', top: '40px', left: '20px', width: '32px', height: '140px', opacity: 0.35, pointerEvents: 'none', zIndex: 0 }} />
         <div className="result-error" style={{ position: 'relative', zIndex: 1 }}>
           <div className="result-error-seal">印</div>
           <h3 className="result-error-title art-title" style={{ fontFamily: 'var(--font-art)' }}>{t('report.error_title')}</h3>
@@ -207,20 +195,25 @@ export default function Report() {
 
   return (
     <div className="container" style={{ maxWidth: 860, position: 'relative' }}>
-      {/* 全局背景装饰:水墨晕染 */}
-      <InkBlot color="var(--mirror)" style={{ position: 'absolute', top: '40px', right: '-80px', width: '320px', height: '320px', pointerEvents: 'none', opacity: 0.3, zIndex: 0 }} />
-      <InkBlot color="var(--mirror)" style={{ position: 'absolute', top: '600px', left: '-80px', width: '260px', height: '260px', pointerEvents: 'none', opacity: 0.2, zIndex: 0 }} />
+      {/* 独立顶部条:无站点头部但有面包屑与返回 */}
+      <TopBar sectionKey={`take.title_${type}`}>
+        <button
+          type="button"
+          onClick={() => setShareOpen(true)}
+          className="topbar-share-btn inline-flex items-center gap-1 px-2.5 py-1 text-[12px] tracking-[0.08em] rounded text-accent bg-accent-soft border border-accent-mid hover:bg-accent-mid transition-colors"
+          aria-label={t('report.btn_share')}
+        >
+          <span aria-hidden="true">↗</span>
+          <span className="hidden sm:inline">{t('report.btn_share')}</span>
+        </button>
+      </TopBar>
 
-      {/* 书法竖排装饰,填补左右空白 */}
-      <CalligraphyColumn chars={['明', '镜', '照', '心']} color="var(--mirror)" style={{ position: 'absolute', top: '60px', left: '0px', width: '40px', height: '140px', opacity: 0.4, pointerEvents: 'none', zIndex: 0 }} />
-      <CalligraphyColumn chars={['真', '我', '如', '见']} color="var(--accent)" style={{ position: 'absolute', top: '60px', right: '0px', width: '40px', height: '140px', opacity: 0.4, pointerEvents: 'none', zIndex: 0 }} />
+      {/* 全局背景装饰:水墨晕染 */}
+      <InkBlot style={{ position: 'absolute', top: '40px', right: '-80px', width: '320px', height: '320px', pointerEvents: 'none', opacity: 0.3, zIndex: 0 }} />
 
       {/* ===== Hero ===== */}
       <div className="report-hero" style={{ position: 'relative', zIndex: 1 }}>
-        <SealStamp char="镜" color="var(--mirror)" style={{ position: 'absolute', top: '12px', right: '12px', width: '52px', height: '52px', opacity: 0.5, pointerEvents: 'none' }} />
-        {/* rough.js 手绘圆环,围绕镜面 */}
         <div style={{ position: 'relative', display: 'inline-block', marginBottom: '8px' }}>
-          <RoughCircle color="var(--mirror)" seed={type === 'celebrity' ? 101 : type === 'value' ? 202 : 303} style={{ position: 'absolute', top: '-12px', left: '-12px', width: 'calc(100% + 24px)', height: 'calc(100% + 24px)', pointerEvents: 'none', opacity: 0.5 }} />
           <div className="mirror-disc" {...(clarity ? { 'data-clarity': clarity } : {})} />
         </div>
         <div className="report-eyebrow">{titleInfo.eyebrow}</div>
@@ -314,11 +307,6 @@ export default function Report() {
         </section>
       )}
 
-      {/* 莲瓣纹分隔装饰 */}
-      <div style={{ textAlign: 'center', margin: '32px 0', position: 'relative', zIndex: 1, opacity: 0.6 }}>
-        <LotusPattern color="var(--mirror)" style={{ width: '280px', height: '60px' }} />
-      </div>
-
       {/* ===== 内在冲突 ===== */}
       {r.conflicts && r.conflicts.length > 0 && (
         <section className="report-section" style={{ position: 'relative', zIndex: 1 }}>
@@ -340,11 +328,6 @@ export default function Report() {
           </div>
         </section>
       )}
-
-      {/* 卷轴分隔装饰 */}
-      <div style={{ textAlign: 'center', margin: '32px 0', position: 'relative', zIndex: 1 }}>
-        <ScrollDivider color="var(--mirror)" style={{ width: '280px', height: '16px' }} />
-      </div>
 
       {/* ===== 行为洞察 ===== */}
       <section className="report-section" style={{ position: 'relative', zIndex: 1 }}>
@@ -377,14 +360,8 @@ export default function Report() {
         </div>
       </section>
 
-      {/* 月相图装饰,代表"自我周期" */}
-      <div style={{ textAlign: 'center', margin: '32px 0', position: 'relative', zIndex: 1, opacity: 0.6 }}>
-        <MoonPhases color="var(--mirror)" style={{ width: '280px', height: '28px' }} />
-      </div>
-
       {/* ===== 镜象名片 ===== */}
       <section className="mirror-card-share" aria-label={t('growth.card_cta')} style={{ position: 'relative', overflow: 'visible' }}>
-        <AuspiciousCloud color="var(--mirror)" style={{ position: 'absolute', top: '-30px', left: '50%', transform: 'translateX(-50%)', width: '140px', height: '40px', opacity: 0.4, pointerEvents: 'none' }} />
         <div className="mcs-disc"><div className="mirror-disc" /></div>
         <div className="mcs-body">
           <div className="mcs-eyebrow">{eyebrow}</div>
@@ -399,8 +376,8 @@ export default function Report() {
         <section className="report-section growth-reco" style={{ position: 'relative', zIndex: 1 }}>
           <h3 className="art-title" style={{ fontFamily: 'var(--font-art)' }}>{t('growth.reco_title')}</h3>
           <div className="reco-inner">{recoInner}</div>
-          {/* 手绘星图,代表"你的星图" */}
-          <RoughConstellation color="var(--mirror)" seed={type === 'celebrity' ? 41 : type === 'value' ? 42 : 43} style={{ width: '100%', maxWidth: '400px', height: '80px', margin: '16px auto 0', opacity: 0.5 }} />
+          {/* 装饰光晕 */}
+          <div style={{ width: '100%', maxWidth: '400px', height: '2px', margin: '16px auto 0', background: 'linear-gradient(90deg, transparent, var(--mirror)40, transparent)', opacity: 0.5 }} />
         </section>
       )}
 
@@ -414,7 +391,7 @@ export default function Report() {
             const tagline = t<string>(`home.mirrors.${m.type}.tagline`) || ''
             return (
               <Link className="mirror-next-card" to={`/take/${m.type}`} key={m.type}>
-                <img className="mirror-next-icon" src={asset(`/images/mirror-${m.type}.svg`)} alt="" width={40} height={40} onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                <img className="mirror-next-icon" src={asset(`/images/mirror-${m.type}.jpg`)} alt="" width={40} height={40} onError={(e) => { e.currentTarget.style.display = 'none' }} />
                 <span className="mirror-next-title">{title}</span>
                 {tagline && <span className="mirror-next-tagline">{tagline}</span>}
               </Link>

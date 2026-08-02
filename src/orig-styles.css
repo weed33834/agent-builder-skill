@@ -121,9 +121,6 @@ body::before {
 }
 
 .container {
-  max-width: 880px;
-  margin: 0 auto;
-  padding: 48px 40px 96px;
   position: relative;
   z-index: 1;
 }
@@ -363,10 +360,10 @@ h1, h2, h3 {
 }
 .mirror-card:hover .start-hint { color: var(--accent); letter-spacing: 0.18em; }
 
-@media (max-width: 720px) {
+@media (max-width: 480px) {
   .mirrors-grid { grid-template-columns: 1fr; }
 }
-@media (max-width: 960px) and (min-width: 721px) {
+@media (min-width: 481px) and (max-width: 768px) {
   .mirrors-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -2296,7 +2293,7 @@ h1, h2, h3 {
 .bc-done-title { font-family: var(--font-serif); font-size: 28px; font-weight: 600; color: var(--ink); }
 .bc-done-sub { font-size: 15px; color: var(--ink-soft); margin: 10px 0 24px; }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .trait-grid { grid-template-columns: 1fr; }
   .bc-title { font-size: 26px; }
   .task-prompt { font-size: 16px; }
@@ -2572,7 +2569,7 @@ html { font-size: 16px; }
 }
 .header-icon-link:hover { opacity: 1; background: var(--paper-soft); }
 .btn-sm { padding: 8px 20px; font-size: 13px; }
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .site-header-inner { gap: 12px; padding: 0 16px; }
   .brand-name { display: none; }
   .nav-link { padding: 6px 10px; font-size: 12px; }
@@ -2583,8 +2580,8 @@ html { font-size: 16px; }
    ============================================================ */
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 48px;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
   align-items: center;
   padding: 64px 0 48px;
 }
@@ -2598,9 +2595,10 @@ html { font-size: 16px; }
   text-transform: uppercase;
 }
 .hero .hero-text h1 {
-  font-size: 64px;
-  margin-bottom: 20px;
-  line-height: 1.05;
+  font-size: 60px;
+  margin-bottom: 18px;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
 }
 .hero-lede {
   font-family: var(--font-serif);
@@ -2608,7 +2606,7 @@ html { font-size: 16px; }
   line-height: 1.8;
   color: var(--ink-soft);
   margin-bottom: 32px;
-  max-width: 420px;
+  max-width: 460px;
 }
 .hero-cta {
   display: flex;
@@ -2627,27 +2625,31 @@ html { font-size: 16px; }
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 320px;
 }
 .hero-visual .hero-mirror-img {
   width: 100%;
-  max-width: 340px;
+  max-width: 300px;
   height: auto;
   animation: reveal 0.8s var(--ease) 0.2s both;
 }
-@media (max-width: 860px) {
+@media (max-width: 768px) {
   .hero-grid {
     grid-template-columns: 1fr;
     gap: 32px;
-    text-align: center;
-    padding: 48px 0 32px;
   }
   .hero-text { text-align: center; }
   .hero-eyebrow { text-align: center; }
   .hero-lede { margin-left: auto; margin-right: auto; }
   .hero-cta { justify-content: center; }
   .hero-trust { text-align: center; }
-  .hero .hero-text h1 { font-size: 48px; }
-  .hero-visual .hero-mirror-img { max-width: 240px; }
+  .hero .hero-text h1 { font-size: 44px; letter-spacing: 0.1em; }
+  .hero-visual { min-height: 0; }
+  .hero-visual .hero-mirror-img { max-width: 220px; }
+}
+@media (max-width: 480px) {
+  .hero-visual .hero-mirror-img { max-width: 180px; }
+  .hero .hero-text h1 { font-size: 38px; }
 }
 
 /* ============================================================
@@ -2673,7 +2675,7 @@ html { font-size: 16px; }
   right: 20px;
   width: 72px;
   height: 72px;
-  background: url('/images/seal.svg') center / contain no-repeat;
+  background: url('/images/seal.jpg') center / contain no-repeat;
   opacity: 0.1;
   pointer-events: none;
   z-index: 0;
@@ -2687,7 +2689,7 @@ html { font-size: 16px; }
   right: 0;
   bottom: 0;
   height: 90px;
-  background: url('/images/mountains.svg') bottom center / 600px 60px no-repeat;
+  background: url('/images/mountains.jpg') bottom center / 600px 60px no-repeat;
   opacity: 0.07;
   pointer-events: none;
   z-index: 0;
@@ -2788,10 +2790,8 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
 .nav-dropdown-panel .nav-link { display: block; white-space: nowrap; }
 .nav-toggle { display: none; background: none; border: none; cursor: pointer; font-size: 20px; color: var(--ink-faint); padding: 4px 8px; border-radius: 4px; }
 .nav-toggle:hover { color: var(--ink); background: var(--paper-soft); }
-@media (max-width: 720px) {
-  .nav-toggle { display: inline-flex; }
-  .primary-nav { display: none; position: absolute; top: 56px; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 2px; padding: 10px 16px; background: var(--paper-faint); border-bottom: 1px solid var(--line-soft); max-height: 70vh; overflow-y: auto; }
-  .site-header.nav-open .primary-nav { display: flex; }
+/* 移动端 nav 显隐由 React (Tailwind) 控制,这里只负责细节样式 */
+@media (max-width: 768px) {
   .nav-dropdown-panel { position: static; box-shadow: none; border: none; background: transparent; padding: 0 0 0 12px; }
 }
 
@@ -3338,9 +3338,9 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
 .hero h1.art-title,
 .hero .hero-text h1.art-title {
   font-family: var(--font-art);
-  font-size: 76px;
+  font-size: 60px;
   font-weight: 400;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.15em;
   background: linear-gradient(135deg, var(--ink) 0%, var(--accent) 50%, var(--ink) 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
@@ -3355,11 +3355,27 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
 .hero-title-en {
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 14px;
-  letter-spacing: 0.5em;
+  font-size: 13px;
+  letter-spacing: 0.32em;
   color: var(--ink-faint);
-  margin-top: 4px;
+  margin-top: 6px;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+@media (max-width: 860px) {
+  .hero-title-en {
+    font-size: 11px;
+    letter-spacing: 0.24em;
+  }
+}
+@media (max-width: 480px) {
+  .hero-title-en {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+  }
 }
 
 /* ---- 镜子卡片增强:装饰背景 + 悬浮光晕 ---- */
@@ -3950,7 +3966,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
 }
 
 /* ---- 移动端适配 ---- */
-@media (max-width: 720px) {
+@media (max-width: 768px) {
   .hero h1.art-title,
   .hero .hero-text h1.art-title { font-size: 52px; letter-spacing: 0.12em; }
   .about-quote { font-size: 20px; padding: 18px 20px; }
@@ -3959,4 +3975,67 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
 }
 
 
+/* ============================================================
+   聚焦态独立顶部条(答题页 / 报告页 / Galgame)
+   替代原本内联的 .take-header / .neon-take-header,统一品牌位 + 面包屑 + 返回。
+   ============================================================ */
+.focused-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(244, 239, 227, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.focused-topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+}
+.focused-topbar .topbar-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: 4px;
+  transition: all 0.2s var(--ease);
+}
+.focused-topbar .topbar-back:hover {
+  color: var(--ink);
+  background: var(--paper-soft);
+}
+.topbar-share-btn { cursor: pointer; }
+.topbar-share-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (max-width: 540px) {
+  .focused-topbar-inner { gap: 8px; padding: 0 12px !important; height: 44px; }
+  .focused-topbar .topbar-back { padding: 5px 8px; font-size: 11px; }
+}
+
+/* take-header 内标题位置:聚焦态下只剩标题居中或左对齐,不再需要 back-link 占位 */
+.take-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: baseline;
+  padding: 12px 0 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+.take-header .title-label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-faint);
+  letter-spacing: 0.3em;
+  font-variation-settings: 'opsz' 14;
+}
 
