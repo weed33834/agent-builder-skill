@@ -98,9 +98,17 @@
 .fig-empty { text-align: center; color: var(--ink-soft); font-family: var(--font-serif); padding: 48px 0; }
 .fig-empty-img { display: block; margin: 0 auto 16px; opacity: 0.55; }
 .fig-count { text-align: center; font-family: var(--font-sans); font-size: 12px; color: var(--ink-ghost); margin-top: 10px; }
+@media (max-width: 768px) {
+  .fig-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .fig-title { font-size: 28px; }
+  .fig-search { max-width: 100%; margin-top: 16px; }
+  .fig-chips { gap: 6px; }
+  .fig-chip { font-size: 11px; padding: 5px 10px; }
+}
 @media (max-width: 480px) {
-  .fig-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-  .fig-title { font-size: 26px; }
+  .fig-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .fig-title { font-size: 24px; }
+  .fig-sub { font-size: 13px; }
 }
 
 /* ---------- figure 详情页 ---------- */

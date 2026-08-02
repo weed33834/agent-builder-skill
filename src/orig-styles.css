@@ -2525,11 +2525,13 @@ html { font-size: 16px; }
   letter-spacing: 0.06em;
 }
 .primary-nav {
-  display: flex;
   gap: 4px;
   flex: 1;
   overflow-x: auto;
   scrollbar-width: none;
+}
+@media (min-width: 769px) {
+  .primary-nav { display: flex; }
 }
 .primary-nav::-webkit-scrollbar { display: none; }
 .nav-link {
@@ -2641,7 +2643,9 @@ html { font-size: 16px; }
   .hero-text { text-align: center; }
   .hero-eyebrow { text-align: center; }
   .hero-lede { margin-left: auto; margin-right: auto; }
-  .hero-cta { justify-content: center; }
+  .hero-cta { justify-content: center; gap: 10px; }
+  .hero-cta .btn-primary,
+  .hero-cta .btn-secondary { flex: 1; min-width: 0; min-height: 48px; padding-top: 14px; padding-bottom: 14px; }
   .hero-trust { text-align: center; }
   .hero .hero-text h1 { font-size: 44px; letter-spacing: 0.1em; }
   .hero-visual { min-height: 0; }
@@ -2650,6 +2654,9 @@ html { font-size: 16px; }
 @media (max-width: 480px) {
   .hero-visual .hero-mirror-img { max-width: 180px; }
   .hero .hero-text h1 { font-size: 38px; }
+  .hero-cta { flex-direction: column; gap: 10px; }
+  .hero-cta .btn-primary,
+  .hero-cta .btn-secondary { width: 100%; }
 }
 
 /* ============================================================
@@ -2727,15 +2734,17 @@ button, .btn, a.btn, .btn-primary, .btn-secondary, .mirror-card,
 input, textarea { -webkit-user-select: text; user-select: text; }
 
 /* 5. 刘海/圆角屏安全区:容器与顶栏左右内边距取 max,桌面端无副作用 */
-.container,
-.site-header,
-.take-header,
-.bottom-nav,
-.tab-bar {
-  padding-left: max(40px, env(safe-area-inset-left));
-  padding-right: max(40px, env(safe-area-inset-right));
+@media (min-width: 769px) {
+  .container,
+  .site-header,
+  .take-header,
+  .bottom-nav,
+  .tab-bar {
+    padding-left: max(40px, env(safe-area-inset-left));
+    padding-right: max(40px, env(safe-area-inset-right));
+  }
 }
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .container,
   .site-header,
   .take-header,
@@ -2788,7 +2797,8 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
 .nav-dropdown-panel { display: none; position: absolute; top: 100%; left: 0; min-width: 184px; background: var(--paper-faint); border: 1px solid var(--line); border-radius: 6px; padding: 6px; flex-direction: column; gap: 2px; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
 .nav-dropdown.open .nav-dropdown-panel { display: flex; }
 .nav-dropdown-panel .nav-link { display: block; white-space: nowrap; }
-.nav-toggle { display: none; background: none; border: none; cursor: pointer; font-size: 20px; color: var(--ink-faint); padding: 4px 8px; border-radius: 4px; }
+.nav-toggle { background: none; border: none; cursor: pointer; font-size: 20px; color: var(--ink-faint); padding: 4px 8px; border-radius: 4px; }
+@media (min-width: 769px) { .nav-toggle { display: none; } }
 .nav-toggle:hover { color: var(--ink); background: var(--paper-soft); }
 /* 移动端 nav 显隐由 React (Tailwind) 控制,这里只负责细节样式 */
 @media (max-width: 768px) {
