@@ -236,7 +236,7 @@ export function ShareModal({ open, onClose, result, type, shareUrl }: Props) {
         <button
           type="button"
           className="share-close"
-          aria-label="close"
+          aria-label={t('common.exit')}
           onClick={onClose}
           style={{
             position: 'absolute',
@@ -286,7 +286,7 @@ export function ShareModal({ open, onClose, result, type, shareUrl }: Props) {
           <div className="share-card-preview" style={{ marginTop: 16 }}>
             <img
               src={previewUrl}
-              alt="share card"
+              alt={t('common.your_mirror')}
               style={{ width: '100%', borderRadius: 8, display: 'block', border: `1px solid ${cssVar('--line', '#d0c9ba')}` }}
             />
             <button type="button" className="btn-primary" onClick={handleDownload} style={{ margin: '12px 0 0', width: '100%' }}>

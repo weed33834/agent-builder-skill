@@ -57,7 +57,7 @@ export default function Figures() {
         <SealStamp char="名" style={{ position: 'absolute', top: '12px', right: '12px', width: '52px', height: '52px', opacity: 0.5, pointerEvents: 'none' }} />
         <ConcentricRings color="var(--mirror-celebrity)" style={{ position: 'absolute', top: '20px', left: '20px', width: '100px', height: '100px', opacity: 0.25, pointerEvents: 'none' }} />
 
-        <div className="fig-eyebrow art-seal" style={{ fontFamily: 'var(--font-seal)' }}>FIGURES · 名人志</div>
+        <div className="fig-eyebrow art-seal" style={{ fontFamily: 'var(--font-seal)' }}>FIGURES · {t('home.figures.title')}</div>
         <h1 className="fig-title art-title">{t('home.figures.title')}</h1>
         <p className="fig-sub">{t('home.figures.sub')}</p>
 

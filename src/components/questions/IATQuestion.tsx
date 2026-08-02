@@ -9,8 +9,7 @@ import { useI18n } from '@/lib/i18n'
 import type { QuestionProps } from './types'
 
 export function IATQuestion({ question: q, tracker, onAnswer, getAnswerRef }: QuestionProps<IATQ>) {
-  const { t: _t } = useI18n()
-  void _t
+  const { t } = useI18n()
   const reactions = useRef<IATReaction[]>([])
   const wordStart = useRef(0)
   const canRespond = useRef(false)
@@ -75,7 +74,7 @@ export function IATQuestion({ question: q, tracker, onAnswer, getAnswerRef }: Qu
   return (
     <div className="question-card">
       <div className="question-prompt">{q.prompt}</div>
-      <p className="question-hint small center">凭直觉,越快越好</p>
+      <p className="question-hint small center">{t('take.iat_hint')}</p>
       <div className="iat-area" data-q={q.id}>
         <div className="iat-labels">
           <span>← {q.left_label}</span>
