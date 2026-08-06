@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 type Variant = 'primary' | 'secondary' | 'link'
 
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-[2px] font-display tracking-[0.12em] ' +
+  'inline-flex items-center justify-center gap-2 rounded-lg font-display tracking-[0.12em] ' +
   'transition-all duration-200 ease-ink select-none cursor-pointer no-underline'
 
 const variants: Record<Variant, string> = {

@@ -48,7 +48,7 @@ export const categories: CategoryMeta[] = [
     theme: 'entertainment',
     icon: 'entertainment',
     accent: '#b8408b',
-    assessments: ['galgame'],
+    assessments: ['galgame', 'galgame-char'],
     available: true,
     tagline: '玩心所向,资历自见',
     desc: 'Galgame 资历测评等趣味向测试,从玩家阅历到梗文化,测出你是萌新、小资历还是老司机。霓虹赛博主题,与自我探索板块形成鲜明对比。',

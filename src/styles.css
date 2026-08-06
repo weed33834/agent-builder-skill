@@ -113,6 +113,15 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
+    transition: background-color 0.3s var(--ease), color 0.3s var(--ease);
+  }
+
+  /* 全局圆角默认样式 */
+  button, .btn, a.btn, [role="button"] {
+    border-radius: 0.5rem /* rounded-lg */;
+  }
+  .card, .container, [class*="card"], [class*="container"]:not(.container) {
+    border-radius: 0.75rem /* rounded-xl */;
   }
 
   /* 键盘焦点样式(WCAG 2.1 SC 2.4.7) */

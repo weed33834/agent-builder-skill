@@ -11,6 +11,7 @@ import { useDocumentMeta } from '@/lib/seo'
 import { categories } from '@/data/categories'
 import { assessments } from '@/lib/data'
 import { galgameMeta } from '@/data/galgame'
+import { CHAR_QUESTIONS } from '@/data/galgame-characters'
 import { asset } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import { MountainLayers } from '@/components/ui/Ornaments'
@@ -26,6 +27,10 @@ function resolveLiveCards(catAssessments: string[]): CardMeta[] {
   for (const at of catAssessments) {
     if (at === 'galgame') {
       cards.push({ type: 'galgame', question_count: galgameMeta.question_count })
+      continue
+    }
+    if (at === 'galgame-char') {
+      cards.push({ type: 'galgame-char', question_count: CHAR_QUESTIONS.length })
       continue
     }
     const a = assessments.find((x) => x.type === at)

@@ -24,6 +24,8 @@ const Take = lazy(() => import('@/pages/Take'))
 const Report = lazy(() => import('@/pages/Report'))
 const TakeGalgame = lazy(() => import('@/pages/TakeGalgame'))
 const GalgameReport = lazy(() => import('@/pages/GalgameReport'))
+const TakeGalgameChar = lazy(() => import('@/pages/TakeGalgameChar'))
+const GalgameCharReport = lazy(() => import('@/pages/GalgameCharReport'))
 
 function RouteFallback() {
   return (
@@ -56,7 +58,9 @@ export default function App() {
             <Route path="take/:type" element={<Take />} />
             <Route path="report/:type" element={<Report />} />
             <Route path="take-galgame" element={<TakeGalgame />} />
+            <Route path="take-galgame-char" element={<TakeGalgameChar />} />
             <Route path="report-galgame" element={<GalgameReport />} />
+            <Route path="report-galgame-char" element={<GalgameCharReport />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

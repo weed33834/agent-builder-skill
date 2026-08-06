@@ -24,23 +24,23 @@ export interface GalgameMeta {
 
 export const galgameMeta: GalgameMeta = {
   type: 'galgame',
-  title: 'Galgame 能力测评',
-  description: '50 道题,测出你是萌新、小资历还是老司机。从阅历量到梗文化,五维量化你的 Galgame 玩家底色。',
-  estimated_minutes: 8,
+  title: 'Galgame 资历测评',
+  description: '30 道题,测出你是未开封新手还是コレクターズエディション老司机。从阅历深度到剧本鉴赏,五维量化你的 Galgame 玩家底色。',
+  estimated_minutes: 6,
   question_count: GALGAME_QUESTIONS.length,
   section: 'entertainment',
 }
 
 /** 维度顺序(用于分组展示) */
-export const GALGAME_DIM_ORDER: GalgameDim[] = ['experience', 'genre', 'aesthetic', 'narrative', 'meme']
+export const GALGAME_DIM_ORDER: GalgameDim[] = ['depth', 'knowledge', 'culture', 'aesthetic', 'narrative']
 
 /** 维度代号 → 中文/英文/日文名 */
 export const GALGAME_DIM_LABEL: Record<GalgameDim, { zh: string; en: string; ja: string }> = {
-  experience: { zh: '阅历量', en: 'Experience', ja: '閲歴量' },
-  genre: { zh: '类型偏好', en: 'Genre', ja: 'ジャンル' },
-  aesthetic: { zh: '审美', en: 'Aesthetic', ja: '審美' },
-  narrative: { zh: '剧情理解', en: 'Narrative', ja: '物語理解' },
-  meme: { zh: '梗文化', en: 'Meme', ja: 'ミーム' },
+  depth: { zh: '阅历深度', en: 'Experience Depth', ja: '閲歴深度' },
+  knowledge: { zh: '作品通晓', en: 'Game Knowledge', ja: '作品知識' },
+  culture: { zh: '圈内文化', en: 'Community Culture', ja: 'コミュニティ文化' },
+  aesthetic: { zh: '审美素养', en: 'Aesthetic Appreciation', ja: '審美素養' },
+  narrative: { zh: '剧本鉴赏', en: 'Narrative Appreciation', ja: '脚本鑑賞' },
 }
 
 export interface GalgameAnswer {

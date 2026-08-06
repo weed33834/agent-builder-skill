@@ -123,6 +123,12 @@ export function SiteHeader() {
                 >
                   {t('nav.galgame')}
                 </NavLink>
+                <NavLink
+                  to="/take-galgame-char"
+                  className="nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] text-ink-faint hover:text-ink hover:bg-paper-soft rounded no-underline"
+                >
+                  {t('nav.galgame_char')}
+                </NavLink>
               </div>
             )}
             {/* 移动端:navOpen 时直接平铺测评链接(不依赖 dropdownOpen) */}
@@ -155,6 +161,12 @@ export function SiteHeader() {
                   className="nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] text-ink-faint hover:text-ink hover:bg-paper-soft rounded no-underline"
                 >
                   {t('nav.galgame')}
+                </NavLink>
+                <NavLink
+                  to="/take-galgame-char"
+                  className="nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] text-ink-faint hover:text-ink hover:bg-paper-soft rounded no-underline"
+                >
+                  {t('nav.galgame_char')}
                 </NavLink>
               </div>
             )}

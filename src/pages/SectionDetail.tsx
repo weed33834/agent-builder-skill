@@ -14,6 +14,7 @@ import { useDocumentMeta } from '@/lib/seo'
 import { categories } from '@/data/categories'
 import { assessments } from '@/lib/data'
 import { galgameMeta } from '@/data/galgame'
+import { CHAR_QUESTIONS } from '@/data/galgame-characters'
 import { asset } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import { InkBlot, SealStamp, BrushStroke, ConcentricRings, MountainLayers } from '@/components/ui/Ornaments'
@@ -24,6 +25,7 @@ const ASSESSMENT_ACCENT: Record<string, string> = {
   value: 'var(--mirror-value)',
   ideology: 'var(--mirror-ideology)',
   galgame: '#b8408b',
+  'galgame-char': '#ff2d95',
 }
 
 /** 统一的卡片元数据:常规测评 + galgame(独立路由) */
@@ -46,6 +48,16 @@ function resolveCards(catAssessments: string[]): CardMeta[] {
         question_count: galgameMeta.question_count,
         estimated_minutes: galgameMeta.estimated_minutes,
         route: '/take-galgame',
+      })
+      continue
+    }
+    if (at === 'galgame-char') {
+      cards.push({
+        type: 'galgame-char',
+        title: 'Galgame 角色画像',
+        question_count: CHAR_QUESTIONS.length,
+        estimated_minutes: 3,
+        route: '/take-galgame-char',
       })
       continue
     }
@@ -123,7 +135,7 @@ export default function SectionDetail() {
           liveAssessments.map((a, i) => {
             const accent = ASSESSMENT_ACCENT[a.type] || cat.accent
             const numCN = ['壹', '贰', '叁', '肆', '伍'][i] || String(i + 1)
-            const isGalgame = a.type === 'galgame'
+            const isGalgame = a.type === 'galgame' || a.type === 'galgame-char'
             return (
               <motion.div
                 key={a.type}

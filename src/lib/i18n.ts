@@ -13,7 +13,7 @@ type ResTree = Record<Lang, ResNode>
 // ===================== 翻译资源 =====================
 const RES: ResTree = {
   zh: {
-    nav: { celebrity: '名人镜', value: '价值镜', ideology: '意识镜', figures: '名人志', all_sections: '全部测评', galgame: 'Galgame 测评' },
+    nav: { celebrity: '名人镜', value: '价值镜', ideology: '意识镜', figures: '名人志', all_sections: '全部测评', galgame: 'Galgame 测评', galgame_char: 'Galgame 角色画像' },
     common: {
       back: '← 返回', exit: '← 退出', confirm: '确认', start: '开始',
       loading: '加载中…', processing: '生成报告中…', processing_sub: '请稍候,这通常需要 5-15 秒',
@@ -46,6 +46,7 @@ const RES: ResTree = {
         value: { icon: '义', title: '价值镜', tagline: '你的价值坐标', desc: '从利他、公正、诚实到自律,多维度刻画你在利益与原则之间的真实站位——你以为的原则,是否经得起情境的考验。' },
         ideology: { icon: '场', title: '意识镜', tagline: '政治光谱定位', desc: '经济与社会双轴交织,如实呈现你在政治光谱上的投影——不预设立场,也不引导结论。' },
         galgame: { icon: '游', title: 'Galgame 能力测评', tagline: '萌新还是老司机', desc: '50 道题,五维量化你的 Galgame 玩家底色。从 Key 社到 TYPE-MOON,从白学到 SCA-自的哲学,测出你在玩家圈的真实段位。' },
+        'galgame-char': { icon: '魂', title: 'Galgame 角色画像', tagline: '你的灵魂角色', desc: '12 道选择题,测出你的灵魂底色与哪个 Galgame 名角色最契合。命中注定就是 ta。' },
       },
       enter: '入镜 →', hero_lede: '三面镜子,九种方法,照见你在历史长河与价值坐标中的真实投影。',
       start_cta: '开始第一次凝视', about_cta: '了解心镜', hero_trust: '无需注册 · 匿名 · 约 8 分钟',
@@ -230,7 +231,7 @@ const RES: ResTree = {
   },
 
   en: {
-    nav: { celebrity: 'Celebrity', value: 'Value', ideology: 'Ideology', figures: 'Figures', all_sections: 'All Assessments', galgame: 'Galgame Test' },
+    nav: { celebrity: 'Celebrity', value: 'Value', ideology: 'Ideology', figures: 'Figures', all_sections: 'All Assessments', galgame: 'Galgame Test', galgame_char: 'Galgame Character Profile' },
     common: {
       back: '← Back', exit: '← Exit', confirm: 'Confirm', start: 'Begin',
       loading: 'Loading…', processing: 'Generating your report…', processing_sub: 'A moment please — usually takes 5–15 seconds',
@@ -263,6 +264,7 @@ const RES: ResTree = {
         value: { icon: 'V', title: 'Value Mirror', tagline: 'Your moral coordinates', desc: 'From altruism and justice to honesty and discipline, multidimensional mapping of where you truly stand between interest and principle. Can your convictions survive the test of context?' },
         ideology: { icon: 'I', title: 'Ideology Mirror', tagline: 'Spectrum positioning', desc: 'Cross-positioned on economic and social axes. No presupposed stance, no guided conclusion — only an honest projection of where you fall on the political spectrum.' },
         galgame: { icon: 'G', title: 'Galgame Aptitude Test', tagline: 'Newbie or veteran', desc: '50 questions across five dimensions to quantify your galgame player profile. From Key to TYPE-MOON, from White Album 2 faction wars to SCA-JI philosophy — find your true rank among players.' },
+        'galgame-char': { icon: 'S', title: 'Galgame Character Profile', tagline: 'Your soul character', desc: '12 questions to match your soul undertone with a classic galgame character. Fate awaits.' },
       },
       enter: 'Enter →', hero_lede: 'Three mirrors, nine methods — see your true projection across history and values.',
       start_cta: 'Begin Your First Gaze', about_cta: 'About MindMirror', hero_trust: 'No signup · Anonymous · ~8 min',
@@ -447,7 +449,7 @@ const RES: ResTree = {
   },
 
   ja: {
-    nav: { celebrity: '名人鏡', value: '価値鏡', ideology: '意識鏡', figures: '人物志', all_sections: '全測評', galgame: 'Galgame 測評' },
+    nav: { celebrity: '名人鏡', value: '価値鏡', ideology: '意識鏡', figures: '人物志', all_sections: '全測評', galgame: 'Galgame 測評', galgame_char: 'Galgame キャラクター' },
     common: {
       back: '← 戻る', exit: '← 終了', confirm: '確認', start: '開始',
       loading: '読み込み中…', processing: 'レポート生成中…', processing_sub: '少々お待ちください — 通常 5〜15 秒',
@@ -480,6 +482,7 @@ const RES: ResTree = {
         value: { icon: '義', title: '価値鏡', tagline: 'あなたの道徳座標', desc: '利他・公正・誠実・自律から、利益と原則の間での真の立ち位置を多次元的に描写。あなたの原則は状況の試練に耐えられるか。' },
         ideology: { icon: '場', title: '意識鏡', tagline: '政治スペクトル定位', desc: '経済軸と社会軸の交叉で位置決め。立場を前提せず、結論を誘導せず、政治スペクトル上の投影をありのままに提示する。' },
         galgame: { icon: '遊', title: 'Galgame 適性測評', tagline: '初心者か達人か', desc: '50 問・五次元で Galgame プレイヤーとしての本色を量化。Key 社から TYPE-MOON、白学から SCA-自の哲学まで、プレイヤー界での真の段位を測る。' },
+        'galgame-char': { icon: '魂', title: 'Galgame キャラクター', tagline: '君の魂のキャラ', desc: '12 問の選択で、あなたの魂の色に最も合う Galgame 名キャラを見つける。運命の出会い。' },
       },
       enter: '入鏡 →', hero_lede: '三つの鏡、九つの方法で、歴史と価値の座標における真の投影を見る。',
       start_cta: '最初の凝視を始める', about_cta: '心鏡について', hero_trust: '登録不要 · 匿名 · 約8分',

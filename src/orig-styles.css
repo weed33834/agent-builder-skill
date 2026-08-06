@@ -102,7 +102,7 @@ html, body {
   padding: 8px 16px;
   z-index: 9999;
   text-decoration: none;
-  border-radius: 0 0 4px 0;
+  border-radius: 0 0 8px 0;
 }
 .skip-link:focus {
   top: 0;
@@ -419,7 +419,7 @@ h1, h2, h3 {
 }
 .cmp-row:last-child { border-bottom: none; }
 .cmp-row .cmp-head { margin-bottom: 6px; }
-.cmp-bar { height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: #fff; font-size: 11px; min-width: 24px; }
+.cmp-bar { height: 18px; border-radius: 6px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: #fff; font-size: 11px; min-width: 24px; }
 .cmp-bar.cmp-self { background: var(--accent); }
 .cmp-bar.cmp-other { background: var(--mirror-celebrity); }
 .btn-primary, .btn-secondary, .btn-link {
@@ -438,6 +438,7 @@ h1, h2, h3 {
   color: var(--ink-soft);
   cursor: pointer;
   font-variation-settings: 'opsz' 14;
+  border-radius: 0.5rem;
 }
 .btn-primary {
   background: var(--accent);
@@ -934,7 +935,7 @@ h1, h2, h3 {
   justify-content: center;
   cursor: pointer;
   line-height: 1;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: all 0.15s var(--ease);
 }
 .sort-move:hover { color: var(--accent); }
@@ -1556,7 +1557,7 @@ h1, h2, h3 {
   flex-shrink: 0;
   width: 88px;
   height: 88px;
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
   background: var(--paper-faint);
   border: 1px solid var(--line-soft);
@@ -1578,7 +1579,7 @@ h1, h2, h3 {
 .match-item.top .match-portrait {
   width: 112px;
   height: 112px;
-  border-radius: 6px;
+  border-radius: 10px;
 }
 .match-portrait.img-fallback {
   background: var(--paper-soft);
@@ -1842,7 +1843,7 @@ h1, h2, h3 {
   color: var(--ink-faint);
   text-decoration: none;
   border: 1px solid var(--line);
-  border-radius: 2px;
+  border-radius: 6px;
   transition: all 0.2s var(--ease);
   white-space: nowrap;
 }
@@ -2334,7 +2335,7 @@ html { font-size: 16px; }
   font-family: var(--font-serif);
   font-size: 14px;
   line-height: 1.6;
-  border-radius: 4px;
+  border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   opacity: 0;
   transform: translateY(-12px);
@@ -2355,7 +2356,7 @@ html { font-size: 16px; }
   color: var(--accent);
   font-family: var(--font-serif);
   font-size: 14px;
-  border-radius: 2px;
+  border-radius: 6px;
   animation: mm-fade-in .2s var(--ease);
 }
 @keyframes mm-fade-in {
@@ -2542,7 +2543,7 @@ html { font-size: 16px; }
   color: var(--ink-faint);
   text-decoration: none;
   white-space: nowrap;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: all 0.2s var(--ease);
 }
 .nav-link:hover {
@@ -2565,7 +2566,7 @@ html { font-size: 16px; }
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 4px;
+  border-radius: 6px;
   opacity: 0.6;
   transition: opacity 0.2s;
 }
@@ -2797,7 +2798,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
 .nav-dropdown-panel { display: none; position: absolute; top: 100%; left: 0; min-width: 184px; background: var(--paper-faint); border: 1px solid var(--line); border-radius: 6px; padding: 6px; flex-direction: column; gap: 2px; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
 .nav-dropdown.open .nav-dropdown-panel { display: flex; }
 .nav-dropdown-panel .nav-link { display: block; white-space: nowrap; }
-.nav-toggle { background: none; border: none; cursor: pointer; font-size: 20px; color: var(--ink-faint); padding: 4px 8px; border-radius: 4px; }
+.nav-toggle { background: none; border: none; cursor: pointer; font-size: 20px; color: var(--ink-faint); padding: 4px 8px; border-radius: 6px; }
 @media (min-width: 769px) { .nav-toggle { display: none; } }
 .nav-toggle:hover { color: var(--ink); background: var(--paper-soft); }
 /* 移动端 nav 显隐由 React (Tailwind) 控制,这里只负责细节样式 */
@@ -2817,7 +2818,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
   margin: 24px 0;
   background: var(--paper-faint);
   border: 1px solid var(--line);
-  border-radius: 6px;
+  border-radius: 12px;
 }
 
 /* ---- 增强空态卡片(profile / history 匿名或无数据) ---- */
@@ -2870,7 +2871,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
   padding: 24px 28px;
   background: var(--paper-faint);
   border: 1px solid var(--line-soft);
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 /* ---- 隐私政策页 ---- */
@@ -2899,7 +2900,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
   padding: 12px 14px;
   background: var(--paper-faint);
   border-left: 2px solid var(--accent);
-  border-radius: 0 4px 4px 0;
+  border-radius: 0 8px 8px 0;
   color: var(--ink-soft);
   font-size: 14px;
   line-height: 1.85;
@@ -2950,7 +2951,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
   background: var(--paper-faint);
   border: 1px solid var(--line);
   border-left: 3px solid var(--mirror-celebrity);
-  border-radius: 0 4px 4px 0;
+  border-radius: 0 8px 8px 0;
   text-align: center;
 }
 .figure-related-title {
@@ -3066,7 +3067,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
   background: var(--paper-soft);
   border: 1px solid var(--line);
   border-top: 2px solid var(--mirror);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 .mcs-disc {
   flex: 0 0 auto;
@@ -3151,7 +3152,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
   background: var(--paper-soft);
   border: 1px solid var(--line);
   border-top: 2px solid var(--mirror);
-  border-radius: 2px;
+  border-radius: 8px;
   transition: all 0.3s var(--ease);
 }
 .mirror-next-card:hover {
@@ -3205,7 +3206,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
   width: 72px;
   height: 72px;
   margin: 0 auto 16px;
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
   background: var(--paper-faint);
   border: 1px solid var(--line-soft);
@@ -3484,7 +3485,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
   margin-bottom: 14px;
   border: 1px solid var(--accent-mid);
   background: var(--paper-faint);
-  border-radius: 2px;
+  border-radius: 6px;
 }
 
 /* ---- 关于页:卡片化段落 ---- */
@@ -3554,7 +3555,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
   background: var(--paper-faint);
   border: 1px solid var(--line-soft);
   border-left: 3px solid var(--mirror);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 12px 12px 0;
   margin-bottom: 16px;
   transition: all 0.3s var(--ease);
   overflow: hidden;
@@ -3707,7 +3708,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
   background: var(--paper-faint);
   border: 1px solid var(--line-soft);
   border-left: 3px solid var(--accent);
-  border-radius: 0 4px 4px 0;
+  border-radius: 0 8px 8px 0;
   transition: all 0.25s var(--ease);
 }
 .privacy-list li:hover {
@@ -3731,7 +3732,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
   padding: 16px 18px 16px 44px;
   background: var(--paper-faint);
   border-left: 3px solid var(--accent);
-  border-radius: 0 4px 4px 0;
+  border-radius: 0 8px 8px 0;
 }
 .privacy-note::before {
   content: '※';
@@ -4014,7 +4015,7 @@ button, .btn, a.btn, .mirror-card, .option, .choice, .nav-link, .lang-switch, .c
   color: var(--ink-faint);
   text-decoration: none;
   white-space: nowrap;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: all 0.2s var(--ease);
 }
 .focused-topbar .topbar-back:hover {
