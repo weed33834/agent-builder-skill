@@ -11,10 +11,9 @@
  * 完成提交:computeGalgameResult → base64 编码 → setLastResult → 跳 /report-galgame?r=
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { useDocumentMeta } from '@/lib/seo'
-import { useI18n } from '@/lib/i18n'
 import { play, vibrate } from '@/lib/audio'
 import { useLastResultStore } from '@/store'
 import { TopBar } from '@/components/layout/TopBar'
@@ -32,11 +31,11 @@ type Phase = 'intro' | 'running' | 'submitting'
 
 /** 维度 → 霓虹色 CSS 变量(用于答题卡分组着色与维度标签) */
 const DIM_VAR: Record<GalgameDim, string> = {
-  experience: 'var(--neon-dim-experience)',
-  genre: 'var(--neon-dim-genre)',
+  depth: 'var(--neon-dim-experience)',
+  knowledge: 'var(--neon-dim-genre)',
+  culture: 'var(--neon-dim-aesthetic)',
   aesthetic: 'var(--neon-dim-aesthetic)',
   narrative: 'var(--neon-dim-narrative)',
-  meme: 'var(--neon-dim-meme)',
 }
 
 /** 答题卡抽屉(参考 AnswerSheet.tsx 交互,因类型不同而独立实现) */
@@ -52,7 +51,7 @@ function GalgameSheet({ open, onClose, currentIdx, answers, onJump }: SheetProps
   // 按维度分组题号
   const groups = useMemo(() => {
     const m: Record<GalgameDim, number[]> = {
-      experience: [], genre: [], aesthetic: [], narrative: [], meme: [],
+      depth: [], knowledge: [], culture: [], aesthetic: [], narrative: [],
     }
     GALGAME_QUESTIONS.forEach((q, i) => { m[q.dim].push(i) })
     return GALGAME_DIM_ORDER.map((dim) => ({ dim, indices: m[dim] }))

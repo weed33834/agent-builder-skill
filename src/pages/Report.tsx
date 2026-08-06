@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button'
 import { RadarChart } from '@/components/RadarChart'
 import { ShareModal } from '@/components/ShareModal'
 import { TopBar } from '@/components/layout/TopBar'
+import { InkBlot, CalligraphyColumn, BrushStroke, MeanderBorder, TrinityMirror, MountainLayers } from '@/components/ui/Ornaments'
 import { asset } from '@/lib/utils'
 import type { AssessmentType, ComputeResult, Conflict, Insight, Match } from '@/lib/types'
 

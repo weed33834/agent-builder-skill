@@ -2,11 +2,9 @@
  * 隐私政策页 —— 复刻原 privacy.html(纯中文硬编码,未走 i18n,与原项目一致)。
  * 增强:艺术字体标题 + 卡片化段落 + 装饰元素 + 装饰条。
  */
-import { Link } from 'react-router-dom'
 import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
 import { Button } from '@/components/ui/Button'
-import { asset } from '@/lib/utils'
 // 装饰已精简 — 保持内容清晰
 
 export default function Privacy() {

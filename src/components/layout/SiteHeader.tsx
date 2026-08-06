@@ -1,230 +1,143 @@
 /**
- * 站点头部 —— 复刻原 site-header.js 注入的 .site-header。
- * 含品牌、移动端汉堡、主导航(测评下拉 + 名人志)、语言切换。
- * 答题页(/take)不渲染头部,由路由 Layout 控制。
+ * 站点头部 —— 极简设计
+ * 左:Logo"心镜"链接到首页
+ * 中:导航链接(全部测评 / 名人志 / 关于)
+ * 右:UserMenu + LangSwitch
+ * 移动端:汉堡菜单 + 右侧滑出抽屉
  */
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'motion/react'
 import { useI18n } from '@/lib/i18n'
-import { assessments } from '@/lib/data'
+import { UserMenu } from './UserMenu'
 import { LangSwitch } from './LangSwitch'
-import { cn, asset } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 export function SiteHeader() {
   const { t } = useI18n()
   const location = useLocation()
-  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [navOpen, setNavOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // 当前是否在答题上下文(下拉触发按钮高亮)
-  const inTake = location.pathname.startsWith('/take') || location.pathname.startsWith('/take-galgame')
-
-  // 路由变化时收起菜单
+  // 路由变化时关闭抽屉
   useEffect(() => {
-    setDropdownOpen(false)
     setNavOpen(false)
   }, [location.pathname, location.search])
 
-  // 点击外部 / Escape 关闭下拉
+  // 抽屉打开时阻止 body 滚动
   useEffect(() => {
-    if (!dropdownOpen) return
-    const onDocClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(false)
+    if (navOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
     }
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDropdownOpen(false) }
-    document.addEventListener('click', onDocClick)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('click', onDocClick)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [dropdownOpen])
+    return () => { document.body.style.overflow = '' }
+  }, [navOpen])
+
+  const navLinks = [
+    { to: '/sections', label: t('nav.all_sections') },
+    { to: '/figures', label: t('nav.figures') },
+    { to: '/about', label: t('common.about') },
+  ]
 
   return (
     <header className="site-header sticky top-0 z-[100] bg-paper/92 backdrop-blur border-b border-line-soft">
-      <div className="site-header-inner mx-auto flex items-center gap-6 px-6 h-14" style={{ maxWidth: 1200 }}>
-        <Link to="/" className="brand flex items-center gap-2 shrink-0 no-underline">
-          <img src={asset('/images/logo-mark.jpg')} alt="心镜" width={28} height={28} />
-          <span className="brand-name font-display text-lg font-medium tracking-[0.06em] text-ink">心镜</span>
+      <div className="mx-auto flex items-center gap-6 px-6 h-14" style={{ maxWidth: 1200 }}>
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2 shrink-0 no-underline">
+          <span className="font-display text-lg font-medium tracking-[0.06em] text-ink">心镜</span>
         </Link>
 
-        {/* 移动端汉堡按钮 —— 仅 ≤768px 显示 */}
-        <button
-          type="button"
-          className="nav-toggle md:hidden text-2xl text-ink p-1 ml-auto leading-none"
-          aria-label={t('common.menu')}
-          aria-expanded={navOpen}
-          onClick={() => setNavOpen((v) => !v)}
-        >
-          {navOpen ? '×' : '☰'}
-        </button>
-
-        {/* 主导航:桌面端横向,移动端下拉面板 */}
-        <nav
-          className={cn(
-            'primary-nav md:flex md:gap-1 md:flex-1 md:overflow-x-auto md:static md:bg-transparent md:shadow-none',
-            navOpen
-              ? 'flex flex-col gap-1 absolute top-14 left-0 right-0 bg-paper border-b border-line p-4 shadow-lg'
-              : 'hidden md:flex',
-          )}
-          aria-label={t('common.main_nav')}
-        >
-          {/* 全部测评 —— 单一下拉:总览 + 三镜 + 娱乐,合并"全部测评"与"测评下拉"为同一入口 */}
-          <div className="nav-dropdown relative md:block" ref={dropdownRef}>
-            <button
-              type="button"
-              className={cn(
-                'nav-dropdown-trigger inline-flex items-center gap-1 bg-transparent border-0 cursor-pointer px-3.5 py-1.5 text-[13px] tracking-[0.08em] rounded w-full md:w-auto',
-                inTake || location.pathname.startsWith('/sections') || location.pathname.startsWith('/section/')
-                  ? 'text-accent font-medium'
-                  : 'text-ink-faint hover:text-ink',
-              )}
-              aria-haspopup="true"
-              aria-expanded={dropdownOpen}
-              onClick={() => setDropdownOpen((v) => !v)}
+        {/* 桌面端导航 */}
+        <nav className="hidden md:flex items-center gap-1 flex-1" aria-label={t('common.main_nav')}>
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) =>
+                cn(
+                  'px-3.5 py-1.5 text-[13px] tracking-[0.08em] rounded no-underline transition-colors',
+                  isActive
+                    ? 'text-accent font-medium'
+                    : 'text-ink-faint hover:text-ink hover:bg-paper-soft',
+                )
+              }
             >
-              <span>{t('nav.all_sections')}</span>
-              <span className="caret text-[10px] opacity-60">▾</span>
-            </button>
-            {/* 桌面端:绝对定位浮层;移动端:navOpen 时内联展开 */}
-            {dropdownOpen && (
-              <div className={cn(
-                'nav-dropdown-panel min-w-[208px] bg-paper-faint border border-line rounded-md p-1.5 flex flex-col gap-0.5 z-[200] shadow-lg',
-                'absolute top-full left-0 hidden md:flex',
-                navOpen && 'static flex mt-1',
-              )}>
-                {/* 板块总览入口 */}
-                <NavLink
-                  to="/sections"
-                  className={({ isActive }) =>
-                    cn(
-                      'nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] rounded no-underline',
-                      isActive ? 'text-accent font-medium bg-paper-soft' : 'text-ink-faint hover:text-ink hover:bg-paper-soft',
-                    )
-                  }
-                >
-                  <span style={{ marginRight: 8, opacity: 0.7 }}>⌘</span>{t('nav.all_sections')}
-                </NavLink>
-                <div className="nav-dropdown-sep h-px bg-line my-1" />
-                {assessments.map((a) => (
-                  <NavLink
-                    key={a.type}
-                    to={`/take/${a.type}`}
-                    className="nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] text-ink-faint hover:text-ink hover:bg-paper-soft rounded no-underline"
-                  >
-                    {t(`nav.${a.type}`)}
-                  </NavLink>
-                ))}
-                <div className="nav-dropdown-sep h-px bg-line my-1" />
-                <NavLink
-                  to="/take-galgame"
-                  className="nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] text-ink-faint hover:text-ink hover:bg-paper-soft rounded no-underline"
-                >
-                  {t('nav.galgame')}
-                </NavLink>
-                <NavLink
-                  to="/take-galgame-char"
-                  className="nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] text-ink-faint hover:text-ink hover:bg-paper-soft rounded no-underline"
-                >
-                  {t('nav.galgame_char')}
-                </NavLink>
-              </div>
-            )}
-            {/* 移动端:navOpen 时直接平铺测评链接(不依赖 dropdownOpen) */}
-            {navOpen && (
-              <div className="md:hidden flex flex-col gap-0.5 mt-1">
-                <NavLink
-                  to="/sections"
-                  className={({ isActive }) =>
-                    cn(
-                      'nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] rounded no-underline',
-                      isActive ? 'text-accent font-medium bg-paper-soft' : 'text-ink-faint hover:text-ink hover:bg-paper-soft',
-                    )
-                  }
-                >
-                  <span style={{ marginRight: 8, opacity: 0.7 }}>⌘</span>{t('nav.all_sections')}
-                </NavLink>
-                <div className="nav-dropdown-sep h-px bg-line my-1" />
-                {assessments.map((a) => (
-                  <NavLink
-                    key={a.type}
-                    to={`/take/${a.type}`}
-                    className="nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] text-ink-faint hover:text-ink hover:bg-paper-soft rounded no-underline"
-                  >
-                    {t(`nav.${a.type}`)}
-                  </NavLink>
-                ))}
-                <div className="nav-dropdown-sep h-px bg-line my-1" />
-                <NavLink
-                  to="/take-galgame"
-                  className="nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] text-ink-faint hover:text-ink hover:bg-paper-soft rounded no-underline"
-                >
-                  {t('nav.galgame')}
-                </NavLink>
-                <NavLink
-                  to="/take-galgame-char"
-                  className="nav-link px-3.5 py-1.5 text-[13px] tracking-[0.08em] text-ink-faint hover:text-ink hover:bg-paper-soft rounded no-underline"
-                >
-                  {t('nav.galgame_char')}
-                </NavLink>
-              </div>
-            )}
-          </div>
-
-          {/* 名人志 */}
-          <NavLink
-            to="/figures"
-            className={({ isActive }) =>
-              cn(
-                'nav-link inline-block px-3.5 py-1.5 text-[13px] tracking-[0.08em] rounded no-underline',
-                isActive ? 'text-accent font-medium' : 'text-ink-faint hover:text-ink hover:bg-paper-soft',
-              )
-            }
-          >
-            {t('nav.figures')}
-          </NavLink>
-
-          {/* 登录 / 注册 —— 桌面端靠右,移动端随面板展开 */}
-          <NavLink
-            to="/auth"
-            className={({ isActive }) =>
-              cn(
-                'nav-link inline-block px-3.5 py-1.5 text-[13px] tracking-[0.08em] rounded no-underline md:ml-auto',
-                isActive ? 'text-accent font-medium' : 'text-ink-faint hover:text-ink hover:bg-paper-soft',
-              )
-            }
-          >
-            {t('auth.tab_login')}
-          </NavLink>
-
-          {/* 关于 / 隐私 —— 移动端补全入口(桌面端在 footer 已有,这里移动端补) */}
-          <NavLink
-            to="/about"
-            className={({ isActive }) =>
-              cn(
-                'nav-link inline-block px-3.5 py-1.5 text-[13px] tracking-[0.08em] rounded no-underline md:hidden',
-                isActive ? 'text-accent font-medium' : 'text-ink-faint hover:text-ink hover:bg-paper-soft',
-              )
-            }
-          >
-            {t('common.about')}
-          </NavLink>
-          <NavLink
-            to="/privacy"
-            className={({ isActive }) =>
-              cn(
-                'nav-link inline-block px-3.5 py-1.5 text-[13px] tracking-[0.08em] rounded no-underline md:hidden',
-                isActive ? 'text-accent font-medium' : 'text-ink-faint hover:text-ink hover:bg-paper-soft',
-              )
-            }
-          >
-            {t('common.privacy')}
-          </NavLink>
+              {link.label}
+            </NavLink>
+          ))}
         </nav>
 
-        <LangSwitch />
+        {/* 右侧区域 */}
+        <div className="flex items-center gap-2 ml-auto">
+          <div className="hidden md:flex items-center gap-2">
+            <UserMenu />
+            <LangSwitch />
+          </div>
+
+          {/* 移动端汉堡按钮 */}
+          <button
+            type="button"
+            className="md:hidden text-2xl text-ink p-1 leading-none"
+            aria-label={t('common.menu')}
+            aria-expanded={navOpen}
+            onClick={() => setNavOpen((v) => !v)}
+          >
+            {navOpen ? '×' : '☰'}
+          </button>
+        </div>
       </div>
+
+      {/* 移动端抽屉遮罩 + 面板 */}
+      <AnimatePresence>
+        {navOpen && (
+          <>
+            <motion.div
+              key="drawer-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/20 z-40 md:hidden"
+              onClick={() => setNavOpen(false)}
+            />
+            <motion.div
+              key="drawer-panel"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-14 right-0 bottom-0 w-72 bg-paper border-l border-line-soft z-50 md:hidden shadow-xl"
+            >
+              <nav className="flex flex-col gap-1 p-4" aria-label={t('common.main_nav')}>
+                {navLinks.map((link) => (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    className={({ isActive }) =>
+                      cn(
+                        'px-3.5 py-2.5 text-[13px] tracking-[0.08em] rounded no-underline transition-colors',
+                        isActive
+                          ? 'text-accent font-medium bg-accent-soft'
+                          : 'text-ink-faint hover:text-ink hover:bg-paper-soft',
+                      )
+                    }
+                    onClick={() => setNavOpen(false)}
+                  >
+                    {link.label}
+                  </NavLink>
+                ))}
+                <div className="border-t border-line-soft my-3" />
+                <div className="px-3.5 py-1">
+                  <UserMenu />
+                </div>
+                <div className="px-3.5 py-2">
+                  <LangSwitch inHeader={false} />
+                </div>
+              </nav>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </header>
   )
 }

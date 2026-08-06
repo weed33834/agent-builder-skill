@@ -1,0 +1,359 @@
+/* ============================================================
+   MindMirror 2.0 设计系统
+   多主题架构: 每个领域拥有独立的视觉语言
+   ============================================================ */
+
+/* ===================== 字体 ===================== */
+@import url('https://fonts.loli.net/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Serif+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap');
+
+/* ===================== 主题变量 ===================== */
+:root {
+  /* ---- 通用过渡 ---- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.04);
+  --shadow-xl: 0 24px 48px rgba(0,0,0,0.12);
+}
+
+/* ===== 1. 水墨主题 (自我探索) ===== */
+[data-theme="ink"] {
+  --bg: #f4efe3;
+  --bg-soft: #ede7d8;
+  --bg-faint: #e8e0cf;
+  --surface: #ffffff;
+  --surface-hover: #faf7f0;
+  --text: #2a2620;
+  --text-soft: #5a544a;
+  --text-dim: #8a8478;
+  --text-faint: #b0a99a;
+  --accent: #8b2e1f;
+  --accent-soft: rgba(139, 46, 31, 0.08);
+  --accent-mid: rgba(139, 46, 31, 0.25);
+  --line: rgba(42, 38, 32, 0.12);
+  --line-soft: rgba(42, 38, 32, 0.06);
+  --font-display: 'Noto Serif SC', 'Noto Serif JP', 'Noto Serif', serif;
+  --font-body: 'Noto Serif SC', 'Noto Serif JP', 'Noto Serif', serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%232a2620' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  /* 卡片 */
+  --card-bg: #ffffff;
+  --card-border: rgba(42, 38, 32, 0.08);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+  --card-radius: var(--radius-md);
+  /* 按钮 */
+  --btn-primary-bg: var(--accent);
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover: #a83a28;
+  /* 标签 */
+  --tag-bg: rgba(139, 46, 31, 0.08);
+  --tag-text: var(--accent);
+  --tag-radius: 999px;
+}
+
+/* ===== 2. 霓虹主题 (娱乐趣味) ===== */
+[data-theme="neon"] {
+  --bg: #0a0612;
+  --bg-soft: #120a1f;
+  --bg-faint: #1a1030;
+  --surface: #1a1030;
+  --surface-hover: #221542;
+  --text: #f0eaff;
+  --text-soft: #c8b8e0;
+  --text-dim: #9a8bb8;
+  --text-faint: #5a4d78;
+  --accent: #ff2d95;
+  --accent-soft: rgba(255, 45, 149, 0.15);
+  --accent-mid: rgba(255, 45, 149, 0.3);
+  --line: rgba(255, 255, 255, 0.10);
+  --line-soft: rgba(255, 255, 255, 0.05);
+  --neon-pink: #ff2d95;
+  --neon-cyan: #00f0ff;
+  --neon-purple: #b8408b;
+  --neon-lime: #c0ff3a;
+  --font-display: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --bg-pattern: linear-gradient(var(--bg-soft) 1px, transparent 1px) 0 0 / 100% 38px,
+                linear-gradient(90deg, var(--bg-soft) 1px, transparent 1px) 0 0 / 38px 100%;
+  --card-bg: linear-gradient(160deg, rgba(26, 16, 48, 0.92), rgba(18, 10, 31, 0.92));
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-shadow: 0 0 24px rgba(184, 64, 139, 0.12);
+  --card-radius: 4px;
+  --btn-primary-bg: linear-gradient(90deg, var(--neon-cyan), var(--neon-lime));
+  --btn-primary-text: #0a0612;
+  --btn-primary-hover: brightness(1.15);
+  --tag-bg: rgba(0, 240, 255, 0.08);
+  --tag-text: var(--neon-cyan);
+  --tag-radius: 2px;
+}
+
+/* ===== 3. 温暖主题 (关系镜像) ===== */
+[data-theme="warm"] {
+  --bg: #fdf8f4;
+  --bg-soft: #faf2ec;
+  --bg-faint: #f5eae0;
+  --surface: #ffffff;
+  --surface-hover: #fdf8f4;
+  --text: #3d3028;
+  --text-soft: #7a6a5e;
+  --text-dim: #a89484;
+  --text-faint: #cbb8a8;
+  --accent: #e8916a;
+  --accent-soft: rgba(232, 145, 106, 0.12);
+  --accent-mid: rgba(232, 145, 106, 0.25);
+  --line: rgba(61, 48, 40, 0.08);
+  --line-soft: rgba(61, 48, 40, 0.04);
+  --font-display: 'Nunito', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --bg-pattern: radial-gradient(circle at 25% 25%, rgba(232, 145, 106, 0.04) 0%, transparent 50%);
+  --card-bg: #ffffff;
+  --card-border: rgba(232, 145, 106, 0.15);
+  --card-shadow: 0 2px 12px rgba(232, 145, 106, 0.08);
+  --card-radius: var(--radius-lg);
+  --btn-primary-bg: var(--accent);
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover: #d4784e;
+  --tag-bg: rgba(232, 145, 106, 0.10);
+  --tag-text: var(--accent);
+  --tag-radius: var(--radius-sm);
+}
+
+/* ===== 4. 杂志主题 (首页) ===== */
+[data-theme="editorial"] {
+  --bg: #fafafa;
+  --bg-soft: #f5f5f5;
+  --bg-faint: #eeeeee;
+  --surface: #ffffff;
+  --surface-hover: #fafafa;
+  --text: #1a1a1a;
+  --text-soft: #555555;
+  --text-dim: #888888;
+  --text-faint: #bbbbbb;
+  --accent: #1a1a1a;
+  --accent-soft: rgba(26, 26, 26, 0.06);
+  --accent-mid: rgba(26, 26, 26, 0.15);
+  --line: rgba(26, 26, 26, 0.08);
+  --line-soft: rgba(26, 26, 26, 0.04);
+  --font-display: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+  --font-body: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --bg-pattern: none;
+  --card-bg: #ffffff;
+  --card-border: rgba(26, 26, 26, 0.06);
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  --card-radius: 0px;
+  --btn-primary-bg: var(--text);
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover: #333333;
+  --tag-bg: var(--accent-soft);
+  --tag-text: var(--text);
+  --tag-radius: 0;
+}
+
+/* ===== 默认主题 ===== */
+[data-theme]:not([data-theme="ink"]):not([data-theme="neon"]):not([data-theme="warm"]):not([data-theme="editorial"]) {
+  --bg: #f4efe3;
+  --bg-soft: #ede7d8;
+  --surface: #ffffff;
+  --text: #2a2620;
+  --accent: #8b2e1f;
+  --line: rgba(42, 38, 32, 0.12);
+  --font-display: 'Noto Serif SC', serif;
+  --font-body: 'Noto Serif SC', serif;
+  --card-bg: #ffffff;
+  --card-radius: 10px;
+  --btn-primary-bg: var(--accent);
+  --btn-primary-text: #ffffff;
+}
+
+/* ===================== 全局基础样式 ===================== */
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.4s var(--ease-out), color 0.4s var(--ease-out);
+}
+
+/* ===================== 通用组件 ===================== */
+
+/* ---- 卡片 ---- */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.card:active {
+  transform: translateY(0);
+}
+
+/* ---- 按钮 ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s var(--ease-spring);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active {
+  transform: scale(0.96);
+}
+.btn-primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+.btn-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text-soft);
+  border: 1px solid var(--line);
+}
+.btn-ghost:hover {
+  border-color: var(--text-soft);
+  color: var(--text);
+}
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 12px;
+}
+.btn-lg {
+  padding: 16px 36px;
+  font-size: 16px;
+}
+
+/* ---- 标签 ---- */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  border-radius: var(--tag-radius);
+  white-space: nowrap;
+}
+
+/* ---- 输入框 ---- */
+.input {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.input::placeholder {
+  color: var(--text-faint);
+}
+
+/* ---- 分隔线 ---- */
+.divider {
+  height: 1px;
+  background: var(--line);
+  margin: 24px 0;
+  border: none;
+}
+
+/* ---- 骨架屏 ---- */
+.skeleton {
+  background: linear-gradient(90deg, var(--line-soft) 25%, var(--line) 50%, var(--line-soft) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---- 页面过渡 ---- */
+.page-enter {
+  animation: pageFadeIn 0.5s var(--ease-out) both;
+}
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- 滚动条 ---- */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--text-faint);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-dim);
+}
+
+/* ===================== 主题切换动画 ===================== */
+.theme-transition {
+  transition: background 0.5s var(--ease-out),
+              color 0.5s var(--ease-out),
+              border-color 0.5s var(--ease-out),
+              box-shadow 0.5s var(--ease-out);
+}
+
+/* ===================== 响应式断点 ===================== */
+@media (max-width: 640px) {
+  .btn { padding: 10px 20px; font-size: 13px; }
+  .btn-lg { padding: 14px 28px; font-size: 15px; }
+  .card { border-radius: calc(var(--card-radius) * 0.75); }
+}
+
+/* ===================== 打印样式 ===================== */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; color: black !important; }
+}

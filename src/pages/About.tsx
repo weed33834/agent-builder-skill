@@ -2,7 +2,6 @@
  * 关于页 —— 复刻原 about.html:6 节(理念/三镜/九法/行为/隐私/边界)+ 印章 + 回首页。
  * 增强:艺术字体标题 + 卡片化布局 + 装饰组件 + 书法引言。
  */
-import { Link } from 'react-router-dom'
 import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
 import { Button } from '@/components/ui/Button'

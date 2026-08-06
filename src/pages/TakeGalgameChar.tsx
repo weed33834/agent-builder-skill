@@ -7,10 +7,9 @@
  * - 完成后跳 /report-galgame-char?r=
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { useDocumentMeta } from '@/lib/seo'
-import { useI18n } from '@/lib/i18n'
 import { play, vibrate } from '@/lib/audio'
 import { useLastResultStore } from '@/store'
 import { TopBar } from '@/components/layout/TopBar'
@@ -18,11 +17,14 @@ import {
   CHAR_QUESTIONS,
   GALGAME_CHARACTERS,
   computeCharacterMatch,
-  type CharQuestion,
-  type CharAnswer,
 } from '@/data/galgame-characters'
 
 type Phase = 'intro' | 'running' | 'submitting'
+
+interface CharAnswer {
+  question_id: string
+  option_id: string
+}
 
 /** 答题卡抽屉 */
 interface SheetProps {
@@ -162,7 +164,7 @@ export default function TakeGalgameChar() {
   }, [])
 
   // 记录答案:立即写入 + 音效震动,250ms 后自动进入下一题
-  const recordAnswer = useCallback((questionId: string, optionId: string, scores: Record<string, number>) => {
+  const recordAnswer = useCallback((questionId: string, optionId: string) => {
     const cur = idxRef.current
     const curQ = CHAR_QUESTIONS[cur]
     if (!curQ) return
@@ -170,7 +172,6 @@ export default function TakeGalgameChar() {
     const rec: CharAnswer = {
       question_id: questionId,
       option_id: optionId,
-      scores,
     }
     const next = [...answersRef.current]
     next[cur] = rec
@@ -341,7 +342,7 @@ export default function TakeGalgameChar() {
                         className={`neon-option${picked ? ' is-selected' : ''}`}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.97 }}
-                        onClick={() => recordAnswer(q.id, opt.id, opt.scores)}
+                        onClick={() => recordAnswer(q.id, opt.id)}
                         disabled={!!answers[currentIdx] && advanceTimerRef.current !== null}
                       >
                         <span className="neon-option-mark">{opt.id.toUpperCase()}</span>

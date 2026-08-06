@@ -1,22 +1,19 @@
 /**
- * 注册 / 登录页 UI 模板 —— 完整表单 + 「正在开发中」提示。
+ * 认证页 —— 双栏布局（左品牌 / 右表单），接入 Supabase 真实认证。
  *
- * 设计意图:用户后续接入真实后端时,只需替换 handleSubmit 内的占位逻辑
- * (目前弹 toast 提示「正在开发中」),表单字段、校验、UI 都已就位。
- *
- * - Tab 切换:登录 / 注册
- * - 字段:邮箱、密码(注册额外:确认密码、昵称)
- * - 客户端校验:邮箱格式、密码长度、两次密码一致
- * - 第三方登录按钮(GitHub / Google / 微信)同样标记「正在开发中」
- * - 提交后不跳转,toast 提示开发中,保留用户输入
+ * - 登录 / 注册 Tab 切换
+ * - 邮箱密码登录 / 注册
+ * - GitHub / Google OAuth 登录
+ * - 表单校验、加载态、错误提示
+ * - 登录成功后跳转首页
  */
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
+import { useNavigate } from 'react-router-dom'
 import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
+import { useAuth } from '@/lib/auth'
 import { toast } from '@/lib/toast'
-import { Button } from '@/components/ui/Button'
-// 装饰已精简 — 保持内容清晰
 
 type Mode = 'login' | 'register'
 
@@ -32,6 +29,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 export default function Auth() {
   const { t } = useI18n()
   const helmet = useDocumentMeta({ page: 'home' })
+  const navigate = useNavigate()
+  const { signIn, signUp, signInWithProvider } = useAuth()
+
   const [mode, setMode] = useState<Mode>('login')
   const [form, setForm] = useState<FormState>({ email: '', password: '', confirm: '', nickname: '' })
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
@@ -56,195 +56,254 @@ export default function Auth() {
     return Object.keys(e).length === 0
   }
 
-  const handleSubmit = (ev: React.FormEvent) => {
+  const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault()
     if (!validate()) return
     setSubmitting(true)
-    // 占位:真实接入时替换为 fetch / signIn 调用
-    setTimeout(() => {
+
+    try {
+      if (mode === 'login') {
+        const { error } = await signIn(form.email, form.password)
+        if (error) {
+          toast(error.message, 'error')
+          return
+        }
+        toast(t('auth.login_success'))
+        navigate('/')
+      } else {
+        const { error } = await signUp(form.email, form.password, form.nickname || undefined)
+        if (error) {
+          toast(error.message, 'error')
+          return
+        }
+        toast(t('auth.register_success'))
+        navigate('/')
+      }
+    } catch {
+      toast(t('common.error_generic'), 'error')
+    } finally {
       setSubmitting(false)
-      toast(t('auth.dev_toast'))
-    }, 600)
+    }
   }
 
-  const handleSocial = (provider: string) => {
-    toast(t('auth.dev_toast_social', { provider }))
+  const handleSocial = async (provider: 'github' | 'google') => {
+    setSubmitting(true)
+    try {
+      const { error } = await signInWithProvider(provider)
+      if (error) {
+        toast(error.message, 'error')
+      }
+      // OAuth 重定向由 Supabase 处理，不需要 navigate
+    } catch {
+      toast(t('common.error_generic'), 'error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleForgot = async () => {
+    if (!form.email) {
+      toast(t('auth.err_email_required'), 'warn')
+      return
+    }
+    if (!EMAIL_RE.test(form.email)) {
+      toast(t('auth.err_email_invalid'), 'warn')
+      return
+    }
+    const { supabase } = await import('@/lib/supabase')
+    const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    })
+    if (error) {
+      toast(error.message, 'error')
+    } else {
+      toast(t('auth.forgot_sent'))
+    }
   }
 
   return (
     <>
       {helmet}
-      <div className="container" style={{ position: 'relative' }}>
-      <header className="hero" style={{ position: 'relative', zIndex: 1, paddingBottom: 24 }}>
-        <div className="mirror-disc" style={{ width: 72, height: 72, marginBottom: 18 }} />
-        <p className="hero-eyebrow">MIND MIRROR · {t('auth.eyebrow')}</p>
-        <h1 className="art-title" style={{ fontSize: 48 }}>{t('auth.title')}</h1>
-        <p className="hero-title-en">{t('auth.subtitle')}</p>
-        <p className="hero-lede" style={{ maxWidth: 520, margin: '14px auto 0' }}>{t('auth.lede')}</p>
-        <div className="hero-divider"><span /></div>
-      </header>
-
-      {/* 正在开发中提示条 */}
-      <motion.div
-        className="auth-notice"
-        role="status"
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        style={{ position: 'relative', zIndex: 1 }}
-      >
-        <span className="auth-notice-badge">{t('auth.dev_badge')}</span>
-        <p className="auth-notice-text">{t('auth.dev_body')}</p>
-      </motion.div>
-
-      <div className="auth-card" style={{ position: 'relative', zIndex: 1 }}>
-        {/* Tab 切换 */}
-        <div className="auth-tabs" role="tablist">
-          {(['login', 'register'] as Mode[]).map((m) => (
-            <button
-              key={m}
-              type="button"
-              role="tab"
-              aria-selected={mode === m}
-              className={`auth-tab${mode === m ? ' active' : ''}`}
-              onClick={() => { setMode(m); setErrors({}) }}
-            >
-              {t(`auth.tab_${m}`)}
-              {mode === m && (
-                <motion.span
-                  layoutId="auth-tab-underline"
-                  className="auth-tab-underline"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
-              )}
-            </button>
-          ))}
+      <div className="auth-split">
+        {/* 左栏：品牌展示 */}
+        <div className="auth-brand">
+          <div className="auth-brand-inner">
+            <div className="auth-brand-icon">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+                <circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
+                <circle cx="24" cy="24" r="10" stroke="currentColor" strokeWidth="1.5" opacity="0.6" />
+                <circle cx="24" cy="24" r="3" fill="currentColor" opacity="0.8" />
+              </svg>
+            </div>
+            <h1 className="auth-brand-title">心镜</h1>
+            <p className="auth-brand-sub">MindMirror</p>
+            <p className="auth-brand-tagline">{t('auth.lede')}</p>
+            <div className="auth-brand-divider" />
+            <p className="auth-brand-quote">{t('auth.brand_quote')}</p>
+          </div>
         </div>
 
-        <form className="auth-form" onSubmit={handleSubmit} noValidate>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={mode}
-              initial={{ opacity: 0, x: 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -12 }}
-              transition={{ duration: 0.25 }}
-            >
-              {mode === 'register' && (
-                <Field
-                  label={t('auth.label_nickname')}
-                  icon="人"
-                  error={errors.nickname}
+        {/* 右栏：表单 */}
+        <div className="auth-panel">
+          <div className="auth-panel-inner">
+            <div className="auth-tabs" role="tablist">
+              {(['login', 'register'] as Mode[]).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === m}
+                  className={`auth-tab${mode === m ? ' active' : ''}`}
+                  onClick={() => { setMode(m); setErrors({}) }}
                 >
-                  <input
-                    type="text"
-                    value={form.nickname}
-                    onChange={(e) => setField('nickname', e.target.value)}
-                    placeholder={t('auth.ph_nickname')}
-                    autoComplete="nickname"
-                    className="auth-input"
-                  />
-                </Field>
+                  {t(`auth.tab_${m}`)}
+                  {mode === m && (
+                    <motion.span
+                      layoutId="auth-tab-underline"
+                      className="auth-tab-underline"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <form className="auth-form" onSubmit={handleSubmit} noValidate>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={mode}
+                  initial={{ opacity: 0, x: 16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -16 }}
+                  transition={{ duration: 0.2 }}
+                  className="auth-fields-wrap"
+                >
+                  {mode === 'register' && (
+                    <Field
+                      label={t('auth.label_nickname')}
+                      icon="人"
+                      error={errors.nickname}
+                    >
+                      <input
+                        type="text"
+                        value={form.nickname}
+                        onChange={(e) => setField('nickname', e.target.value)}
+                        placeholder={t('auth.ph_nickname')}
+                        autoComplete="nickname"
+                        className="auth-input"
+                      />
+                    </Field>
+                  )}
+
+                  <Field label={t('auth.label_email')} icon="✉" error={errors.email}>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setField('email', e.target.value)}
+                      placeholder={t('auth.ph_email')}
+                      autoComplete="email"
+                      className={`auth-input${errors.email ? ' has-error' : ''}`}
+                      aria-invalid={!!errors.email}
+                    />
+                  </Field>
+
+                  <Field label={t('auth.label_password')} icon="钥" error={errors.password}>
+                    <input
+                      type="password"
+                      value={form.password}
+                      onChange={(e) => setField('password', e.target.value)}
+                      placeholder={t('auth.ph_password')}
+                      autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                      className={`auth-input${errors.password ? ' has-error' : ''}`}
+                      aria-invalid={!!errors.password}
+                    />
+                  </Field>
+
+                  {mode === 'register' && (
+                    <Field label={t('auth.label_confirm')} icon="钥" error={errors.confirm}>
+                      <input
+                        type="password"
+                        value={form.confirm}
+                        onChange={(e) => setField('confirm', e.target.value)}
+                        placeholder={t('auth.ph_confirm')}
+                        autoComplete="new-password"
+                        className={`auth-input${errors.confirm ? ' has-error' : ''}`}
+                        aria-invalid={!!errors.confirm}
+                      />
+                    </Field>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+
+              {mode === 'login' && (
+                <div className="auth-row-between">
+                  <label className="auth-remember">
+                    <input type="checkbox" /> <span>{t('auth.remember')}</span>
+                  </label>
+                  <button
+                    type="button"
+                    className="auth-link-btn"
+                    onClick={handleForgot}
+                  >
+                    {t('auth.forgot')}
+                  </button>
+                </div>
               )}
 
-              <Field label={t('auth.label_email')} icon="✉" error={errors.email}>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setField('email', e.target.value)}
-                  placeholder={t('auth.ph_email')}
-                  autoComplete="email"
-                  className={`auth-input${errors.email ? ' has-error' : ''}`}
-                  aria-invalid={!!errors.email}
-                />
-              </Field>
+              <button
+                type="submit"
+                className="auth-submit-btn"
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <span className="auth-submit-loading">
+                    <span className="auth-spinner" />
+                    {t('common.loading')}
+                  </span>
+                ) : (
+                  t(`auth.submit_${mode}`)
+                )}
+              </button>
+            </form>
 
-              <Field label={t('auth.label_password')} icon="钥" error={errors.password}>
-                <input
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => setField('password', e.target.value)}
-                  placeholder={t('auth.ph_password')}
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                  className={`auth-input${errors.password ? ' has-error' : ''}`}
-                  aria-invalid={!!errors.password}
-                />
-              </Field>
+            <div className="auth-divider-text"><span>{t('auth.or_divider')}</span></div>
 
-              {mode === 'register' && (
-                <Field label={t('auth.label_confirm')} icon="钥" error={errors.confirm}>
-                  <input
-                    type="password"
-                    value={form.confirm}
-                    onChange={(e) => setField('confirm', e.target.value)}
-                    placeholder={t('auth.ph_confirm')}
-                    autoComplete="new-password"
-                    className={`auth-input${errors.confirm ? ' has-error' : ''}`}
-                    aria-invalid={!!errors.confirm}
-                  />
-                </Field>
-              )}
-            </motion.div>
-          </AnimatePresence>
-
-          {mode === 'login' && (
-            <div className="auth-row-between">
-              <label className="auth-remember">
-                <input type="checkbox" /> <span>{t('auth.remember')}</span>
-              </label>
-              <button type="button" className="auth-link-btn" onClick={() => toast(t('auth.dev_toast'))}>
-                {t('auth.forgot')}
+            <div className="auth-social">
+              <button
+                type="button"
+                className="auth-social-btn"
+                onClick={() => handleSocial('github')}
+                disabled={submitting}
+                aria-label="GitHub"
+              >
+                <SocialIcon id="github" />
+                <span>GitHub</span>
+              </button>
+              <button
+                type="button"
+                className="auth-social-btn"
+                onClick={() => handleSocial('google')}
+                disabled={submitting}
+                aria-label="Google"
+              >
+                <SocialIcon id="google" />
+                <span>Google</span>
               </button>
             </div>
-          )}
 
-          <Button
-            type="submit"
-            className="auth-submit"
-            disabled={submitting}
-          >
-            {submitting ? t('common.loading') : t(`auth.submit_${mode}`)}
-          </Button>
-        </form>
-
-        <div className="auth-divider-text"><span>{t('auth.or_divider')}</span></div>
-
-        {/* 第三方登录 */}
-        <div className="auth-social">
-          {[
-            { id: 'github', label: 'GitHub' },
-            { id: 'google', label: 'Google' },
-            { id: 'wechat', label: t('auth.social_wechat') },
-          ].map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              className="auth-social-btn"
-              onClick={() => handleSocial(p.label)}
-              aria-label={p.label}
-            >
-              <SocialIcon id={p.id} />
-              <span>{p.label}</span>
-            </button>
-          ))}
+            <p className="auth-foot-hint">
+              {mode === 'login' ? t('auth.switch_to_register') : t('auth.switch_to_login')}{' '}
+              <button
+                type="button"
+                className="auth-link-btn"
+                onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setErrors({}) }}
+              >
+                {mode === 'login' ? t('auth.tab_register') : t('auth.tab_login')}
+              </button>
+            </p>
+          </div>
         </div>
-
-        <p className="auth-foot-hint">
-          {mode === 'login' ? t('auth.switch_to_register') : t('auth.switch_to_login')}{' '}
-          <button
-            type="button"
-            className="auth-link-btn"
-            onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setErrors({}) }}
-          >
-            {mode === 'login' ? t('auth.tab_register') : t('auth.tab_login')}
-          </button>
-        </p>
       </div>
-
-      <div className="actions" style={{ position: 'relative', zIndex: 1, marginTop: 24, textAlign: 'center' }}>
-        <Button variant="secondary" to="/">{t('common.back_home')}</Button>
-      </div>
-    </div>
     </>
   )
 }
@@ -282,7 +341,7 @@ function Field({ label, icon, error, children }: {
 }
 
 function SocialIcon({ id }: { id: string }) {
-  const common = { width: 16, height: 16, viewBox: '0 0 24 24', 'aria-hidden': true } as const
+  const common = { width: 16, height: 16, viewBox: '0 0 24 24', 'aria-hidden': true as const }
   if (id === 'github') {
     return (
       <svg {...common} fill="currentColor">
@@ -300,11 +359,5 @@ function SocialIcon({ id }: { id: string }) {
       </svg>
     )
   }
-  // wechat
-  return (
-    <svg {...common} fill="#4a8b6b">
-      <path d="M8.69 2C4.45 2 1 4.94 1 8.56c0 2.1 1.18 3.97 3.02 5.17-.18.7-.5 1.86-.57 2.1-.09.3.13.27.27.18.13-.07 1.6-1.06 2.32-1.55.66.16 1.36.26 2.08.29-.18-.55-.27-1.13-.27-1.73 0-3.34 3.34-6.05 7.46-6.05.27 0 .53.02.79.04C15.5 4.04 12.39 2 8.69 2Zm-2.5 4.2a1.04 1.04 0 1 1 0 2.08 1.04 1.04 0 0 1 0-2.08Zm5 0a1.04 1.04 0 1 1 0 2.08 1.04 1.04 0 0 1 0-2.08Z" />
-      <path d="M23 13.78c0-2.96-2.88-5.36-6.43-5.36-3.55 0-6.42 2.4-6.42 5.36 0 2.96 2.87 5.36 6.42 5.36.7 0 1.36-.09 1.99-.26.55.37 1.79 1.18 1.91 1.25.12.07.3.1.21-.16-.06-.18-.32-1.13-.46-1.71C21.86 17.31 23 15.66 23 13.78Zm-9.07-1.36a.88.88 0 1 1 0-1.76.88.88 0 0 1 0 1.76Zm4.29 0a.88.88 0 1 1 0-1.76.88.88 0 0 1 0 1.76Z" />
-    </svg>
-  )
+  return null
 }

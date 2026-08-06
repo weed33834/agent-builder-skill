@@ -10,7 +10,6 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import confetti from 'canvas-confetti'
 import { useDocumentMeta } from '@/lib/seo'
-import { useI18n } from '@/lib/i18n'
 import { play, vibrate } from '@/lib/audio'
 import { toast } from '@/lib/toast'
 import { useLastResultStore } from '@/store'
@@ -43,11 +42,11 @@ function decodeShare(raw: string): Decoded | null {
 
 /** 维度 → 霓虹色 CSS 变量 */
 const DIM_VAR: Record<GalgameDim, string> = {
-  experience: 'var(--neon-dim-experience)',
-  genre: 'var(--neon-dim-genre)',
+  depth: 'var(--neon-dim-experience)',
+  knowledge: 'var(--neon-dim-genre)',
+  culture: 'var(--neon-dim-aesthetic)',
   aesthetic: 'var(--neon-dim-aesthetic)',
   narrative: 'var(--neon-dim-narrative)',
-  meme: 'var(--neon-dim-meme)',
 }
 
 /** 霓虹庆祝粒子色 */
@@ -65,14 +64,14 @@ function tierOf(pct: number): string {
 /** 维度分档点评(有玩家社群人味,不堆空话) */
 const DIM_COMMENT: Record<GalgameDim, string[]> = {
   // 顺序:萌新 / 入门 / 小资历 / 老资历 / 老司机
-  experience: [
+  depth: [
     '大门才推开一条缝,通关清单还得慢慢攒。',
     '通关过几部名作,硬盘里开始有迹可循。',
     '通关键堆得起来了,Key 社和型月都摸过一轮。',
     '通关清单能拉一长串,剧本家风格一眼能认。',
     '硬盘就是一部 Galgame 通关史,冷门佳作也藏了不少。',
   ],
-  genre: [
+  knowledge: [
     '还没摸清自己吃哪一口,先广撒网看看。',
     '开始知道自己偏爱哪种类型了。',
     '萌系、泣系、社会派都有涉猎,口味渐稳。',
@@ -93,7 +92,7 @@ const DIM_COMMENT: Record<GalgameDim, string[]> = {
     '剧本家风格了然于胸,叙事诡计瞒不过你。',
     'SCA-自的哲学、打越的诡计都嚼过,剧本门儿清。',
   ],
-  meme: [
+  culture: [
     '白学现场只能围观吃瓜,梗接不上。',
     '“又到了白色相簿的季节”能跟着乐了。',
     '名场面名台词能接上几句。',

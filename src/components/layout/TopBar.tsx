@@ -7,7 +7,7 @@
  * - 移动端:左 logo + 简短页名 + 返回按钮
  * - 视觉:极简、克制,与 hero 背景的宣纸色一致
  */
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { useI18n } from '@/lib/i18n'
 import { asset, cn } from '@/lib/utils'
 import { LangSwitch } from './LangSwitch'
@@ -21,7 +21,6 @@ interface TopBarProps {
 
 export function TopBar({ sectionKey, children }: TopBarProps) {
   const { t } = useI18n()
-  const location = useLocation()
 
   return (
     <header className="focused-topbar sticky top-0 z-[100] bg-paper/92 backdrop-blur border-b border-line-soft">
