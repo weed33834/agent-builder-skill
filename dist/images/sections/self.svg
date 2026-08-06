@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <!-- 三镜交错,半透明填充便于看出交叠 -->
+  </defs>
+  <!-- 旧铜镜 -->
+  <circle cx="24" cy="26" r="14" fill="#8b6a2e" fill-opacity="0.18" stroke="#8b6a2e" stroke-width="1.6"/>
+  <!-- 青石镜 -->
+  <circle cx="40" cy="26" r="14" fill="#4a6b5c" fill-opacity="0.18" stroke="#4a6b5c" stroke-width="1.6"/>
+  <!-- 钢蓝镜 -->
+  <circle cx="32" cy="40" r="14" fill="#3a5670" fill-opacity="0.18" stroke="#3a5670" stroke-width="1.6"/>
+  <!-- 中央抽象人形(朱墨):头 + 肩 -->
+  <circle cx="32" cy="27" r="4.2" fill="#8b2e1f"/>
+  <path d="M24,40 Q24,31 32,31 Q40,31 40,40 Z" fill="#8b2e1f"/>
+  <!-- 心字篆意:在头顶点一朱砂,呼应心镜 -->
+  <circle cx="32" cy="17.5" r="1.1" fill="#8b2e1f"/>
+</svg>

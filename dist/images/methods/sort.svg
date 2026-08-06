@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- 排序:三条不等长横线 + 上下箭头 -->
+  <g stroke="#1a1714" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7">
+    <!-- 三条横线(从长到短) -->
+    <line x1="14" y1="22" x2="50" y2="22"/>
+    <line x1="14" y1="32" x2="40" y2="32"/>
+    <line x1="14" y1="42" x2="30" y2="42"/>
+    <!-- 上箭头 -->
+    <path d="M 52 18 L 56 14 L 60 18" stroke-linejoin="round"/>
+    <line x1="56" y1="14" x2="56" y2="28"/>
+    <!-- 下箭头 -->
+    <path d="M 52 46 L 56 50 L 60 46" stroke-linejoin="round"/>
+    <line x1="56" y1="36" x2="56" y2="50"/>
+  </g>
+</svg>

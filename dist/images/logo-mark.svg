@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 极简标记:圆 + 一道朱墨斜划 -->
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#3a5670" stroke-width="3"/>
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#8b2e1f" stroke-width="1" opacity="0.35"/>
+  <!-- 朱墨斜划(毛笔斜扫,微锥形) -->
+  <path d="M14,50 Q30,34 50,14 L46,10 Q26,30 10,46 Z" fill="#8b2e1f"/>
+</svg>

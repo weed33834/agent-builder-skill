@@ -1,0 +1,1 @@
+import{N as e}from"./index-YjrmfoZg.js";function t(t,n=`info`){switch(n){case`error`:e.error(t);break;case`warn`:e.warning(t);break;default:e(t)}}export{t};

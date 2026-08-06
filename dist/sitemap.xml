@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 部署提示:搜索引擎要求 <loc> 为绝对 URL。
+     本站为域名无关的纯静态站点,上线时请把 https://YOUR-DOMAIN 批量替换为实际域名。 -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://YOUR-DOMAIN/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://YOUR-DOMAIN/sections</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://YOUR-DOMAIN/section/self</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://YOUR-DOMAIN/section/entertainment</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://YOUR-DOMAIN/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://YOUR-DOMAIN/figures</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://YOUR-DOMAIN/take/celebrity</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://YOUR-DOMAIN/take/value</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://YOUR-DOMAIN/take/ideology</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://YOUR-DOMAIN/take-galgame</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://YOUR-DOMAIN/auth</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://YOUR-DOMAIN/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>
