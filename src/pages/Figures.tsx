@@ -13,7 +13,7 @@ import { cn, asset } from '@/lib/utils'
 
 export default function Figures() {
   const { t } = useI18n()
-  useDocumentMeta({ page: 'figure' })
+  const helmet = useDocumentMeta({ page: 'figure' })
   const { data: all, isLoading, error } = useQuery({ queryKey: qk.celebrities(), queryFn: fetchCelebrities })
   const [activeTag, setActiveTag] = useState('')
   const [query, setQuery] = useState('')
@@ -45,7 +45,9 @@ export default function Figures() {
   }, [all, activeTag, query])
 
   return (
-    <div className="container">
+    <>
+      {helmet}
+      <div className="container">
       <header className="fig-hero">
         <div className="fig-eyebrow art-seal" style={{ fontFamily: 'var(--font-seal)' }}>FIGURES · {t('home.figures.title')}</div>
         <h1 className="fig-title art-title">{t('home.figures.title')}</h1>
@@ -87,5 +89,6 @@ export default function Figures() {
         )}
       </div>
     </div>
+    </>
   )
 }

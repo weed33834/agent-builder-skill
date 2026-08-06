@@ -41,10 +41,12 @@ function resolveLiveCards(catAssessments: string[]): CardMeta[] {
 
 export default function Sections() {
   const { t } = useI18n()
-  useDocumentMeta({ page: 'home' })
+  const helmet = useDocumentMeta({ page: 'home' })
 
   return (
-    <div className="container" style={{ position: 'relative' }}>
+    <>
+      {helmet}
+      <div className="container" style={{ position: 'relative' }}>
       <header className="hero" style={{ position: 'relative', zIndex: 1, paddingBottom: 32 }}>
         <div className="mirror-disc" style={{ width: 72, height: 72, marginBottom: 20 }} />
         <p className="hero-eyebrow">MIND MIRROR · 全部测评</p>
@@ -120,5 +122,6 @@ export default function Sections() {
         <Button variant="secondary" to="/">{t('common.back_home')}</Button>
       </div>
     </div>
+    </>
   )
 }

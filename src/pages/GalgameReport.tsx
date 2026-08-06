@@ -125,7 +125,7 @@ function pointsStr(pts: { x: number; y: number }[]): string {
 export default function GalgameReport() {
   const [searchParams] = useSearchParams()
   const lastResult = useLastResultStore((s) => s.result)
-  useDocumentMeta({ page: 'report', vars: { name: galgameMeta.title } })
+  const helmet = useDocumentMeta({ page: 'report', vars: { name: galgameMeta.title } })
 
   const decoded = useMemo<Decoded | null>(() => {
     const raw = searchParams.get('r') || lastResult || ''
@@ -186,15 +186,18 @@ export default function GalgameReport() {
 
   if (!decoded || !r || !title) {
     return (
-      <div className="neon-report-wrap">
-        <TopBar sectionKey="common.error_generic" />
-        <div className="neon-error">
-          <div className="neon-title-emoji" aria-hidden="true">💾</div>
-          <h2 className="neon-error-title">数据损坏 / DATA CORRUPTED</h2>
-          <p className="neon-error-desc">这份报告的链接已失效或解析失败。重新测一遍,生成新的资历档案。</p>
-          <Link className="neon-btn" to="/take-galgame">重新测评 →</Link>
+      <>
+        {helmet}
+        <div className="neon-report-wrap">
+          <TopBar sectionKey="common.error_generic" />
+          <div className="neon-error">
+            <div className="neon-title-emoji" aria-hidden="true">💾</div>
+            <h2 className="neon-error-title">数据损坏 / DATA CORRUPTED</h2>
+            <p className="neon-error-desc">这份报告的链接已失效或解析失败。重新测一遍,生成新的资历档案。</p>
+            <Link className="neon-btn" to="/take-galgame">重新测评 →</Link>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
@@ -223,8 +226,10 @@ export default function GalgameReport() {
   }
 
   return (
-    <div className="neon-report-wrap">
-      <TopBar sectionKey="nav.galgame" />
+    <>
+      {helmet}
+      <div className="neon-report-wrap">
+        <TopBar sectionKey="nav.galgame" />
 
       {/* ===== Hero ===== */}
       <section className="neon-hero">
@@ -415,5 +420,6 @@ export default function GalgameReport() {
         <Link className="neon-btn is-pink" to="/">回首页</Link>
       </div>
     </div>
+    </>
   )
 }

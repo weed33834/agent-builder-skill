@@ -17,7 +17,7 @@ import { MountainLayers } from '@/components/ui/Ornaments'
 export default function Figure() {
   const { id } = useParams<{ id: string }>()
   const { t } = useI18n()
-  useDocumentMeta({ page: 'figure' })
+  const helmet = useDocumentMeta({ page: 'figure' })
   const { data: all, isLoading } = useQuery({ queryKey: qk.celebrities(), queryFn: fetchCelebrities })
 
   const f: Celebrity | undefined = all?.find((x) => String(x.id) === String(id))
@@ -34,32 +34,40 @@ export default function Figure() {
 
   if (isLoading) {
     return (
-      <div className="container">
-        <div className="figure-loading">
-          <div className="mirror-disc" />
-          <p>{t('common.loading')}</p>
+      <>
+        {helmet}
+        <div className="container">
+          <div className="figure-loading">
+            <div className="mirror-disc" />
+            <p>{t('common.loading')}</p>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
   if (!f) {
     return (
-      <div className="container" style={{ position: 'relative' }}>
-        <div className="figure-error" style={{ position: 'relative', zIndex: 1 }}>
-          <p>{t('figure.not_found')}</p>
-          <Button to="/">{t('common.back_home')}</Button>
+      <>
+        {helmet}
+        <div className="container" style={{ position: 'relative' }}>
+          <div className="figure-error" style={{ position: 'relative', zIndex: 1 }}>
+            <p>{t('figure.not_found')}</p>
+            <Button to="/">{t('common.back_home')}</Button>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
   const subtitle = [f.era, f.role].filter(Boolean)
 
   return (
-    <div className="container" style={{ position: 'relative' }}>
+    <>
+      {helmet}
+      <div className="container" style={{ position: 'relative' }}>
 
-      {/* ===== Hero ===== */}
+        {/* ===== Hero ===== */}
       <header className="figure-hero" style={{ position: 'relative', overflow: 'visible' }}>
         <div style={{ position: 'relative', display: 'inline-block', zIndex: 1 }}>
           <Portrait
@@ -130,5 +138,6 @@ export default function Figure() {
       {/* 远山层叠底部装饰 */}
       <MountainLayers color="var(--ink-ghost)" style={{ width: '100%', maxWidth: '600px', height: '80px', margin: '24px auto 0', display: 'block', position: 'relative', zIndex: 1 }} />
     </div>
+    </>
   )
 }

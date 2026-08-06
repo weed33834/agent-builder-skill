@@ -31,7 +31,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default function Auth() {
   const { t } = useI18n()
-  useDocumentMeta({ page: 'home' })
+  const helmet = useDocumentMeta({ page: 'home' })
   const [mode, setMode] = useState<Mode>('login')
   const [form, setForm] = useState<FormState>({ email: '', password: '', confirm: '', nickname: '' })
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
@@ -72,7 +72,9 @@ export default function Auth() {
   }
 
   return (
-    <div className="container" style={{ position: 'relative' }}>
+    <>
+      {helmet}
+      <div className="container" style={{ position: 'relative' }}>
       <header className="hero" style={{ position: 'relative', zIndex: 1, paddingBottom: 24 }}>
         <div className="mirror-disc" style={{ width: 72, height: 72, marginBottom: 18 }} />
         <p className="hero-eyebrow">MIND MIRROR · {t('auth.eyebrow')}</p>
@@ -243,6 +245,7 @@ export default function Auth() {
         <Button variant="secondary" to="/">{t('common.back_home')}</Button>
       </div>
     </div>
+    </>
   )
 }
 

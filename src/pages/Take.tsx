@@ -46,7 +46,7 @@ export default function Take() {
 
   const a = assessments.find((x) => x.type === type)
   const metaVars = useMemo(() => ({ name: a?.title || '' }), [a?.title])
-  useDocumentMeta({ page: 'take', vars: metaVars })
+  const helmet = useDocumentMeta({ page: 'take', vars: metaVars })
 
   const { data: bank, error } = useQuery({
     queryKey: type ? qk.bank(type) : ['bank', 'none'],
@@ -283,7 +283,9 @@ export default function Take() {
   const timerRatio = q && q.time_limit_sec ? remaining / q.time_limit_sec : 0
 
   return (
-    <div className="container" style={{ position: 'relative' }}>
+    <>
+      {helmet}
+      <div className="container" style={{ position: 'relative' }}>
       {/* 独立顶部条:取代原本内联的 .take-header,保持聚焦态无站点头部但仍有面包屑与返回 */}
       <TopBar sectionKey={`take.title_${type || 'celebrity'}`} />
 
@@ -419,5 +421,6 @@ export default function Take() {
         />
       )}
     </div>
+    </>
   )
 }

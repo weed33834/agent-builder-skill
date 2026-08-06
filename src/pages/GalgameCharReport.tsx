@@ -41,7 +41,7 @@ const NEON_COLORS = ['#ff2d95', '#00f0ff', '#b8408b', '#c0ff3a', '#ffe600']
 export default function GalgameCharReport() {
   const [searchParams] = useSearchParams()
   const lastResult = useLastResultStore((s) => s.result)
-  useDocumentMeta({ page: 'report', vars: { name: 'Galgame 角色画像' } })
+  const helmet = useDocumentMeta({ page: 'report', vars: { name: 'Galgame 角色画像' } })
 
   const decoded = useMemo<Decoded | null>(() => {
     const raw = searchParams.get('r') || lastResult || ''
@@ -100,15 +100,18 @@ export default function GalgameCharReport() {
 
   if (!decoded || !top1 || !topChar) {
     return (
-      <div className="neon-report-wrap">
-        <TopBar sectionKey="common.error_generic" />
-        <div className="neon-error">
-          <div className="neon-title-emoji" aria-hidden="true">💾</div>
-          <h2 className="neon-error-title">数据损坏 / DATA CORRUPTED</h2>
-          <p className="neon-error-desc">这份角色画像的链接已失效或解析失败。重新测一遍，生成新的匹配档案。</p>
-          <Link className="neon-btn" to="/take-galgame-char">重新测评 →</Link>
+      <>
+        {helmet}
+        <div className="neon-report-wrap">
+          <TopBar sectionKey="common.error_generic" />
+          <div className="neon-error">
+            <div className="neon-title-emoji" aria-hidden="true">💾</div>
+            <h2 className="neon-error-title">数据损坏 / DATA CORRUPTED</h2>
+            <p className="neon-error-desc">这份角色画像的链接已失效或解析失败。重新测一遍，生成新的匹配档案。</p>
+            <Link className="neon-btn" to="/take-galgame-char">重新测评 →</Link>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
@@ -123,8 +126,10 @@ export default function GalgameCharReport() {
   }
 
   return (
-    <div className="neon-report-wrap">
-      <TopBar sectionKey="nav.galgame_char" />
+    <>
+      {helmet}
+      <div className="neon-report-wrap">
+        <TopBar sectionKey="nav.galgame_char" />
 
       {/* ===== Hero: Top 1 角色展示 ===== */}
       <section className="neon-hero">
@@ -210,5 +215,6 @@ export default function GalgameCharReport() {
         <Link className="neon-btn is-pink" to="/">回首页</Link>
       </div>
     </div>
+    </>
   )
 }

@@ -9,9 +9,11 @@ import { InkBlot } from '@/components/ui/Ornaments'
 
 export default function NotFound() {
   const { t } = useI18n()
-  useDocumentMeta({ page: 'notfound' })
+  const helmet = useDocumentMeta({ page: 'notfound' })
   return (
-    <div className="nf-wrap container flex flex-col items-center justify-center text-center" style={{ minHeight: '72vh', position: 'relative', overflow: 'hidden', padding: '48px 20px' }}>
+    <>
+      {helmet}
+      <div className="nf-wrap container flex flex-col items-center justify-center text-center" style={{ minHeight: '72vh', position: 'relative', overflow: 'hidden', padding: '48px 20px' }}>
       <InkBlot style={{ position: 'absolute', top: '5%', right: '-5%', width: '300px', height: '300px', pointerEvents: 'none', opacity: 0.2, zIndex: 0 }} />
 
       <img src={asset('/images/404-broken-mirror.jpg')} className="nf-illustration" style={{ position: 'relative', zIndex: 1, width: '200px', maxWidth: '60vw', height: 'auto', marginBottom: '24px' }} alt="" aria-hidden="true" />
@@ -23,5 +25,6 @@ export default function NotFound() {
         <Button variant="link" to="/figures">{t('nav.figures')}</Button>
       </div>
     </div>
+    </>
   )
 }

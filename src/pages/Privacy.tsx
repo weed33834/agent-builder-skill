@@ -11,10 +11,12 @@ import { asset } from '@/lib/utils'
 
 export default function Privacy() {
   const { t } = useI18n()
-  useDocumentMeta({ page: 'privacy' })
+  const helmet = useDocumentMeta({ page: 'privacy' })
 
   return (
-    <div className="container">
+    <>
+      {helmet}
+      <div className="container">
       <header className="hero" style={{ position: 'relative', overflow: 'visible' }}>
         <div className="mirror-disc" style={{ position: 'relative', zIndex: 1 }} />
         <h1 className="art-title" style={{ position: 'relative', zIndex: 1 }}>隐私政策</h1>
@@ -128,5 +130,6 @@ export default function Privacy() {
         </div>
       </main>
     </div>
+    </>
   )
 }

@@ -71,27 +71,32 @@ export default function SectionDetail() {
   const { id } = useParams<{ id: string }>()
   const { t } = useI18n()
   const cat = categories.find((c) => c.id === id)
-  useDocumentMeta({ page: 'home' })
+  const helmet = useDocumentMeta({ page: 'home' })
 
   if (!cat) {
     return (
-      <div className="container" style={{ textAlign: 'center', padding: '80px 0' }}>
-        <p className="art-title" style={{ fontSize: 28, color: 'var(--ink-faint)' }}>板块不存在</p>
-        <div className="actions" style={{ marginTop: 24 }}>
-          <Button to="/sections">{t('sections.back_to_sections')}</Button>
+      <>
+        {helmet}
+        <div className="container" style={{ textAlign: 'center', padding: '80px 0' }}>
+          <p className="art-title" style={{ fontSize: 28, color: 'var(--ink-faint)' }}>板块不存在</p>
+          <div className="actions" style={{ marginTop: 24 }}>
+            <Button to="/sections">{t('sections.back_to_sections')}</Button>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
   const liveAssessments = resolveCards(cat.assessments)
 
   return (
-    <div
-      className="container"
-      data-section={cat.theme}
-      style={{ position: 'relative', '--cat-accent': cat.accent } as React.CSSProperties}
-    >
+    <>
+      {helmet}
+      <div
+        className="container"
+        data-section={cat.theme}
+        style={{ position: 'relative', '--cat-accent': cat.accent } as React.CSSProperties}
+      >
       {/* 背景装饰 */}
       <InkBlot style={{ position: 'absolute', top: '20px', right: '-60px', width: '320px', height: '320px', pointerEvents: 'none', opacity: 0.28, zIndex: 0 }} />
       <InkBlot style={{ position: 'absolute', bottom: '60px', left: '-80px', width: '240px', height: '240px', pointerEvents: 'none', opacity: 0.18, zIndex: 0 }} />
@@ -179,5 +184,6 @@ export default function SectionDetail() {
         <Button variant="secondary" to="/sections">{t('sections.back_to_sections')}</Button>
       </div>
     </div>
+    </>
   )
 }

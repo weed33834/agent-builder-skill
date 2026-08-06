@@ -168,7 +168,7 @@ function GalgameSheet({ open, onClose, currentIdx, answers, onJump }: SheetProps
 
 export default function TakeGalgame() {
   const navigate = useNavigate()
-  useDocumentMeta({ page: 'take', vars: { name: galgameMeta.title } })
+  const helmet = useDocumentMeta({ page: 'take', vars: { name: galgameMeta.title } })
 
   const [phase, setPhase] = useState<Phase>('intro')
   const [currentIdx, setCurrentIdx] = useState(0)
@@ -279,7 +279,9 @@ export default function TakeGalgame() {
   const pct = total ? (answeredCount / total) * 100 : 0
 
   return (
-    <div className="neon-take-wrap">
+    <>
+      {helmet}
+      <div className="neon-take-wrap">
       <TopBar sectionKey="nav.galgame" />
       <div className="neon-take-header">
         <span className="neon-take-title">GALGAME // 资历测评</span>
@@ -461,5 +463,6 @@ export default function TakeGalgame() {
         onJump={jumpTo}
       />
     </div>
+    </>
   )
 }

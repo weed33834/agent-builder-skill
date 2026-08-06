@@ -17,12 +17,14 @@ const MIRROR_EN = ['CELEBRITY', 'VALUE', 'IDEOLOGY']
 
 export default function About() {
   const { t } = useI18n()
-  useDocumentMeta({ page: 'about' })
+  const helmet = useDocumentMeta({ page: 'about' })
   const mirrors = t<MirrorListItem[]>('about.mirrors')
   const methods = t<MethodItem[]>('about.methods')
 
   return (
-    <div className="container">
+    <>
+      {helmet}
+      <div className="container">
       <header className="hero" style={{ position: 'relative', overflow: 'visible' }}>
         <div className="mirror-disc" style={{ position: 'relative', zIndex: 1 }} />
         <h1 className="art-title" style={{ position: 'relative', zIndex: 1 }}>{t('home.brand')}</h1>
@@ -119,5 +121,6 @@ export default function About() {
         </div>
       </main>
     </div>
+    </>
   )
 }

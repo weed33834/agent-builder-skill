@@ -129,7 +129,7 @@ function CharSheet({ open, onClose, currentIdx, answers, onJump }: SheetProps) {
 
 export default function TakeGalgameChar() {
   const navigate = useNavigate()
-  useDocumentMeta({ page: 'take', vars: { name: 'Galgame 角色画像' } })
+  const helmet = useDocumentMeta({ page: 'take', vars: { name: 'Galgame 角色画像' } })
 
   const [phase, setPhase] = useState<Phase>('intro')
   const [currentIdx, setCurrentIdx] = useState(0)
@@ -238,7 +238,9 @@ export default function TakeGalgameChar() {
   const pct = total ? (answeredCount / total) * 100 : 0
 
   return (
-    <div className="neon-take-wrap">
+    <>
+      {helmet}
+      <div className="neon-take-wrap">
       <TopBar sectionKey="nav.galgame_char" />
       <div className="neon-take-header">
         <span className="neon-take-title">GALGAME // 角色画像</span>
@@ -412,5 +414,6 @@ export default function TakeGalgameChar() {
         onJump={jumpTo}
       />
     </div>
+    </>
   )
 }

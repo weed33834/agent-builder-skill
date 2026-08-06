@@ -55,7 +55,7 @@ export default function Report() {
   const lastResult = useLastResultStore((s) => s.result)
 
   const a = assessments.find((x) => x.type === pathType)
-  useDocumentMeta({ page: 'report', vars: { name: a?.title || '' } })
+  const helmet = useDocumentMeta({ page: 'report', vars: { name: a?.title || '' } })
 
   const decoded = useMemo<Decoded | null>(() => {
     const raw = searchParams.get('r') || lastResult || ''
@@ -114,19 +114,22 @@ export default function Report() {
 
   if (!decoded || !type || !r) {
     return (
-      <div className="container" style={{ maxWidth: 560, padding: '120px 40px', textAlign: 'center', position: 'relative' }}>
-        <TopBar sectionKey="common.error_generic" />
-        <InkBlot style={{ position: 'absolute', top: '20px', right: '-40px', width: '280px', height: '280px', pointerEvents: 'none', opacity: 0.3, zIndex: 0 }} />
-        <InkBlot style={{ position: 'absolute', bottom: '20px', left: '-40px', width: '240px', height: '240px', pointerEvents: 'none', opacity: 0.25, zIndex: 0 }} />
-        <CalligraphyColumn chars={['镜', '破', '难', '圆']} color="var(--accent)" style={{ position: 'absolute', top: '40px', left: '20px', width: '32px', height: '140px', opacity: 0.35, pointerEvents: 'none', zIndex: 0 }} />
-        <div className="result-error" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="result-error-seal">印</div>
-          <h3 className="result-error-title art-title" style={{ fontFamily: 'var(--font-art)' }}>{t('report.error_title')}</h3>
-          <p className="result-error-desc">{t('report.error_desc')}</p>
-          <BrushStroke color="var(--accent)" style={{ width: '180px', height: '20px', margin: '16px auto', opacity: 0.5 }} />
-          <Button to="/">{t('report.error_back')}</Button>
+      <>
+        {helmet}
+        <div className="container" style={{ maxWidth: 560, padding: '120px 40px', textAlign: 'center', position: 'relative' }}>
+          <TopBar sectionKey="common.error_generic" />
+          <InkBlot style={{ position: 'absolute', top: '20px', right: '-40px', width: '280px', height: '280px', pointerEvents: 'none', opacity: 0.3, zIndex: 0 }} />
+          <InkBlot style={{ position: 'absolute', bottom: '20px', left: '-40px', width: '240px', height: '240px', pointerEvents: 'none', opacity: 0.25, zIndex: 0 }} />
+          <CalligraphyColumn chars={['镜', '破', '难', '圆']} color="var(--accent)" style={{ position: 'absolute', top: '40px', left: '20px', width: '32px', height: '140px', opacity: 0.35, pointerEvents: 'none', zIndex: 0 }} />
+          <div className="result-error" style={{ position: 'relative', zIndex: 1 }}>
+            <div className="result-error-seal">印</div>
+            <h3 className="result-error-title art-title" style={{ fontFamily: 'var(--font-art)' }}>{t('report.error_title')}</h3>
+            <p className="result-error-desc">{t('report.error_desc')}</p>
+            <BrushStroke color="var(--accent)" style={{ width: '180px', height: '20px', margin: '16px auto', opacity: 0.5 }} />
+            <Button to="/">{t('report.error_back')}</Button>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
@@ -194,8 +197,10 @@ export default function Report() {
   const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
 
   return (
-    <div className="container" style={{ maxWidth: 860, position: 'relative' }}>
-      {/* 独立顶部条:无站点头部但有面包屑与返回 */}
+    <>
+      {helmet}
+      <div className="container" style={{ maxWidth: 860, position: 'relative' }}>
+        {/* 独立顶部条:无站点头部但有面包屑与返回 */}
       <TopBar sectionKey={`take.title_${type}`}>
         <button
           type="button"
@@ -416,5 +421,6 @@ export default function Report() {
 
       <ShareModal open={shareOpen} onClose={() => setShareOpen(false)} result={r} type={type} shareUrl={shareUrl} />
     </div>
+    </>
   )
 }

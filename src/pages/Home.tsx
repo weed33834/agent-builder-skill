@@ -32,7 +32,7 @@ const fadeUp = {
 
 export default function Home() {
   const { t } = useI18n()
-  useDocumentMeta({ page: 'home' })
+  const helmet = useDocumentMeta({ page: 'home' })
   const { data: figures, isLoading } = useQuery({ queryKey: qk.celebrities(), queryFn: fetchCelebrities })
 
   const today: Celebrity[] =
@@ -43,7 +43,9 @@ export default function Home() {
   const brand = t<string>('home.brand')
 
   return (
-    <MotionConfig reducedMotion="user">
+    <>
+      {helmet}
+      <MotionConfig reducedMotion="user">
       <div className="container home-container">
 
         {/* ===== Hero 区 ===== */}
@@ -247,5 +249,6 @@ export default function Home() {
         </main>
       </div>
     </MotionConfig>
+    </>
   )
 }
