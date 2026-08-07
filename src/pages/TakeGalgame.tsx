@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { useDocumentMeta } from '@/lib/seo'
 import { play, vibrate } from '@/lib/audio'
-import { useLastResultStore } from '@/store'
+import { useLastResultStore, useHistoryStore } from '@/store'
 import { TopBar } from '@/components/layout/TopBar'
 import {
   GALGAME_QUESTIONS,
@@ -181,6 +181,7 @@ export default function TakeGalgame() {
   const answersRef = useRef(answers); answersRef.current = answers
   const submittingRef = useRef(false)
   const advanceTimerRef = useRef<number | null>(null)
+  const startedAtRef = useRef(Date.now())
 
   const total = GALGAME_QUESTIONS.length
   const q = GALGAME_QUESTIONS[currentIdx]
@@ -250,9 +251,17 @@ export default function TakeGalgame() {
     play('submit')
     window.setTimeout(() => {
       try {
-        const result = computeGalgameResult(answersRef.current.filter((a): a is GalgameAnswer => !!a))
+        const validAnswers = answersRef.current.filter((a): a is GalgameAnswer => !!a)
+        const result = computeGalgameResult(validAnswers)
         const share = btoa(unescape(encodeURIComponent(JSON.stringify({ type: 'galgame', result }))))
         useLastResultStore.getState().setLastResult(share)
+        useHistoryStore.getState().addRecord({
+          assessment_id: 'galgame',
+          duration_sec: Math.round((Date.now() - startedAtRef.current) / 1000),
+          question_count: validAnswers.length,
+          summary: `${result.title.name_zh} · ${result.pct}%`,
+          share,
+        })
         play('complete'); vibrate([20, 30, 20])
         navigate(`/report-galgame?r=${encodeURIComponent(share)}`)
       } catch (e) {

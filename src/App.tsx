@@ -28,6 +28,9 @@ const TakeGalgame = lazy(() => import('@/pages/TakeGalgame'))
 const GalgameReport = lazy(() => import('@/pages/GalgameReport'))
 const TakeGalgameChar = lazy(() => import('@/pages/TakeGalgameChar'))
 const GalgameCharReport = lazy(() => import('@/pages/GalgameCharReport'))
+const Profile = lazy(() => import('@/pages/Profile'))
+const MyAssessments = lazy(() => import('@/pages/MyAssessments'))
+const Settings = lazy(() => import('@/pages/Settings'))
 
 function RouteFallback() {
   return (
@@ -56,6 +59,9 @@ export default function App() {
                 <Route path="figure/:id" element={<Figure />} />
                 <Route path="about" element={<About />} />
                 <Route path="privacy" element={<Privacy />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="my-assessments" element={<MyAssessments />} />
+                <Route path="settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
               <Route path="take/:type" element={<Take />} />

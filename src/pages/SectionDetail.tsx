@@ -151,7 +151,7 @@ export default function SectionDetail() {
                 <Link to={a.route} className={`mirror-card${isGalgame ? ' mirror-card-neon' : ''}`} data-type={a.type} style={{ '--cat-accent': accent } as React.CSSProperties}>
                   <span className="mirror-card-num">No.{String(i + 1).padStart(2, '0')}</span>
                   <div className="card-icon">
-                    <img src={asset(`/images/mirror-${a.type}.jpg`)} className="mirror-card-icon" width={48} height={48} alt="" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                    <img src={asset(`/images/mirror-${a.type}.svg`)} className="mirror-card-icon" width={48} height={48} alt="" onError={(e) => { e.currentTarget.style.display = 'none' }} />
                   </div>
                   <span className="art-seal" style={{ position: 'absolute', top: '48px', right: '20px', fontSize: '22px', color: accent, opacity: 0.5 }}>{numCN}</span>
                   <h2>{t(`home.mirrors.${a.type}.title`)}</h2>

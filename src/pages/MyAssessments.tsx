@@ -2,25 +2,14 @@
  * 我的测评页 —— 时间线/列表风格
  * 展示用户完成的所有测评历史记录
  * 路由: /my-assessments
+ *
+ * 数据源:本地历史(useHistoryStore,持久化于 localStorage)。
+ * 不依赖 Supabase,未登录亦可查看本机记录。
  */
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
-import { useAuth } from '@/lib/auth'
-import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
-import { supabase } from '@/lib/supabase'
-
-interface AssessmentRecord {
-  id: string
-  assessment_id: string
-  created_at: string
-  duration_sec: number | null
-  is_public: boolean
-  // 解码后的摘要
-  summary?: string
-  title?: string
-}
+import { useHistoryStore, type HistoryRecord } from '@/store'
 
 const ASSESSMENT_NAMES: Record<string, { title: string; icon: string; route: string }> = {
   celebrity: { title: '名人镜', icon: '名', route: '/report/celebrity' },
@@ -53,79 +42,9 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function MyAssessments() {
-  const { t } = useI18n()
   const helmet = useDocumentMeta({ page: 'home' })
-  const { user, isAuthenticated, loading: authLoading } = useAuth()
-  const [records, setRecords] = useState<AssessmentRecord[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (!user) {
-      setLoading(false)
-      return
-    }
-    supabase
-      .from('results')
-      .select('id, assessment_id, created_at, duration_sec, is_public, summary')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(50)
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setRecords(data.map((r) => {
-            let summary = ''
-            try {
-              if (r.summary && typeof r.summary === 'string') {
-                const parsed = JSON.parse(r.summary)
-                summary = parsed.text || ''
-              }
-            } catch {}
-            const meta = ASSESSMENT_NAMES[r.assessment_id] || { title: r.assessment_id, icon: '?', route: '#' }
-            return {
-              ...r,
-              summary,
-              title: meta.title,
-            }
-          }))
-        }
-        setLoading(false)
-      })
-      .then(() => setLoading(false))
-  }, [user])
-
-  if (authLoading) {
-    return (
-      <>
-        {helmet}
-        <div className="assessments-loading">
-          <div className="assessments-loading-spinner" />
-          <p>{t('common.loading')}</p>
-        </div>
-      </>
-    )
-  }
-
-  if (!isAuthenticated || !user) {
-    return (
-      <>
-        {helmet}
-        <div className="assessments-guest">
-          <div className="assessments-guest-card">
-            <div className="assessments-guest-icon">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-              </svg>
-            </div>
-            <h2 className="assessments-guest-title">登录后可查看测评记录</h2>
-            <p className="assessments-guest-desc">你的每一次探索都会被记录</p>
-            <Link to="/auth" className="assessments-btn-primary">登录 / 注册</Link>
-            <Link to="/" className="assessments-btn-ghost">回首页</Link>
-          </div>
-        </div>
-      </>
-    )
-  }
+  const records = useHistoryStore((s) => s.records)
+  const clearHistory = useHistoryStore((s) => s.clearHistory)
 
   return (
     <>
@@ -141,16 +60,21 @@ export default function MyAssessments() {
               个人资料
             </Link>
             <h1 className="assessments-title">我的测评</h1>
-            <p className="assessments-subtitle">共 {records.length} 次探索记录</p>
+            <p className="assessments-subtitle">共 {records.length} 次探索记录(本机)</p>
+            {records.length > 0 && (
+              <button
+                type="button"
+                className="assessments-btn-ghost"
+                onClick={() => { if (confirm('确定清空所有本机测评记录?此操作不可恢复。')) clearHistory() }}
+                style={{ marginTop: 12, fontSize: 12 }}
+              >
+                清空记录
+              </button>
+            )}
           </div>
 
           {/* 时间线 */}
-          {loading ? (
-            <div className="assessments-loading">
-              <div className="assessments-loading-spinner" />
-              <p>{t('common.loading')}</p>
-            </div>
-          ) : records.length === 0 ? (
+          {records.length === 0 ? (
             <div className="assessments-empty">
               <div className="assessments-empty-icon">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -165,8 +89,9 @@ export default function MyAssessments() {
           ) : (
             <div className="assessments-timeline">
               <div className="assessments-timeline-line" />
-              {records.map((record, i) => {
+              {records.map((record: HistoryRecord, i) => {
                 const meta = ASSESSMENT_NAMES[record.assessment_id] || { title: record.assessment_id, icon: '?', route: '#' }
+                const reportLink = record.share ? `${meta.route}?r=${encodeURIComponent(record.share)}` : meta.route
                 return (
                   <motion.div
                     key={record.id}
@@ -185,7 +110,7 @@ export default function MyAssessments() {
                             {timeAgo(record.created_at)}
                           </span>
                         </div>
-                        {record.duration_sec && (
+                        {record.duration_sec != null && record.duration_sec > 0 && (
                           <span className="assessments-timeline-duration">
                             {Math.floor(record.duration_sec / 60)}分{record.duration_sec % 60}秒
                           </span>
@@ -195,7 +120,7 @@ export default function MyAssessments() {
                         <p className="assessments-timeline-summary">{record.summary}</p>
                       )}
                       <div className="assessments-timeline-foot">
-                        <Link to={meta.route} className="assessments-timeline-link">
+                        <Link to={reportLink} className="assessments-timeline-link">
                           查看报告
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M5 12h14" /><polyline points="12 5 19 12 12 19" />

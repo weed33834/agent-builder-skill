@@ -127,3 +127,41 @@ export const useLastResultStore = create<LastResultState>()(
     { name: 'mindmirror_last_result' }, // 沿用原 key
   ),
 )
+
+// ===================== 5. 测评历史(本地) =====================
+// Supabase 未配置时,以 localStorage 作为持久层,保证 Profile / MyAssessments 可用。
+// 每条记录保留足够元数据 + base64 share(可重建报告)。
+export interface HistoryRecord {
+  id: string
+  assessment_id: string  // celebrity | value | ideology | galgame | galgame-char
+  created_at: string     // ISO
+  duration_sec: number | null
+  question_count: number
+  summary: string
+  share: string          // base64 编码的 {type, result}
+}
+
+interface HistoryState {
+  records: HistoryRecord[]
+  addRecord: (r: Omit<HistoryRecord, 'id' | 'created_at'>) => void
+  clearHistory: () => void
+}
+
+function genId(): string {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+export const useHistoryStore = create<HistoryState>()(
+  persist(
+    (set) => ({
+      records: [],
+      addRecord: (r) =>
+        set((s) => ({
+          // 保留最近 100 条,避免 localStorage 无限增长
+          records: [{ ...r, id: genId(), created_at: new Date().toISOString() }, ...s.records].slice(0, 100),
+        })),
+      clearHistory: () => set({ records: [] }),
+    }),
+    { name: 'mindmirror_history' },
+  ),
+)

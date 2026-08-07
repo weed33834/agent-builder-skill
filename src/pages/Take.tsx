@@ -19,7 +19,7 @@ import { loadCelebrities, loadIdeologies } from '@/lib/data'
 import { BehaviorTracker } from '@/lib/behavior'
 import { play, vibrate } from '@/lib/audio'
 import { toast } from '@/lib/toast'
-import { useDraftStore, useLastResultStore } from '@/store'
+import { useDraftStore, useLastResultStore, useHistoryStore } from '@/store'
 import type { Answer, AnswerRecord, AssessmentType, AssessmentVersion, QuestionBank } from '@/lib/types'
 import { QuestionRouter } from '@/components/questions/QuestionRouter'
 import { SectionIntro } from '@/components/questions/SectionIntro'
@@ -195,6 +195,14 @@ export default function Take() {
       play('submit'); vibrate([20, 30, 20])
       const share = btoa(unescape(encodeURIComponent(JSON.stringify({ type, result }))))
       useLastResultStore.getState().setLastResult(share)
+      // 写入本地历史(Profile / MyAssessments 读取)
+      useHistoryStore.getState().addRecord({
+        assessment_id: type,
+        duration_sec: Math.round((Date.now() - startedAtRef.current) / 1000),
+        question_count: payload.length,
+        summary: result.summary || (result.matches[0] ? result.matches[0].name : ''),
+        share,
+      })
       useDraftStore.getState().clearDraft(type)
       leaveGuardOffRef.current = true
       navigate(`/report/${type}?r=${encodeURIComponent(share)}`)

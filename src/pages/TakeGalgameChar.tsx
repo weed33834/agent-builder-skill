@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { useDocumentMeta } from '@/lib/seo'
 import { play, vibrate } from '@/lib/audio'
-import { useLastResultStore } from '@/store'
+import { useLastResultStore, useHistoryStore } from '@/store'
 import { TopBar } from '@/components/layout/TopBar'
 import {
   CHAR_QUESTIONS,
@@ -144,6 +144,7 @@ export default function TakeGalgameChar() {
   const answersRef = useRef(answers); answersRef.current = answers
   const submittingRef = useRef(false)
   const advanceTimerRef = useRef<number | null>(null)
+  const startedAtRef = useRef(Date.now())
 
   const total = CHAR_QUESTIONS.length
   const q = CHAR_QUESTIONS[currentIdx]
@@ -211,9 +212,18 @@ export default function TakeGalgameChar() {
     play('submit')
     window.setTimeout(() => {
       try {
-        const result = computeCharacterMatch(answersRef.current.filter((a): a is CharAnswer => !!a))
+        const validAnswers = answersRef.current.filter((a): a is CharAnswer => !!a)
+        const result = computeCharacterMatch(validAnswers)
         const share = btoa(unescape(encodeURIComponent(JSON.stringify({ type: 'galgame-char', result }))))
         useLastResultStore.getState().setLastResult(share)
+        const top = result[0]
+        useHistoryStore.getState().addRecord({
+          assessment_id: 'galgame-char',
+          duration_sec: Math.round((Date.now() - startedAtRef.current) / 1000),
+          question_count: validAnswers.length,
+          summary: top ? `${top.character.name_zh} · ${top.percentage}%` : '',
+          share,
+        })
         play('complete'); vibrate([20, 30, 20])
         navigate(`/report-galgame-char?r=${encodeURIComponent(share)}`)
       } catch (e) {

@@ -2,51 +2,28 @@
  * 个人资料页 —— 玻璃质感卡片风格
  * 展示用户头像、昵称、邮箱、认证状态、统计概览
  * 路由: /profile
+ *
+ * 数据源:本地历史(useHistoryStore)。Supabase 未配置时仍可正常展示统计,
+ * 已配置时用户信息(昵称/邮箱)来自 Supabase Auth。
  */
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { useAuth } from '@/lib/auth'
 import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
-import { supabase } from '@/lib/supabase'
-
-interface ProfileStats {
-  total_assessments: number
-  total_questions: number
-  member_days: number
-}
+import { useHistoryStore } from '@/store'
 
 export default function Profile() {
   const { t } = useI18n()
   const helmet = useDocumentMeta({ page: 'home' })
   const { user, isAuthenticated, loading, signOut } = useAuth()
-  const [stats, setStats] = useState<ProfileStats>({
-    total_assessments: 0,
-    total_questions: 0,
-    member_days: 0,
-  })
+  const records = useHistoryStore((s) => s.records)
 
-  useEffect(() => {
-    if (!user) return
-    // 计算注册天数
-    const created = new Date(user.created_at)
-    const now = new Date()
-    const days = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24))
-    setStats((s) => ({ ...s, member_days: days }))
-
-    // 尝试从 Supabase 获取测评统计
-    supabase
-      .from('results')
-      .select('id, answers', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .then(({ count }) => {
-        if (count !== null) {
-          setStats((s) => ({ ...s, total_assessments: count }))
-        }
-      })
-      .then(() => {})
-  }, [user])
+  const totalAssessments = records.length
+  const totalQuestions = records.reduce((s, r) => s + (r.question_count || 0), 0)
+  const memberDays = user
+    ? Math.max(0, Math.floor((Date.now() - new Date(user.created_at).getTime()) / (1000 * 60 * 60 * 24)))
+    : 0
 
   if (loading) {
     return (
@@ -127,15 +104,15 @@ export default function Profile() {
             {/* 统计区 */}
             <div className="profile-stats-grid">
               <div className="profile-stat-item">
-                <span className="profile-stat-num">{stats.total_assessments}</span>
+                <span className="profile-stat-num">{totalAssessments}</span>
                 <span className="profile-stat-label">完成测评</span>
               </div>
               <div className="profile-stat-item">
-                <span className="profile-stat-num">{stats.total_questions}</span>
+                <span className="profile-stat-num">{totalQuestions}</span>
                 <span className="profile-stat-label">答题总数</span>
               </div>
               <div className="profile-stat-item">
-                <span className="profile-stat-num">{stats.member_days}</span>
+                <span className="profile-stat-num">{memberDays}</span>
                 <span className="profile-stat-label">加入天数</span>
               </div>
             </div>

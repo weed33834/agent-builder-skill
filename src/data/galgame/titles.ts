@@ -1,6 +1,6 @@
 /**
  * Galgame 资历测评 —— 称号档位数据。
- * 5 档称号覆盖 0-300 分(30 题 × 最高 6 分 = 180,保留档位空间为未来扩展)。
+ * 5 档称号覆盖 0-180 分(30 题 × 最高 6 分 = 180),每档 36 分区间,均可达。
  * 每档三语点评,引用真实作品/梗,有 Galgame 玩家社群的人味。
  */
 export interface GalgameTitle {
@@ -20,7 +20,7 @@ export const GALGAME_TITLES: GalgameTitle[] = [
   {
     tier: 1,
     min_score: 0,
-    max_score: 60,
+    max_score: 36,
     name_zh: '未开封',
     name_en: 'Sealed',
     name_ja: '未開封',
@@ -31,8 +31,8 @@ export const GALGAME_TITLES: GalgameTitle[] = [
   },
   {
     tier: 2,
-    min_score: 61,
-    max_score: 120,
+    min_score: 37,
+    max_score: 72,
     name_zh: '通常版',
     name_en: 'Regular Edition',
     name_ja: '通常版',
@@ -43,8 +43,8 @@ export const GALGAME_TITLES: GalgameTitle[] = [
   },
   {
     tier: 3,
-    min_score: 121,
-    max_score: 180,
+    min_score: 73,
+    max_score: 108,
     name_zh: '限定版',
     name_en: 'Limited Edition',
     name_ja: '限定版',
@@ -55,20 +55,20 @@ export const GALGAME_TITLES: GalgameTitle[] = [
   },
   {
     tier: 4,
-    min_score: 181,
-    max_score: 240,
+    min_score: 109,
+    max_score: 144,
     name_zh: '完全版',
     name_en: 'Perfect Edition',
     name_ja: '完全版',
     blurb_zh: '剧本家风格一眼能认，打越的诡计、龙骑士07的元叙事、丸户的细腻日常都品过。沙耶之歌对你来说已经是"当年"的事了，同人社团的新作也在追。萌豚也好社会派也罢，来者不拒。',
-    blurb_en: 'You can spot a scriptwriter\'s style at a glance—Uchikoshi\'s tricks, Ryukishi07\'s meta-narrative, Maruto\'s细腻 daily life. Saya no Uta is already "back in the day" for you, and you\'re keeping up with new doujin circle releases. Moe-pig or social school, bring it on.',
+    blurb_en: 'You can spot a scriptwriter\'s style at a glance—Uchikoshi\'s tricks, Ryukishi07\'s meta-narrative, Maruto\'s nuanced daily life. Saya no Uta is already "back in the day" for you, and you\'re keeping up with new doujin circle releases. Moe-pig or social school, bring it on.',
     blurb_ja: 'シナリオライターの個性は一目で判別。打越の仕掛け、竜騎士07のメタ物語、丸戸の繊細な日常を味わってきた。沙耶の歌はもう「あの頃」の話で、同人サークルの新作も追っている。萌豚も社会派も何でも来い。',
     emoji: '💿',
   },
   {
     tier: 5,
-    min_score: 241,
-    max_score: 300,
+    min_score: 145,
+    max_score: 180,
     name_zh: 'コレクターズエディション',
     name_en: "Collector's Edition",
     name_ja: 'コレクターズエディション',
