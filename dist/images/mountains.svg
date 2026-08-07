@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 60" width="300" height="60">
-  <!-- 远山双层淡影,墨色描边 -->
-  <path d="M0 50 L40 30 L80 46 L120 22 L170 44 L210 28 L260 48 L300 34"
-        fill="none" stroke="#1a1714" stroke-width="1.5" opacity="0.5"/>
-  <path d="M0 56 L50 44 L100 54 L150 40 L200 54 L250 46 L300 52"
-        fill="none" stroke="#1a1714" stroke-width="1" opacity="0.3"/>
-</svg>
