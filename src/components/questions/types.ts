@@ -6,7 +6,7 @@
  * 由 Take 页的计时器在归零时读取(等价于原 take.js 的 getCurrentAnswer)。
  */
 import type { ReactNode } from 'react'
-import type { BehaviorTracker } from '@/lib/behavior'
+import type { BehaviorTracker } from '@/lib/utils'
 import type { Answer, Question } from '@/lib/types'
 
 export type AnswerGetter = () => Answer

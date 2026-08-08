@@ -6,9 +6,10 @@
  * 其余页面均懒加载,避免把 Figures/Take/Report(含 echarts)打进首屏 bundle。
  */
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { HelmetProvider } from 'react-helmet-async'
+import { AnimatePresence, motion } from 'motion/react'
 import { Toaster } from 'sonner'
 import { queryClient } from '@/lib/query'
 import { MainLayout } from '@/components/layout/MainLayout'
@@ -35,8 +36,30 @@ const Settings = lazy(() => import('@/pages/Settings'))
 function RouteFallback() {
   return (
     <div className="loading-overlay" style={{ position: 'fixed', minHeight: '60vh' }}>
-      <div className="mirror-disc" />
+      <motion.div
+        className="mirror-disc"
+        animate={{ rotate: 360, opacity: [0.3, 0.8, 0.3] }}
+        transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+      />
     </div>
+  )
+}
+
+/** 页面过渡包装:为每个独立路由添加淡入动画 */
+function AnimatedOutlet({ children }: { children: React.ReactNode }) {
+  const location = useLocation()
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
   )
 }
 
@@ -64,12 +87,12 @@ export default function App() {
                 <Route path="settings" element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
-              <Route path="take/:type" element={<Take />} />
-              <Route path="report/:type" element={<Report />} />
-              <Route path="take-galgame" element={<TakeGalgame />} />
-              <Route path="take-galgame-char" element={<TakeGalgameChar />} />
-              <Route path="report-galgame" element={<GalgameReport />} />
-              <Route path="report-galgame-char" element={<GalgameCharReport />} />
+              <Route path="take/:type" element={<AnimatedOutlet><Take /></AnimatedOutlet>} />
+              <Route path="report/:type" element={<AnimatedOutlet><Report /></AnimatedOutlet>} />
+              <Route path="take-galgame" element={<AnimatedOutlet><TakeGalgame /></AnimatedOutlet>} />
+              <Route path="take-galgame-char" element={<AnimatedOutlet><TakeGalgameChar /></AnimatedOutlet>} />
+              <Route path="report-galgame" element={<AnimatedOutlet><GalgameReport /></AnimatedOutlet>} />
+              <Route path="report-galgame-char" element={<AnimatedOutlet><GalgameCharReport /></AnimatedOutlet>} />
             </Routes>
           </Suspense>
           <Toaster

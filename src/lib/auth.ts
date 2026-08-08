@@ -13,6 +13,10 @@ export function useAuth() {
 
   // 初始化: 监听认证状态
   useEffect(() => {
+    if (!supabase) {
+      clearAuth()
+      return
+    }
     // 获取当前 session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setAuth(session?.user ?? null, session)
@@ -24,16 +28,18 @@ export function useAuth() {
     })
 
     return () => subscription.unsubscribe()
-  }, [setAuth])
+  }, [setAuth, clearAuth])
 
   // 邮箱密码登录
   const signIn = useCallback(async (email: string, password: string) => {
+    if (!supabase) return { error: new Error('Supabase 未配置') }
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     return { error }
   }, [])
 
   // 注册
   const signUp = useCallback(async (email: string, password: string, nickname?: string) => {
+    if (!supabase) return { error: new Error('Supabase 未配置') }
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -46,6 +52,7 @@ export function useAuth() {
 
   // OAuth 登录
   const signInWithProvider = useCallback(async (provider: Provider) => {
+    if (!supabase) return { error: new Error('Supabase 未配置') }
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: window.location.origin },
@@ -55,6 +62,7 @@ export function useAuth() {
 
   // 退出
   const signOut = useCallback(async () => {
+    if (!supabase) { clearAuth(); navigate('/'); return }
     await supabase.auth.signOut()
     clearAuth()
     navigate('/')
@@ -62,6 +70,7 @@ export function useAuth() {
 
   // 重置密码
   const resetPassword = useCallback(async (email: string) => {
+    if (!supabase) return { error: new Error('Supabase 未配置') }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/callback`,
     })

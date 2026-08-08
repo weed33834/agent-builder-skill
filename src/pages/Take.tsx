@@ -9,6 +9,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'motion/react'
 import { useQuery } from '@tanstack/react-query'
 import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
@@ -16,9 +17,8 @@ import { assessments } from '@/lib/data'
 import { fetchBank, qk } from '@/lib/query'
 import { filterBank, computeResult } from '@/lib/scoring'
 import { loadCelebrities, loadIdeologies } from '@/lib/data'
-import { BehaviorTracker } from '@/lib/behavior'
+import { BehaviorTracker, toast } from '@/lib/utils'
 import { play, vibrate } from '@/lib/audio'
-import { toast } from '@/lib/toast'
 import { useDraftStore, useLastResultStore, useHistoryStore } from '@/store'
 import type { Answer, AnswerRecord, AssessmentType, AssessmentVersion, QuestionBank } from '@/lib/types'
 import { QuestionRouter } from '@/components/questions/QuestionRouter'
@@ -391,14 +391,22 @@ export default function Take() {
         )}
 
         {phase === 'running' && q && !showIntro && (
-          <div key={currentIdx}>
-            <QuestionRouter
-              question={q}
-              tracker={trackerRef.current}
-              onAnswer={recordAnswer}
-              getAnswerRef={getAnswerRef}
-            />
-          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentIdx}
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <QuestionRouter
+                question={q}
+                tracker={trackerRef.current}
+                onAnswer={recordAnswer}
+                getAnswerRef={getAnswerRef}
+              />
+            </motion.div>
+          </AnimatePresence>
         )}
       </div>
 

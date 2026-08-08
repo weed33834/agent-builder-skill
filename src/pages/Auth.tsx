@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import { useI18n } from '@/lib/i18n'
 import { useDocumentMeta } from '@/lib/seo'
 import { useAuth } from '@/lib/auth'
-import { toast } from '@/lib/toast'
+import { toast } from '@/lib/utils'
 
 type Mode = 'login' | 'register'
 
@@ -111,6 +111,10 @@ export default function Auth() {
       return
     }
     const { supabase } = await import('@/lib/supabase')
+    if (!supabase) {
+      toast(t('auth.err_supabase_not_configured') || '认证服务未配置', 'error')
+      return
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
       redirectTo: `${window.location.origin}/auth/callback`,
     })

@@ -9,6 +9,7 @@ import { useDocumentMeta } from '@/lib/seo'
 import { qk, fetchCelebrities } from '@/lib/query'
 import { FigureCard } from '@/components/ui/FigureCard'
 import { cn, asset } from '@/lib/utils'
+import { FadeIn } from '@/components/ui/Animations'
 // 装饰已精简 — 保持内容清晰
 
 export default function Figures() {
@@ -47,6 +48,7 @@ export default function Figures() {
   return (
     <>
       {helmet}
+      <FadeIn>
       <div className="container">
       <header className="fig-hero">
         <div className="fig-eyebrow art-seal" style={{ fontFamily: 'var(--font-seal)' }}>FIGURES · {t('home.figures.title')}</div>
@@ -89,6 +91,7 @@ export default function Figures() {
         )}
       </div>
     </div>
+    </FadeIn>
     </>
   )
 }

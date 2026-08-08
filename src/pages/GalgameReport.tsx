@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import confetti from 'canvas-confetti'
 import { useDocumentMeta } from '@/lib/seo'
 import { play, vibrate } from '@/lib/audio'
-import { toast } from '@/lib/toast'
+import { toast } from '@/lib/utils'
 import { useLastResultStore } from '@/store'
 import { TopBar } from '@/components/layout/TopBar'
 import {

@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { toast as sonnerToast } from 'sonner'
 
 /**
  * shadcn/ui 标准的 className 合并工具。
@@ -36,4 +37,52 @@ export function asset(path: string): string {
   // 使用 jsDelivr CDN 加速资源加载
   const base = 'https://cdn.jsdelivr.net/gh/weed33834/mindmirror@main/public'
   return base + path
+}
+
+// ==================== 合并自 behavior.ts ====================
+
+/**
+ * 行为轨迹采集器 —— 记录单题作答时长、改动次数、轨迹。
+ * Take 页用 useRef 持有实例,跨题 start() 重置。
+ */
+export class BehaviorTracker {
+  private startTime = 0
+  private changeCount = 0
+  private trajectory: { t: number; value: unknown }[] = []
+
+  start(): void {
+    this.startTime = performance.now()
+    this.changeCount = 0
+    this.trajectory = []
+  }
+
+  recordChange(value: unknown): void {
+    this.changeCount++
+    this.trajectory.push({ t: performance.now() - this.startTime, value })
+  }
+
+  snapshot(): { duration_ms: number; change_count: number; trajectory: unknown[] | null } {
+    return {
+      duration_ms: Math.round(performance.now() - this.startTime),
+      change_count: this.changeCount,
+      trajectory: this.trajectory.length ? this.trajectory : null,
+    }
+  }
+}
+
+// ==================== 合并自 toast.ts ====================
+
+type ToastKind = 'info' | 'warn' | 'error'
+
+export function toast(msg: string, kind: ToastKind = 'info'): void {
+  switch (kind) {
+    case 'error':
+      sonnerToast.error(msg)
+      break
+    case 'warn':
+      sonnerToast.warning(msg)
+      break
+    default:
+      sonnerToast(msg)
+  }
 }

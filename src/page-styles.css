@@ -1568,6 +1568,7 @@ body[data-galgame="1"]::after {
 }
 .neon-option {
   position: relative;
+  overflow: hidden;
   display: flex;
   align-items: flex-start;
   gap: 14px;
@@ -2239,35 +2240,8 @@ body[data-galgame="1"]::after {
 }
 
 /* ============================================================
-   霓虹页视觉增强 —— 选项左侧霓虹条 + 选中脉冲 + 卡片角标
+   霓虹页视觉增强 —— 选项动效集中在下方"答题页增强"区域
    ============================================================ */
-/* 选项卡:左侧霓虹强调条,hover/选中时点亮 */
-.neon-option::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 50%;
-  width: 3px;
-  height: 0;
-  background: var(--neon-cyan);
-  box-shadow: 0 0 8px var(--neon-cyan);
-  transform: translateY(-50%);
-  transition: height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
-  border-radius: 0 2px 2px 0;
-}
-.neon-option:hover::before { height: 60%; }
-.neon-option.is-selected::before {
-  height: 80%;
-  background: var(--neon-pink);
-  box-shadow: 0 0 10px var(--neon-pink);
-}
-.neon-option.is-selected {
-  animation: neon-pick 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@keyframes neon-pick {
-  0% { transform: scale(1); }
-  40% { transform: scale(1.015); box-shadow: 0 0 28px rgba(255, 45, 149, 0.7); }
-  100% { transform: scale(1); }
-}
 
 /* 题目卡:四角霓虹角标,赛博朋克 HUD 感 */
 .neon-q-card::after {
@@ -2748,6 +2722,111 @@ body[data-galgame="1"]::after {
 }
 
 /* ============================================================
+   全局微交互增强 —— 按钮点击弹性 / 卡片 hover 反馈 / 输入焦点动效
+   所有 transition 使用统一缓动曲线,尊重 prefers-reduced-motion
+   ============================================================ */
+
+/* ---- 全局按钮点击弹性缩放 ---- */
+button:active:not(:disabled):not([disabled]),
+.btn:active:not(:disabled):not([disabled]),
+a.btn:active:not(:disabled):not([disabled]),
+button[type="submit"]:active:not(:disabled):not([disabled]) {
+  transform: scale(0.97) !important;
+  transition-duration: 0.08s !important;
+}
+
+/* ---- 卡片点击反馈 ---- */
+.mirror-card:active:not(:disabled):not(.no-tap),
+.section-card:active:not(:disabled):not(.no-tap),
+.onthisday-card:active:not(:disabled):not(.no-tap),
+.ed-domain-card:active:not(:disabled):not(.no-tap),
+.ed-assessment-card:active:not(:disabled):not(.no-tap) {
+  transform: scale(0.985) !important;
+  transition-duration: 0.08s !important;
+}
+
+/* ---- 链接点击微反馈 ---- */
+a:active:not(:disabled):not([disabled]) {
+  opacity: 0.8;
+  transition-duration: 0.08s !important;
+}
+
+/* ---- 输入框焦点增强 ---- */
+input:focus,
+textarea:focus,
+select:focus,
+.auth-input:focus,
+.fig-search:focus {
+  transition:
+    border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.25s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+/* ---- Toast 入场动画 ---- */
+[data-sonner-toaster] [data-sonner-toast] {
+  animation: sonner-slide-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+@keyframes sonner-slide-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---- 表单提交加载态 ---- */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+  color: transparent !important;
+}
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: btn-spin 0.6s linear infinite;
+}
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- 数字变化过渡 ---- */
+.num-transition {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ---- 选中态脉冲 ---- */
+@keyframes select-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+.select-pop {
+  animation: select-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ---- 减少动效 ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  button:active:not(:disabled):not([disabled]),
+  .btn:active:not(:disabled):not([disabled]),
+  .mirror-card:active:not(:disabled):not(.no-tap) {
+    transform: none !important;
+  }
+}
+
+/* ============================================================
    动画响应增强 —— 全局微交互优化
    按钮/链接/卡片/页面切换/滚动显现/加载态/焦点态
    过渡时间 0.25-0.4s,弹性 cubic-bezier,尊重 prefers-reduced-motion
@@ -2918,6 +2997,229 @@ input:focus-visible,
   .back-link:hover {
     transform: none !important;
   }
+}
+
+/* ============================================================
+   答题页增强:选项选中涟漪效果 + 进度条弹性过渡
+   ============================================================ */
+
+/* 选项选中:涟漪扩散 */
+.neon-option.is-selected::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: var(--neon-pink);
+  opacity: 0;
+  animation: neon-ripple 0.5s ease-out;
+  pointer-events: none;
+}
+@keyframes neon-ripple {
+  0%   { opacity: 0.15; transform: scale(0.92); }
+  50%  { opacity: 0.06; transform: scale(1.04); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+/* 选项选中:底部边框脉冲 */
+.neon-option.is-selected {
+  animation: neon-pick 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes neon-pick {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.015); box-shadow: 0 0 28px rgba(255, 45, 149, 0.7); }
+  100% { transform: scale(1); }
+}
+
+/* 进度条弹性过渡增强 */
+.neon-progress-fill {
+  transition: width 0.5s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* 常规测评选项 Hover 增强 */
+.neon-option {
+  position: relative;
+  overflow: hidden;
+}
+.neon-option::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  width: 3px;
+  height: 0;
+  background: var(--neon-cyan);
+  box-shadow: 0 0 8px var(--neon-cyan);
+  transform: translateY(-50%);
+  transition: height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 0 2px 2px 0;
+}
+.neon-option:hover::before { height: 60%; }
+.neon-option.is-selected::before {
+  height: 80%;
+  background: var(--neon-pink);
+  box-shadow: 0 0 10px var(--neon-pink);
+}
+
+/* ============================================================
+   常规测评(Take.tsx)选项区增强
+   ============================================================ */
+
+/* 选项卡片 hover 微动效:轻微上浮 + 左侧强调条 */
+.take-option {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.25s cubic-bezier(0.34, 1.4, 0.64, 1),
+    box-shadow 0.25s var(--ease),
+    border-color 0.25s var(--ease),
+    background 0.25s var(--ease) !important;
+}
+.take-option:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.12);
+}
+.take-option:active {
+  transform: translateY(0);
+  transition-duration: 0.08s !important;
+}
+.take-option::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  width: 3px;
+  height: 0;
+  background: var(--mirror);
+  transform: translateY(-50%);
+  transition: height 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 0 2px 2px 0;
+}
+.take-option:hover::before { height: 50%; }
+.take-option.is-selected::before {
+  height: 70%;
+  background: var(--accent);
+}
+
+/* 选项选中涟漪 */
+.take-option.is-selected::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  opacity: 0;
+  animation: take-ripple 0.5s ease-out;
+  pointer-events: none;
+}
+@keyframes take-ripple {
+  0%   { opacity: 0.12; transform: scale(0.95); }
+  50%  { opacity: 0.05; transform: scale(1.02); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+/* ============================================================
+   报告页:维度卡片错落入场增强
+   ============================================================ */
+
+/* 维度卡片悬停:光带扫过 */
+.dim-card {
+  position: relative;
+  overflow: hidden;
+}
+.dim-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  transition: left 0.6s var(--ease);
+}
+.dim-card:hover::after { left: 120%; }
+
+/* 报告页 Hero 数字计数动画 */
+.report-score-num {
+  display: inline-block;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================================
+   选择器/开关:平滑弹性过渡
+   ============================================================ */
+
+/* settings toggle 增强 */
+.settings-toggle-knob {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================================
+   首页:卡片入场错落增强
+   ============================================================ */
+
+/* Stagger 子项入场:从下方滑入 + 淡入 */
+.stagger-item {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.stagger-item.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   页面切换:滑入滑出增强
+   ============================================================ */
+
+/* AnimatePresence 包装器的页面过渡 */
+.page-slide-enter {
+  animation: page-slide-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.page-slide-exit {
+  animation: page-slide-out 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes page-slide-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes page-slide-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-8px); }
+}
+
+/* ============================================================
+   幻灯片(Slider)和量表题(Scale)增强
+   ============================================================ */
+
+/* 量表选项:溢出隐藏(让涟漪有效) */
+.scale-point {
+  overflow: hidden;
+}
+
+/* 强制二选一卡片:溢出隐藏 */
+.fc-card {
+  overflow: hidden;
+}
+
+/* ============================================================
+   庆祝粒子容器(报告页完成时)
+   ============================================================ */
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ============================================================
+   提交按钮加载态:脉冲呼吸
+   ============================================================ */
+@keyframes btn-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+.btn-is-submitting {
+  animation: btn-pulse 1.2s ease-in-out infinite;
+  pointer-events: none;
 }
 
 /* ============================================================

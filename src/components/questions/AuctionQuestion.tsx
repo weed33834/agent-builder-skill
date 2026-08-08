@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { AuctionQuestion as AuctionQ } from '@/lib/types'
 import { useI18n } from '@/lib/i18n'
-import { toast } from '@/lib/toast'
+import { toast } from '@/lib/utils'
 import type { QuestionProps } from './types'
 
 export function AuctionQuestion({ question: q, tracker, onAnswer, getAnswerRef }: QuestionProps<AuctionQ>) {

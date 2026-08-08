@@ -4,7 +4,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '@/lib/i18n'
-import { toast } from '@/lib/toast'
+import { toast } from '@/lib/utils'
 import { asset } from '@/lib/utils'
 import type { ComputeResult, AssessmentType, Match } from '@/lib/types'
 

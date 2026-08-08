@@ -3,7 +3,6 @@
  * 资源命名空间:page.section.element,支持 "a.b.c" 嵌套 + {var} 插值 + 数组。
  * 语言状态走 Zustand(useLangStore),持久化到 localStorage(沿用原 key mm_lang)。
  */
-import { useSyncExternalStore } from 'react'
 import { useLangStore, type Lang } from '@/store'
 
 // ===================== 资源类型(宽松,允许嵌套对象/字符串/数组) =====================
@@ -722,6 +721,3 @@ const LANG_TAG: Record<Lang, string> = { zh: 'zh-CN', en: 'en-US', ja: 'ja-JP' }
 export function langTag(lang: Lang): string {
   return LANG_TAG[lang] || lang
 }
-
-// useSyncExternalStore 占位避免未用警告(保留以备未来 SSR 同步)
-void useSyncExternalStore
