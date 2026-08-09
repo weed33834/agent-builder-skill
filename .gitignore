@@ -1,32 +1,33 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+*.egg
+.venv/
+venv/
+env/
 
-node_modules
-dist
-dist-ssr
-*.local
+# Node
+node_modules/
+*.tsbuildinfo
 
-# Playwright
-test-results/
-playwright-report/
-/blob-report/
-/playwright/.cache/
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# Environment
+.env
+.env.local
+
+# OS
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-# 仅忽略根目录的 data/(脚本生成产物),不要误伤 src/data/ 源码
-/data/
+Thumbs.db
+
+# Docker
+.docker/
+
+# Logs
+*.log

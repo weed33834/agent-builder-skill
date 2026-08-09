@@ -1,0 +1,32 @@
+# FastAPI 服务
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.9.0
+pydantic-settings>=2.5.0
+
+# L1+L2: LangChain 核心
+langchain>=0.3.0
+langchain-core>=0.3.0
+
+# L1: LLM 提供商
+langchain-openai>=0.2.0
+langchain-anthropic>=0.2.0
+langchain-ollama>=0.2.0
+
+# L4: Agent 框架
+langgraph>=0.2.0
+
+# L5: 工具依赖
+httpx>=0.28.0
+
+# L2: Token 管理
+tiktoken>=0.8.0
+
+# 可选存储
+# chromadb>=0.5.0
+# langchain-community>=0.3.0
+# psycopg2-binary>=2.9.0
+# redis>=5.2.0
+
+# 调试
+# langsmith>=0.1.0
