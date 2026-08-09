@@ -1,0 +1,86 @@
+# 模板 B: 研究助手 (Research)
+# 适用场景: 搜索、分析、总结信息
+# 配置差异: 强推理模型 + 搜索工具 + 长记忆
+
+agent:
+  name: "ResearchAssistant"
+  type: "research"
+  description: "网页搜索研究助手，可以搜索网页、总结内容、保存笔记"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o"
+  temperature: 0.7
+  max_tokens: 4096
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: false
+    models: []
+
+prompt:
+  system_prompt: |
+    你是一个专业的研究助手。你的任务是：
+    1. 理解用户的问题
+    2. 搜索相关信息
+    3. 总结和分析结果
+    4. 给出有深度、有来源的回答
+    
+    使用工具时，优先搜索权威来源。
+    回答时注明信息来源，使用 Markdown 格式。
+  role_template: "research_assistant"
+  output_format: "markdown"
+
+agent_framework:
+  graph_type: "single"
+  max_iterations: 15
+  checkpointer: "memory"
+
+tools:
+  enabled:
+    - web_search
+    - web_fetch
+    - current_time
+    - calculate
+  custom:
+    - name: "save_note"
+      description: "保存研究笔记到本地文件"
+      parameters:
+        title: { type: "string", description: "笔记标题" }
+        content: { type: "string", description: "笔记内容" }
+
+memory:
+  type: "buffer"
+  max_messages: 100
+  knowledge:
+    enabled: false
+    vector_store: "chroma"
+
+orchestration:
+  mode: "single"
+  max_subtasks: 5
+  timeout: 180
+
+api:
+  auth_enabled: false
+  rate_limit: 60
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "研究助手"
+  features:
+    - tool_visualization
+    - session_management
+    - markdown_rendering
+
+deployment:
+  type: "docker"
+  log_level: "INFO"
+  debug: false

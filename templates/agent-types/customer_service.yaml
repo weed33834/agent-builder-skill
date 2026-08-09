@@ -1,0 +1,125 @@
+# 模板 D: 客服系统 (Customer Service)
+# 适用场景: 多 Agent 协作的客服系统
+# 配置差异: 多 Agent 图 + 监督/路由/聚合
+
+agent:
+  name: "CustomerService"
+  type: "customer_service"
+  description: "智能客服系统，可以分类问题、路由到专业 Agent、汇总回答"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o"
+  temperature: 0.5
+  max_tokens: 4096
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: false
+    models: []
+
+prompt:
+  system_prompt: |
+    你是一个智能客服助手。你的任务是：
+    1. 友好地接待用户
+    2. 理解用户的问题
+    3. 提供准确、有用的回答
+    4. 如果问题复杂，转交给更专业的 Agent
+    
+    始终保持专业、耐心、友好的态度。
+  role_template: "customer_service"
+  output_format: "text"
+
+agent_framework:
+  graph_type: "multi"
+  max_iterations: 30
+  checkpointer: "memory"
+
+tools:
+  enabled:
+    - web_search
+    - current_time
+  custom:
+    - name: "query_order"
+      description: "查询订单信息"
+      parameters:
+        order_id: { type: "string", description: "订单编号" }
+    - name: "cancel_order"
+      description: "取消订单"
+      parameters:
+        order_id: { type: "string", description: "订单编号" }
+        reason: { type: "string", description: "取消原因" }
+    - name: "process_refund"
+      description: "处理退款"
+      parameters:
+        order_id: { type: "string", description: "订单编号" }
+        amount: { type: "number", description: "退款金额" }
+    - name: "check_refund_status"
+      description: "查询退款状态"
+      parameters:
+        order_id: { type: "string", description: "订单编号" }
+    - name: "search_products"
+      description: "搜索产品信息"
+      parameters:
+        keyword: { type: "string", description: "搜索关键词" }
+    - name: "get_product_info"
+      description: "获取产品详情"
+      parameters:
+        product_id: { type: "string", description: "产品编号" }
+
+memory:
+  type: "buffer"
+  max_messages: 200
+  knowledge:
+    enabled: true
+    vector_store: "chroma"
+
+orchestration:
+  mode: "multi"
+  max_subtasks: 10
+  timeout: 300
+  agents:
+    - name: "classifier"
+      role: "问题分类"
+      system_prompt: "你负责将用户问题分类到：订单、退款、产品咨询。返回分类结果。"
+      tools: []
+    - name: "order_agent"
+      role: "订单处理"
+      system_prompt: "你负责处理订单相关查询，包括查询订单状态、取消订单等。"
+      tools: [query_order, cancel_order]
+    - name: "refund_agent"
+      role: "退款处理"
+      system_prompt: "你负责处理退款请求，包括查询退款状态、处理退款等。"
+      tools: [process_refund, check_refund_status]
+    - name: "product_agent"
+      role: "产品咨询"
+      system_prompt: "你负责回答产品相关问题，包括产品信息、规格、价格等。"
+      tools: [search_products, get_product_info]
+    - name: "aggregator"
+      role: "结果汇总"
+      system_prompt: "你负责汇总所有子 Agent 的结果，生成给用户的最终回复。"
+      tools: []
+
+api:
+  auth_enabled: true
+  rate_limit: 120
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "智能客服"
+  features:
+    - tool_visualization
+    - session_management
+    - ticket_system
+
+deployment:
+  type: "docker"
+  log_level: "INFO"
+  debug: false
