@@ -1,6 +1,6 @@
-"""L8+L10 - 应用入口
+"""L8+L10 - Application Entry
 
-FastAPI 应用实例化，注册所有路由和中间件。
+FastAPI application instantiation, registers all routes and middleware.
 """
 
 from fastapi import FastAPI
@@ -15,22 +15,22 @@ from .l5_tools.base_tools import BASE_TOOLS
 from .l10_infra.config import settings
 from .l10_infra.logging import setup_logging, get_logger
 
-# 配置日志
+# Configure logging
 setup_logging()
 logger = get_logger(__name__)
 
 
 def create_app() -> FastAPI:
-    """创建并配置 FastAPI 应用"""
-    
+    """Create and configure the FastAPI application"""
+
     app = FastAPI(
         title=settings.APP_NAME,
         version=settings.APP_VERSION,
-        description="万能 Agent 构建器 - 10 层架构智能体应用",
+        description="Universal Agent Builder - 10-Layer Architecture Agent Application",
     )
-    
-    # ===== L10: 基础设施 =====
-    # CORS 配置
+
+    # ===== L10: Infrastructure =====
+    # CORS configuration
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ORIGINS,
@@ -38,52 +38,52 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    
-    # 认证中间件（可选）
+
+    # Auth middleware (optional)
     if settings.API_KEY:
         app.middleware("http")(AuthMiddleware(settings.API_KEY))
-    
-    # ===== L8: API 路由 =====
+
+    # ===== L8: API Routes =====
     app.include_router(health_router, prefix="/api", tags=["health"])
     app.include_router(chat_router, prefix="/api", tags=["chat"])
     app.include_router(config_router, prefix="/api", tags=["config"])
-    
-    # ===== 启动/关闭事件 =====
+
+    # ===== Startup/Shutdown Events =====
     @app.on_event("startup")
     async def startup():
-        """应用启动时初始化各层"""
-        logger.info(f"正在启动 {settings.APP_NAME} v{settings.APP_VERSION}...")
-        
-        # L5: 注册基础工具
+        """Initialize all layers on application startup"""
+        logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}...")
+
+        # L5: Register base tools
         for tool in BASE_TOOLS:
             ToolRegistry.register(tool, category="general")
-            logger.info(f"  注册工具: {tool.name}")
-        
-        # L4: 初始化 Agent 图
+            logger.info(f"  Registered tool: {tool.name}")
+
+        # L4: Initialize Agent graph
         from .l4_agent.graph import get_graph
         graph = get_graph()
-        logger.info(f"  Agent 图已初始化")
-        
-        logger.info(f"  LLM 提供商: {settings.LLM_PROVIDER}")
-        logger.info(f"  模型: {settings.LLM_MODEL}")
-        logger.info(f"  已注册工具: {len(ToolRegistry.get_all())} 个")
-        logger.info(f"{settings.APP_NAME} 启动完成")
-    
+        logger.info(f"  Agent graph initialized")
+
+        logger.info(f"  LLM provider: {settings.LLM_PROVIDER}")
+        logger.info(f"  Model: {settings.LLM_MODEL}")
+        logger.info(f"  Registered tools: {len(ToolRegistry.get_all())}")
+        logger.info(f"{settings.APP_NAME} started successfully")
+
     @app.on_event("shutdown")
     async def shutdown():
-        """应用关闭时清理"""
-        logger.info("正在关闭应用...")
+        """Cleanup on application shutdown"""
+        logger.info("Shutting down application...")
         ToolRegistry.clear()
-        logger.info("应用已关闭")
-    
+        logger.info("Application closed")
+
     return app
 
 
-# 创建应用实例
+# Create application instance
 app = create_app()
 
 
-# 直接运行时启动
+# Start when run directly
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(

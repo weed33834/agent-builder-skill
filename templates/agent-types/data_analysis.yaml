@@ -1,11 +1,11 @@
-# 模板 E: 数据分析 (Data Analysis)
-# 适用场景: 数据上传、分析、可视化
-# 配置差异: 文件上传 + 图表生成 + 向量存储
+# Template E: Data Analysis
+# Use case: Data upload, analysis, and visualization
+# Configuration differences: File upload + chart generation + vector storage
 
 agent:
   name: "DataAnalyzer"
   type: "data_analysis"
-  description: "数据分析助手，可以上传 CSV 文件、分析数据、生成图表"
+  description: "Data analysis assistant that can upload CSV files, analyze data, and generate charts"
 
 llm:
   provider: "openai"
@@ -21,6 +21,7 @@ interface:
   fallback:
     enabled: false
     models: []
+  stream_mode: "messages"
 
 prompt:
   system_prompt: |
@@ -43,7 +44,8 @@ prompt:
 agent_framework:
   graph_type: "single"
   max_iterations: 20
-  checkpointer: "memory"
+  checkpointer: "inmemory"
+  node_cache: false
 
 tools:
   enabled:
@@ -52,6 +54,14 @@ tools:
     - generate_chart
     - current_time
   custom: []
+
+mcp:
+  enabled: true
+  servers:
+    - name: "data_processing"
+      transport: "stdio"
+      command: "python"
+      args: ["-m", "app.data_analysis.mcp_server"]
 
 memory:
   type: "buffer"
@@ -74,7 +84,7 @@ api:
 
 ui:
   type: "chat"
-  title: "数据分析"
+  title: "Data Analysis"
   features:
     - tool_visualization
     - session_management

@@ -1,24 +1,24 @@
-# Agent 类型模板
+# Agent Type Templates
 
-本目录包含 5 种预定义的 Agent 类型模板，每种模板对应一个 YAML 配置文件。
+This directory contains 5 predefined Agent type templates, each corresponding to a YAML configuration file.
 
-## 模板列表
+## Template List
 
-| 模板文件 | Agent 类型 | 适用场景 | 复杂度 |
+| Template File | Agent Type | Use Case | Complexity |
 |----------|------------|----------|--------|
-| `chat.yaml` | 聊天助手 | 通用对话、简单问答 | ★☆☆☆☆ |
-| `research.yaml` | 研究助手 | 搜索、总结、分析信息 | ★★★☆☆ |
-| `coding.yaml` | 编码助手 | 编写代码、审查、调试 | ★★★☆☆ |
-| `customer_service.yaml` | 客服系统 | 多 Agent 协作客服 | ★★★★★ |
-| `data_analysis.yaml` | 数据分析 | 数据上传、分析、可视化 | ★★★★☆ |
+| `chat.yaml` | Chat Assistant | General conversation, simple Q&A | ★☆☆☆☆ |
+| `research.yaml` | Research Assistant | Search, summarize, and analyze information | ★★★☆☆ |
+| `coding.yaml` | Coding Assistant | Write code, review, debug | ★★★☆☆ |
+| `customer_service.yaml` | Customer Service System | Multi-Agent collaborative customer service | ★★★★★ |
+| `data_analysis.yaml` | Data Analysis | Data upload, analysis, visualization | ★★★★☆ |
 
-## 使用方式
+## Usage
 
 ```bash
-# 使用模板生成 Agent
+# Generate an Agent using a template
 python scripts/generate.py templates/agent-types/research.yaml ./my_agent
 ```
 
-## 自定义
+## Customization
 
-复制任一模板，修改配置项即可创建自定义 Agent 类型。
+Copy any template and modify the configuration items to create a custom Agent type.

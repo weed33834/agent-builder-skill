@@ -1,9 +1,9 @@
-"""L3 - 系统提示词定义
+"""L3 - System Prompt Definitions
 
-定义 Agent 的基础行为准则和角色设定。
+Defines the Agent's base behavior guidelines and role settings.
 """
 
-# 默认 Agent 系统提示词
+# Default Agent system prompt
 DEFAULT_SYSTEM_PROMPT = """你是一个智能助手，可以调用工具来帮助用户解决问题。
 
 ## 可用工具
@@ -25,12 +25,12 @@ DEFAULT_SYSTEM_PROMPT = """你是一个智能助手，可以调用工具来帮�
 - 不确定时如实说明
 """
 
-# 简洁模式（适合快速对话）
+# Concise mode (suitable for quick conversations)
 CONCISE_SYSTEM_PROMPT = """你是一个智能助手。你可以使用工具来帮助用户。
 可用工具：web_search, web_fetch, current_time, calculate
 直接回答，简洁明了。"""
 
-# 开发者模式（适合技术场景）
+# Developer mode (suitable for technical scenarios)
 DEVELOPER_SYSTEM_PROMPT = """你是一个技术专家助手。你擅长：
 - 代码编写和审查
 - 技术问题诊断
@@ -41,7 +41,7 @@ DEVELOPER_SYSTEM_PROMPT = """你是一个技术专家助手。你擅长：
 
 
 def get_default_prompt(style: str = "default") -> str:
-    """获取默认系统提示词"""
+    """Get the default system prompt"""
     prompts = {
         "default": DEFAULT_SYSTEM_PROMPT,
         "concise": CONCISE_SYSTEM_PROMPT,

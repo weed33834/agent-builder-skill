@@ -1,4 +1,4 @@
-"""L8 - 健康检查 API 端点"""
+"""L8 - Health Check API Endpoint"""
 
 from fastapi import APIRouter
 from datetime import datetime
@@ -11,9 +11,9 @@ router = APIRouter()
 
 @router.get("/health", response_model=HealthResponse)
 async def health_check():
-    """健康检查
+    """Health check
     
-    返回服务的运行状态信息。
+    Returns the service's runtime status information.
     """
     return HealthResponse(
         status="ok",

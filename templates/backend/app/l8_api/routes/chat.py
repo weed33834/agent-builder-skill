@@ -1,6 +1,6 @@
-"""L8 - 聊天 API 端点
+"""L8 - Chat API Endpoint
 
-提供 SSE 流式聊天接口，支持实时流式响应和工具调用可视化。
+Provides an SSE streaming chat interface, supporting real-time streaming responses and tool call visualization.
 """
 
 import json
@@ -16,30 +16,30 @@ router = APIRouter()
 
 @router.post("/chat")
 async def chat(request: ChatRequest):
-    """流式聊天
+    """Streaming chat
     
-    使用 SSE 实时返回 Agent 的响应。
-    支持流式 Token、工具调用状态、完成事件等。
+    Returns the Agent's response in real time using SSE.
+    Supports streaming tokens, tool call status, completion events, etc.
     """
     try:
         graph = get_graph()
         session_mgr = get_session_manager()
         
-        # 获取或创建会话
+        # Get or create a session
         thread_id = request.thread_id
         if not thread_id:
             thread_id = session_mgr.create_session()
         
         config = get_graph_config(thread_id)
         
-        # 保存用户消息
+        # Save the user message
         await session_mgr.add_message(thread_id, "user", request.message)
         
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
     
     async def event_stream():
-        """SSE 事件流"""
+        """SSE event stream"""
         tool_call_count = 0
         full_response = ""
         
@@ -51,7 +51,7 @@ async def chat(request: ChatRequest):
             kind = event["event"]
             
             try:
-                # L1/L2: LLM 流式输出 Token
+                # L1/L2: LLM streaming token output
                 if kind == "on_chat_model_stream":
                     chunk = event["data"].get("chunk", "")
                     content = chunk.content if hasattr(chunk, "content") else str(chunk)
@@ -59,24 +59,24 @@ async def chat(request: ChatRequest):
                         full_response += content
                         yield f"data: {json.dumps({'type': 'token', 'content': content})}\n\n"
                 
-                # L5: 工具调用开始
+                # L5: Tool call start
                 elif kind == "on_tool_start":
                     tool_call_count += 1
                     tool_name = event["name"]
                     tool_input = event["data"].get("input", "")
                     yield f"data: {json.dumps({'type': 'tool_start', 'tool': tool_name, 'input': str(tool_input)[:200]})}\n\n"
                 
-                # L5: 工具调用结束
+                # L5: Tool call end
                 elif kind == "on_tool_end":
                     tool_name = event["name"]
                     tool_output = event["data"].get("output", "")
                     yield f"data: {json.dumps({'type': 'tool_end', 'tool': tool_name, 'output': str(tool_output)[:500]})}\n\n"
                 
-                # L3: 提示构建完成，LLM 开始推理
+                # L3: Prompt building complete, LLM starts reasoning
                 elif kind == "on_chat_model_start":
                     yield f"data: {json.dumps({'type': 'thinking'})}\n\n"
                 
-                # L4: 节点状态
+                # L4: Node status
                 elif kind == "on_chain_start":
                     name = event.get("name", "")
                     if name in ["agent_node", "tool_node"]:
@@ -88,14 +88,14 @@ async def chat(request: ChatRequest):
                         yield f"data: {json.dumps({'type': 'node_end', 'node': name})}\n\n"
             
             except Exception:
-                # 忽略单个事件的错误，继续流
+                # Ignore single event errors, continue streaming
                 pass
         
-        # 保存助手响应
+        # Save the assistant response
         if full_response:
             await session_mgr.add_message(thread_id, "assistant", full_response)
         
-        # 流结束
+        # Stream end
         yield f"data: {json.dumps({'type': 'done', 'thread_id': thread_id, 'tool_calls': tool_call_count})}\n\n"
     
     return StreamingResponse(
@@ -111,11 +111,11 @@ async def chat(request: ChatRequest):
 
 @router.post("/chat/reset")
 async def reset_chat(thread_id: str | None = None):
-    """重置会话"""
+    """Reset a session"""
     import uuid
     if thread_id:
         from ...l6_memory.session_manager import get_session_manager
         session_mgr = get_session_manager()
         session_mgr.delete_session(thread_id)
     new_thread_id = str(uuid.uuid4())
-    return {"thread_id": new_thread_id, "message": "会话已重置"}
+    return {"thread_id": new_thread_id, "message": "Session reset"}

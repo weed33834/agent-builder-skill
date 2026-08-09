@@ -1,6 +1,6 @@
-"""L2 - 重试和回退策略
+"""L2 - Retry and Fallback Strategy
 
-实现自动重试（指数退避）和模型回退机制。
+Implements automatic retry (exponential backoff) and model fallback mechanisms.
 """
 
 from typing import TypeVar, Callable, Awaitable
@@ -13,15 +13,15 @@ T = TypeVar("T")
 
 
 class RetryHandler:
-    """重试处理器
-    
-    支持：
-    - 指数退避重试
-    - 最大重试次数限制
-    - 特定异常类型重试
-    - 模型回退（主模型失败时降级）
+    """Retry handler
+
+    Supports:
+    - Exponential backoff retry
+    - Maximum retry count limit
+    - Retry on specific exception types
+    - Model fallback (degrade when primary model fails)
     """
-    
+
     def __init__(
         self,
         max_retries: int = 3,
@@ -33,82 +33,82 @@ class RetryHandler:
         self.base_delay = base_delay
         self.max_delay = max_delay
         self.backoff_factor = backoff_factor
-    
+
     async def execute_with_retry(
         self,
         func: Callable[..., Awaitable[T]],
         *args,
         **kwargs,
     ) -> T:
-        """带重试的执行
-        
+        """Execute with retry
+
         Args:
-            func: 要执行的异步函数
-            *args, **kwargs: 函数参数
+            func: The async function to execute
+            *args, **kwargs: Function arguments
         Returns:
-            T: 函数执行结果
+            T: Function execution result
         Raises:
-            最后一次重试的异常
+            The exception from the last retry
         """
         last_exception = None
-        
+
         for attempt in range(1, self.max_retries + 1):
             try:
                 return await func(*args, **kwargs)
             except Exception as e:
                 last_exception = e
-                
+
                 if attempt < self.max_retries:
                     delay = min(
                         self.base_delay * (self.backoff_factor ** (attempt - 1)),
                         self.max_delay,
                     )
                     logger.warning(
-                        f"调用失败 (尝试 {attempt}/{self.max_retries}): {e}。"
-                        f"将在 {delay:.1f} 秒后重试..."
+                        f"Invocation failed (attempt {attempt}/{self.max_retries}): {e}. "
+                        f"Retrying in {delay:.1f}s..."
                     )
                     await asyncio.sleep(delay)
                 else:
                     logger.error(
-                        f"调用失败，已耗尽所有重试次数: {e}"
+                        f"Invocation failed, all retry attempts exhausted: {e}"
                     )
 
         if last_exception:
             raise last_exception
-        raise RuntimeError("重试器: 没有异常但也未成功")
+        raise RuntimeError("Retrier: no exception but not successful")
 
 
 class FallbackChain:
-    """模型回退链
-    
-    主模型失败时自动降级到备用模型。
+    """Model fallback chain
+
+    Automatically degrades to a backup model when the primary model fails.
     """
-    
+
     def __init__(self, models: list[dict]):
-        """初始化回退链
-        
+        """Initialize the fallback chain
+
         Args:
-            models: 模型配置列表，按优先级排列
+            models: List of model configurations, ordered by priority
                     [{"provider": "openai", "model": "gpt-4o"},
                      {"provider": "openai", "model": "gpt-4o-mini"}]
         """
         self.models = models
-    
+
     async def execute_with_fallback(
         self,
         func: Callable[..., Awaitable[T]],
         *args,
         **kwargs,
     ) -> T:
-        """带回退的执行
-        
-        按配置顺序尝试模型，直到成功。
+        """Execute with fallback
+
+        Tries models in configuration order until one succeeds.
         """
         last_exception = None
-        
+
         for i, model_config in enumerate(self.models):
             try:
-                # 更新 kwargs 中的模型配置
+                # Update the model configuration in kwargs
                 kwargs.update({
                     "provider": model_config["provider"],
                     "model": model_config["model"],
@@ -117,10 +117,10 @@ class FallbackChain:
             except Exception as e:
                 last_exception = e
                 logger.warning(
-                    f"模型 {model_config['model']} 失败"
+                    f"Model {model_config['model']} failed "
                     f"({i+1}/{len(self.models)}): {e}"
                 )
 
         if last_exception:
             raise last_exception
-        raise RuntimeError("FallbackChain: 没有可用的备用模型")
+        raise RuntimeError("FallbackChain: no backup model available")

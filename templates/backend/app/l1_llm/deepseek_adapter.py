@@ -1,7 +1,7 @@
-"""L1 - DeepSeek 适配器
+"""L1 - DeepSeek Adapter
 
-实现 LLMAdapter 接口，适配 DeepSeek 系列模型。
-使用 OpenAI 兼容接口调用。
+Implements the LLMAdapter interface to adapt DeepSeek series models.
+Uses the OpenAI-compatible interface for invocation.
 """
 
 from typing import AsyncIterator, Optional
@@ -13,12 +13,12 @@ from .base import LLMAdapter
 
 
 class DeepSeekAdapter(LLMAdapter):
-    """DeepSeek 模型适配器
-    
-    支持: DeepSeek-V3, DeepSeek-R1 等
-    使用 OpenAI 兼容 API: https://api.deepseek.com
+    """DeepSeek model adapter
+
+    Supports: DeepSeek-V3, DeepSeek-R1, etc.
+    Uses the OpenAI-compatible API: https://api.deepseek.com
     """
-    
+
     def __init__(
         self,
         model: str = "deepseek-chat",
@@ -31,7 +31,7 @@ class DeepSeekAdapter(LLMAdapter):
         self.model_name = model
         self.temperature = temperature
         self.max_tokens = max_tokens
-        
+
         client_kwargs = {
             "model": model,
             "temperature": temperature,
@@ -41,16 +41,16 @@ class DeepSeekAdapter(LLMAdapter):
         }
         if api_key:
             client_kwargs["api_key"] = api_key
-        
+
         self._client = ChatOpenAI(**client_kwargs)
-    
+
     async def invoke(self, messages: list, tools: Optional[list] = None) -> AIMessage:
         if tools:
             llm = self._client.bind_tools(tools)
         else:
             llm = self._client
         return await llm.ainvoke(messages)
-    
+
     async def stream(self, messages: list, tools: Optional[list] = None) -> AsyncIterator[str]:
         if tools:
             llm = self._client.bind_tools(tools)
@@ -59,10 +59,10 @@ class DeepSeekAdapter(LLMAdapter):
         async for chunk in llm.astream(messages):
             if chunk.content:
                 yield chunk.content
-    
+
     def bind_tools(self, tools: list) -> Runnable:
         return self._client.bind_tools(tools)
-    
+
     def get_model_info(self) -> dict:
         return {
             "provider": "deepseek",

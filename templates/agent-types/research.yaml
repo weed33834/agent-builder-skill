@@ -1,11 +1,11 @@
-# 模板 B: 研究助手 (Research)
-# 适用场景: 搜索、分析、总结信息
-# 配置差异: 强推理模型 + 搜索工具 + 长记忆
+# Template B: Research Assistant
+# Use case: Search, analyze, and summarize information
+# Configuration differences: Strong reasoning model + search tools + long memory
 
 agent:
   name: "ResearchAssistant"
   type: "research"
-  description: "网页搜索研究助手，可以搜索网页、总结内容、保存笔记"
+  description: "Web search research assistant that can search the web, summarize content, and save notes"
 
 llm:
   provider: "openai"
@@ -21,6 +21,7 @@ interface:
   fallback:
     enabled: false
     models: []
+  stream_mode: "messages"
 
 prompt:
   system_prompt: |
@@ -38,7 +39,8 @@ prompt:
 agent_framework:
   graph_type: "single"
   max_iterations: 15
-  checkpointer: "memory"
+  checkpointer: "inmemory"
+  node_cache: false
 
 tools:
   enabled:
@@ -48,10 +50,18 @@ tools:
     - calculate
   custom:
     - name: "save_note"
-      description: "保存研究笔记到本地文件"
+      description: "Save research notes to a local file"
       parameters:
-        title: { type: "string", description: "笔记标题" }
-        content: { type: "string", description: "笔记内容" }
+        title: { type: "string", description: "Note title" }
+        content: { type: "string", description: "Note content" }
+
+mcp:
+  enabled: true
+  servers:
+    - name: "research_tools"
+      transport: "stdio"
+      command: "python"
+      args: ["-m", "app.l5_tools.mcp_server"]
 
 memory:
   type: "buffer"
@@ -74,7 +84,7 @@ api:
 
 ui:
   type: "chat"
-  title: "研究助手"
+  title: "Research Assistant"
   features:
     - tool_visualization
     - session_management

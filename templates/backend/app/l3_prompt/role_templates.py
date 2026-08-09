@@ -1,6 +1,6 @@
-"""L3 - 角色模板
+"""L3 - Role Templates
 
-预定义多种专业角色的系统提示词模板。
+Predefined system prompt templates for a variety of professional roles.
 """
 
 ROLE_TEMPLATES = {
@@ -102,19 +102,19 @@ ROLE_TEMPLATES = {
 
 
 def get_role_prompt(role_name: str) -> str:
-    """获取角色提示词
-    
+    """Get a role prompt
+
     Args:
-        role_name: 角色名称
+        role_name: Role name
     Returns:
-        角色提示词文本，找不到时返回 None
+        The role prompt text, or None if not found
     """
     role = ROLE_TEMPLATES.get(role_name)
     return role["prompt"] if role else None
 
 
 def list_roles() -> list[dict]:
-    """列出所有可用角色"""
+    """List all available roles"""
     return [
         {"id": key, "name": val["name"], "description": val["description"]}
         for key, val in ROLE_TEMPLATES.items()

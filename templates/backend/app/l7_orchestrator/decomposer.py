@@ -1,6 +1,6 @@
-"""L7 - 任务分解器
+"""L7 - Task Decomposer
 
-将复杂任务自动拆分为可执行的子任务序列。
+Automatically splits complex tasks into executable subtask sequences.
 """
 
 from typing import Optional
@@ -9,31 +9,31 @@ import uuid
 
 
 class TaskDecomposer:
-    """任务分解器
-    
-    将用户的复杂请求分解为多个子任务，
-    每个子任务可以由专门的 Agent 执行。
+    """Task decomposer
+
+    Decomposes a user's complex request into multiple subtasks,
+    each of which can be executed by a specialized Agent.
     """
-    
+
     def __init__(self, max_subtasks: int = 5):
         self.max_subtasks = max_subtasks
-    
+
     async def decompose(self, task: str, context: Optional[dict] = None) -> list[SubTask]:
-        """分解任务
-        
-        根据任务描述，自动生成子任务列表。
-        支持链式依赖（前一个任务的结果作为后一个的输入）。
-        
+        """Decompose a task
+
+        Automatically generates a subtask list based on the task description.
+        Supports chained dependencies (the result of one task serves as input to the next).
+
         Args:
-            task: 任务描述
-            context: 上下文信息
+            task: Task description
+            context: Context information
         Returns:
-            list[SubTask]: 子任务列表
+            list[SubTask]: Subtask list
         """
         task_lower = task.lower()
         subtasks = []
-        
-        # 分析任务类型，生成对应的子任务
+
+        # Analyze task type and generate corresponding subtasks
         if any(kw in task_lower for kw in ["搜索", "调研", "research", "search"]):
             subtasks = self._create_research_tasks(task)
         elif any(kw in task_lower for kw in ["分析", "analyze", "analysis"]):
@@ -41,7 +41,7 @@ class TaskDecomposer:
         elif any(kw in task_lower for kw in ["对比", "比较", "compare"]):
             subtasks = self._create_comparison_tasks(task)
         else:
-            # 默认：单任务
+            # Default: single task
             subtasks = [
                 SubTask(
                     id=str(uuid.uuid4())[:8],
@@ -50,11 +50,11 @@ class TaskDecomposer:
                     input_data={"task": task},
                 )
             ]
-        
+
         return subtasks[:self.max_subtasks]
-    
+
     def _create_research_tasks(self, task: str) -> list[SubTask]:
-        """创建研究类子任务"""
+        """Create research-type subtasks"""
         return [
             SubTask(
                 id=str(uuid.uuid4())[:8],
@@ -70,9 +70,9 @@ class TaskDecomposer:
                 dependencies=["search"],
             ),
         ]
-    
+
     def _create_analysis_tasks(self, task: str) -> list[SubTask]:
-        """创建分析类子任务"""
+        """Create analysis-type subtasks"""
         return [
             SubTask(
                 id=str(uuid.uuid4())[:8],
@@ -95,9 +95,9 @@ class TaskDecomposer:
                 dependencies=["analyze"],
             ),
         ]
-    
+
     def _create_comparison_tasks(self, task: str) -> list[SubTask]:
-        """创建对比类子任务"""
+        """Create comparison-type subtasks"""
         return [
             SubTask(
                 id=str(uuid.uuid4())[:8],

@@ -1,11 +1,11 @@
-# 模板 D: 客服系统 (Customer Service)
-# 适用场景: 多 Agent 协作的客服系统
-# 配置差异: 多 Agent 图 + 监督/路由/聚合
+# Template D: Customer Service System
+# Use case: Multi-Agent collaborative customer service system
+# Configuration differences: Multi-Agent graph + supervisor/routing/aggregation
 
 agent:
   name: "CustomerService"
   type: "customer_service"
-  description: "智能客服系统，可以分类问题、路由到专业 Agent、汇总回答"
+  description: "Intelligent customer service system that can classify questions, route to specialized Agents, and aggregate answers"
 
 llm:
   provider: "openai"
@@ -21,6 +21,7 @@ interface:
   fallback:
     enabled: false
     models: []
+  stream_mode: "messages"
 
 prompt:
   system_prompt: |
@@ -35,9 +36,10 @@ prompt:
   output_format: "text"
 
 agent_framework:
-  graph_type: "multi"
+  graph_type: "supervisor"
   max_iterations: 30
-  checkpointer: "memory"
+  checkpointer: "inmemory"
+  node_cache: false
 
 tools:
   enabled:
@@ -45,31 +47,31 @@ tools:
     - current_time
   custom:
     - name: "query_order"
-      description: "查询订单信息"
+      description: "Query order information"
       parameters:
-        order_id: { type: "string", description: "订单编号" }
+        order_id: { type: "string", description: "Order ID" }
     - name: "cancel_order"
-      description: "取消订单"
+      description: "Cancel an order"
       parameters:
-        order_id: { type: "string", description: "订单编号" }
-        reason: { type: "string", description: "取消原因" }
+        order_id: { type: "string", description: "Order ID" }
+        reason: { type: "string", description: "Cancellation reason" }
     - name: "process_refund"
-      description: "处理退款"
+      description: "Process a refund"
       parameters:
-        order_id: { type: "string", description: "订单编号" }
-        amount: { type: "number", description: "退款金额" }
+        order_id: { type: "string", description: "Order ID" }
+        amount: { type: "number", description: "Refund amount" }
     - name: "check_refund_status"
-      description: "查询退款状态"
+      description: "Check refund status"
       parameters:
-        order_id: { type: "string", description: "订单编号" }
+        order_id: { type: "string", description: "Order ID" }
     - name: "search_products"
-      description: "搜索产品信息"
+      description: "Search product information"
       parameters:
-        keyword: { type: "string", description: "搜索关键词" }
+        keyword: { type: "string", description: "Search keyword" }
     - name: "get_product_info"
-      description: "获取产品详情"
+      description: "Get product details"
       parameters:
-        product_id: { type: "string", description: "产品编号" }
+        product_id: { type: "string", description: "Product ID" }
 
 memory:
   type: "buffer"
@@ -79,28 +81,41 @@ memory:
     vector_store: "chroma"
 
 orchestration:
-  mode: "multi"
+  mode: "supervisor"
+  graph_type: "supervisor"
   max_subtasks: 10
   timeout: 300
+  a2a:
+    enabled: true
+    agent_card:
+      name: "CustomerService"
+      description: "Intelligent customer service system supporting multi-Agent collaboration"
+      skills: [order_management, refund_processing, product_inquiry]
+      auth_type: "none"
+    discovery:
+      endpoint: "/.well-known/agent.json"
+    rpc:
+      endpoint: "/a2a/rpc"
+      protocol: "json-rpc-2.0"
   agents:
     - name: "classifier"
-      role: "问题分类"
+      role: "Question classification"
       system_prompt: "你负责将用户问题分类到：订单、退款、产品咨询。返回分类结果。"
       tools: []
     - name: "order_agent"
-      role: "订单处理"
+      role: "Order processing"
       system_prompt: "你负责处理订单相关查询，包括查询订单状态、取消订单等。"
       tools: [query_order, cancel_order]
     - name: "refund_agent"
-      role: "退款处理"
+      role: "Refund processing"
       system_prompt: "你负责处理退款请求，包括查询退款状态、处理退款等。"
       tools: [process_refund, check_refund_status]
     - name: "product_agent"
-      role: "产品咨询"
+      role: "Product inquiry"
       system_prompt: "你负责回答产品相关问题，包括产品信息、规格、价格等。"
       tools: [search_products, get_product_info]
     - name: "aggregator"
-      role: "结果汇总"
+      role: "Result aggregation"
       system_prompt: "你负责汇总所有子 Agent 的结果，生成给用户的最终回复。"
       tools: []
 
@@ -113,7 +128,7 @@ api:
 
 ui:
   type: "chat"
-  title: "智能客服"
+  title: "Customer Service"
   features:
     - tool_visualization
     - session_management

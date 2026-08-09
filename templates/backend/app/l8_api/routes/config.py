@@ -1,6 +1,6 @@
-"""L8 - Agent 配置 API 端点
+"""L8 - Agent Configuration API Endpoint
 
-提供当前 Agent 配置信息，供前端动态渲染 UI。
+Provides current Agent configuration information for the frontend to dynamically render UI.
 """
 from fastapi import APIRouter
 from ...l10_infra.config import settings
@@ -10,14 +10,14 @@ router = APIRouter()
 
 @router.get("/config")
 async def get_agent_config():
-    """获取当前 Agent 配置信息
+    """Get current Agent configuration
     
-    前端根据此配置动态渲染 UI 功能。
+    The frontend dynamically renders UI features based on this configuration.
     """
     return {
         "name": settings.APP_NAME,
         "type": settings.LLM_MODEL,
-        "description": f"基于 {settings.LLM_PROVIDER}/{settings.LLM_MODEL} 的智能 Agent",
+        "description": f"Intelligent Agent based on {settings.LLM_PROVIDER}/{settings.LLM_MODEL}",
         "ui": {
             "type": "chat",
             "title": settings.APP_NAME,
@@ -34,10 +34,10 @@ async def get_agent_config():
 
 
 def _get_ui_features() -> list[str]:
-    """根据配置返回 UI 功能列表"""
+    """Return UI feature list based on configuration"""
     features = ["session_management", "markdown_rendering"]
     
-    # 根据工具配置决定 UI 功能
+    # Determine UI features based on tool configuration
     if settings.MAX_TOOL_CALLS > 0:
         features.append("tool_visualization")
     
@@ -48,7 +48,7 @@ def _get_ui_features() -> list[str]:
 
 
 def _get_tool_count() -> int:
-    """获取已注册工具数量"""
+    """Get the number of registered tools"""
     try:
         from ...l5_tools.registry import ToolRegistry
         return len(ToolRegistry.get_all())

@@ -1,5 +1,5 @@
-"""L8 - API 服务层 (API Service)
+"""L8 - API Service Layer
 
-对外提供 HTTP 接口，处理请求/响应、认证、限流等横切关注点。
-使用 FastAPI 框架实现高性能异步 API。
+Exposes HTTP interfaces externally, handling cross-cutting concerns such as request/response, authentication, and rate limiting.
+Uses the FastAPI framework to implement high-performance async APIs.
 """

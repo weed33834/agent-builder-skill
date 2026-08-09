@@ -1,18 +1,19 @@
 /**
- * L9 - 页面头部组件
+ * L9 - Page Header Component
  * 
- * 显示应用名称、当前会话标题，提供侧边栏切换按钮。
+ * Displays the app name and current session title, and provides a sidebar toggle button.
  */
 
 interface HeaderProps {
   onToggleSidebar: () => void
   sessionTitle: string
+  children?: React.ReactNode
 }
 
-export function Header({ onToggleSidebar, sessionTitle }: HeaderProps) {
+export function Header({ onToggleSidebar, sessionTitle, children }: HeaderProps) {
   return (
     <header className="app-header">
-      <button className="sidebar-toggle" onClick={onToggleSidebar} title="会话列表">
+      <button className="sidebar-toggle" onClick={onToggleSidebar} title="Session list">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M3 12h18M3 6h18M3 18h18" />
         </svg>
@@ -25,6 +26,7 @@ export function Header({ onToggleSidebar, sessionTitle }: HeaderProps) {
         <h1 className="header-title">Agent Builder</h1>
       </div>
       <div className="header-session">{sessionTitle}</div>
+      {children && <div className="header-children">{children}</div>}
     </header>
   )
 }

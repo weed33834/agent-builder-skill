@@ -1,7 +1,7 @@
 /**
- * L9 - 加载动画组件
+ * L9 - Loading Animation Component
  * 
- * 展示 L1-L10 各层调用时的加载状态。
+ * Displays the loading state during L1-L10 layer calls.
  */
 
 interface LoadingProps {
@@ -9,7 +9,7 @@ interface LoadingProps {
   layer?: string
 }
 
-export function Loading({ text = '加载中...', layer }: LoadingProps) {
+export function Loading({ text = 'Loading...', layer }: LoadingProps) {
   return (
     <div className="loading-container">
       <div className="loading-spinner">

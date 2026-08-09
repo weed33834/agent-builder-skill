@@ -1,6 +1,6 @@
-"""L2 - 统一聊天接口
+"""L2 - Unified Chat Interface
 
-封装 L1 各适配器的差异，提供统一的聊天调用方式。
+Encapsulates the differences between L1 adapters and provides a unified chat invocation method.
 """
 
 from typing import AsyncIterator, Optional
@@ -13,11 +13,11 @@ from .retry import RetryHandler
 
 
 class ChatInterface:
-    """统一聊天接口
-    
-    屏蔽不同 LLM 提供商的差异，提供一致的调用方式。
+    """Unified chat interface
+
+    Shields the differences between LLM providers and provides a consistent invocation method.
     """
-    
+
     def __init__(
         self,
         provider: str = "openai",
@@ -37,19 +37,19 @@ class ChatInterface:
         )
         self._stream_manager = StreamManager()
         self._retry_handler = RetryHandler()
-    
+
     async def chat(
         self,
         messages: list[dict],
         tools: Optional[list] = None,
     ) -> AIMessage:
-        """同步聊天
-        
+        """Synchronous chat
+
         Args:
-            messages: 消息列表，格式: [{"role": "user", "content": "..."}]
-            tools: 可选工具列表
+            messages: List of messages, format: [{"role": "user", "content": "..."}]
+            tools: Optional list of tools
         Returns:
-            AIMessage: LLM 响应
+            AIMessage: LLM response
         """
         langchain_messages = self._convert_messages(messages)
         return await self._retry_handler.execute_with_retry(
@@ -57,19 +57,19 @@ class ChatInterface:
             langchain_messages,
             tools,
         )
-    
+
     async def chat_stream(
         self,
         messages: list[dict],
         tools: Optional[list] = None,
     ) -> AsyncIterator[str]:
-        """流式聊天
-        
+        """Streaming chat
+
         Args:
-            messages: 消息列表
-            tools: 可选工具列表
+            messages: List of messages
+            tools: Optional list of tools
         Yields:
-            str: 逐片文本内容
+            str: Text content chunk by chunk
         """
         langchain_messages = self._convert_messages(messages)
         async for chunk in self._stream_manager.stream(
@@ -78,17 +78,17 @@ class ChatInterface:
             tools,
         ):
             yield chunk
-    
+
     def bind_tools(self, tools: list):
-        """绑定工具到当前 LLM"""
+        """Bind tools to the current LLM"""
         return self._llm.bind_tools(tools)
-    
+
     def get_model_info(self) -> dict:
-        """获取当前模型信息"""
+        """Get current model information"""
         return self._llm.get_model_info()
-    
+
     def _convert_messages(self, messages: list[dict]) -> list[BaseMessage]:
-        """将 API 消息格式转为 LangChain 消息格式"""
+        """Convert API message format to LangChain message format"""
         converted = []
         for msg in messages:
             role = msg.get("role", "user")

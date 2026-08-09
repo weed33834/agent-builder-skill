@@ -1,8 +1,8 @@
 /**
- * L9 - 错误边界组件
+ * L9 - Error Boundary Component
  * 
- * 捕获 React 组件树中的错误，防止整个应用崩溃。
- * 显示友好的错误提示和恢复按钮。
+ * Catches errors in the React component tree to prevent the entire app from crashing.
+ * Displays a friendly error message and a recovery button.
  */
 
 import { Component, type ReactNode, type ErrorInfo } from 'react'
@@ -35,7 +35,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="error-boundary">
           <div className="error-icon">⚠</div>
-          <h2>应用出现错误</h2>
+          <h2>Application Error</h2>
           <p className="error-message">{this.state.error?.message}</p>
           <button
             className="error-retry-btn"
@@ -44,7 +44,7 @@ export class ErrorBoundary extends Component<Props, State> {
               window.location.reload()
             }}
           >
-            重新加载
+            Reload
           </button>
         </div>
       )

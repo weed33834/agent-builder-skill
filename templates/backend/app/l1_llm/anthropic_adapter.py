@@ -1,6 +1,6 @@
-"""L1 - Anthropic 适配器
+"""L1 - Anthropic Adapter
 
-实现 LLMAdapter 接口，适配 Anthropic Claude 系列模型。
+Implements the LLMAdapter interface to adapt Anthropic Claude series models.
 """
 
 from typing import AsyncIterator, Optional
@@ -12,11 +12,11 @@ from .base import LLMAdapter
 
 
 class AnthropicAdapter(LLMAdapter):
-    """Anthropic Claude 模型适配器
-    
-    支持: Claude 3.5 Sonnet, Claude 3 Haiku 等
+    """Anthropic Claude model adapter
+
+    Supports: Claude 3.5 Sonnet, Claude 3 Haiku, etc.
     """
-    
+
     def __init__(
         self,
         model: str = "claude-3-5-sonnet-20241022",
@@ -29,7 +29,7 @@ class AnthropicAdapter(LLMAdapter):
         self.model_name = model
         self.temperature = temperature
         self.max_tokens = max_tokens
-        
+
         client_kwargs = {
             "model": model,
             "temperature": temperature,
@@ -40,16 +40,16 @@ class AnthropicAdapter(LLMAdapter):
             client_kwargs["api_key"] = api_key
         if api_base:
             client_kwargs["base_url"] = api_base
-        
+
         self._client = ChatAnthropic(**client_kwargs)
-    
+
     async def invoke(self, messages: list, tools: Optional[list] = None) -> AIMessage:
         if tools:
             llm = self._client.bind_tools(tools)
         else:
             llm = self._client
         return await llm.ainvoke(messages)
-    
+
     async def stream(self, messages: list, tools: Optional[list] = None) -> AsyncIterator[str]:
         if tools:
             llm = self._client.bind_tools(tools)
@@ -58,10 +58,10 @@ class AnthropicAdapter(LLMAdapter):
         async for chunk in llm.astream(messages):
             if chunk.content:
                 yield chunk.content
-    
+
     def bind_tools(self, tools: list) -> Runnable:
         return self._client.bind_tools(tools)
-    
+
     def get_model_info(self) -> dict:
         return {
             "provider": "anthropic",

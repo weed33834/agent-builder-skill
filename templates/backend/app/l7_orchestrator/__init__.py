@@ -1,5 +1,5 @@
-"""L7 - 编排调度层 (Orchestration)
+"""L7 - Orchestration Layer
 
-管理多个 Agent 的协作、任务分解和工作流执行。
-提供监督 Agent、任务分解器、结果聚合器等编排能力。
+Manages multi-Agent collaboration, task decomposition, and workflow execution.
+Provides orchestration capabilities including supervisor Agent, task decomposer, and result aggregator.
 """

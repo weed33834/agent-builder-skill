@@ -1,40 +1,46 @@
-"""L4 - 路由决策
+"""L4 - Routing Decisions
 
-定义 Agent 的条件路由逻辑，支持动态决策。
+Defines the Agent's conditional routing logic, supporting dynamic decisions.
+LangGraph v1.0 provides a built-in tools_condition, which can be used directly for most scenarios.
 """
 
 from typing import Callable
+from langgraph.prebuilt import tools_condition
+
 from .state import AgentState
 
 
 class ConditionalRouter:
-    """条件路由器
-    
-    根据状态动态决定下一步路由。
-    支持自定义路由逻辑和默认路由。
+    """Conditional router
+
+    Dynamically decides the next route based on state.
+    Supports custom routing logic and default routing.
+
+    Note: For the standard Agent→Tools→Agent loop, it is recommended to use
+    langgraph.prebuilt.tools_condition directly instead of this class.
     """
-    
+
     def __init__(self):
         self._routes: dict[str, tuple[Callable[[AgentState], bool], str]] = {}
         self._default_route: str = "__end__"
-    
+
     def add_route(
         self,
         name: str,
         condition: Callable[[AgentState], bool],
         target: str,
     ):
-        """添加条件路由
-        
+        """Add a conditional route
+
         Args:
-            name: 路由名称
-            condition: 条件函数，返回 True 时走此路由
-            target: 目标节点
+            name: Route name
+            condition: Condition function, takes this route when returning True
+            target: Target node
         """
         self._routes[name] = (condition, target)
-    
+
     def route(self, state: AgentState) -> str:
-        """执行路由决策"""
+        """Execute the routing decision"""
         for name, (condition, target) in self._routes.items():
             try:
                 if condition(state):
@@ -44,17 +50,21 @@ class ConditionalRouter:
         return self._default_route
 
 
-# 预定义路由条件
+# Predefined routing conditions
 def has_tool_calls(state: AgentState) -> bool:
-    """检查是否有工具调用"""
-    return state.get("next_step") == "tools"
+    """Check whether there are tool calls (a simplified version compatible with tools_condition)"""
+    last_message = state.get("messages", [])
+    if not last_message:
+        return False
+    last = last_message[-1]
+    return hasattr(last, "tool_calls") and bool(last.tool_calls)
 
 
 def has_error(state: AgentState) -> bool:
-    """检查是否有错误"""
+    """Check whether there is an error"""
     return state.get("error") is not None
 
 
 def max_iterations_reached(state: AgentState, max_iter: int = 10) -> bool:
-    """检查是否达到最大迭代次数"""
+    """Check whether the maximum iteration count has been reached"""
     return state.get("iteration_count", 0) >= max_iter

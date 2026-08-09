@@ -1,5 +1,5 @@
-"""L6 - 记忆与知识层 (Memory & Knowledge)
+"""L6 - Memory & Knowledge
 
-管理 Agent 的短期记忆、长期记忆和外部知识。
-包括对话缓冲、向量存储、RAG 检索和知识库管理。
+Manages the Agent's short-term memory, long-term memory, and external knowledge.
+Includes conversation buffering, vector storage, RAG retrieval, and knowledge base management.
 """

@@ -1,10 +1,17 @@
-"""L4 - Agent 节点逻辑
+"""L4 - Agent Node Logic
 
-定义 LangGraph 图中的各个节点函数。
-每个节点是一个独立处理步骤，接收状态并返回更新。
+Defines the node functions in the LangGraph graph.
+Each node is an independent processing step that receives state and returns updates.
+
+LangGraph v1.0 pattern:
+  - Uses Command(goto=, update=) instead of directly returning dict
+  - Supports interrupt() for human-in-the-loop
+  - Comprehensive error handling and type annotations
 """
 
 from typing import Literal
+from langgraph.graph import Command
+from langgraph.types import interrupt
 from langchain_core.messages import AIMessage, ToolMessage
 
 from .state import AgentState
@@ -15,7 +22,7 @@ from ..l10_infra.config import settings
 
 
 def _get_llm():
-    """根据配置获取 LLM 实例"""
+    """Get an LLM instance based on configuration"""
     return ChatInterface(
         provider=settings.LLM_PROVIDER,
         model=settings.LLM_MODEL,
@@ -26,21 +33,23 @@ def _get_llm():
     )
 
 
-async def agent_node(state: AgentState) -> dict:
-    """Agent 核心节点
-    
-    接收当前状态，通过 L3 提示构建器组装 Prompt，
-    调用 L2 接口与 LLM 交互，决定下一步操作。
+async def agent_node(state: AgentState) -> Command[Literal["tools", "__end__"]]:
+    """Agent core node
+
+    Receives the current state, assembles the Prompt via the L3 prompt builder,
+    invokes the L2 interface to interact with the LLM, and decides the next step.
+
+    v1.0 pattern: Returns a Command object, specifying both goto and update.
     """
-    # 获取当前配置
+    # Get current configuration
     llm = _get_llm()
     tools = ToolRegistry.get_all()
-    
-    # 使用 L3 提示构建器组装消息
+
+    # Assemble messages using the L3 prompt builder
     builder = PromptBuilder()
     messages = builder.build()
-    
-    # 添加历史消息
+
+    # Add history messages
     for msg in state.get("messages", []):
         if msg.type == "human":
             role = "user"
@@ -52,89 +61,199 @@ async def agent_node(state: AgentState) -> dict:
             "role": role,
             "content": msg.content,
         })
-    
+
     try:
-        # 通过 L2 接口调用 LLM
+        # Invoke the LLM via the L2 interface
         response = await llm.chat(messages, tools=tools if tools else None)
-        
-        # 检查是否有工具调用
+
+        # Check whether there are tool calls
         if hasattr(response, "tool_calls") and response.tool_calls:
-            return {
-                "messages": [response],
-                "next_step": "tools",
-                "current_tool": response.tool_calls[0]["name"],
-                "iteration_count": (state.get("iteration_count", 0) + 1),
-            }
+            return Command(
+                goto="tools",
+                update={
+                    "messages": [response],
+                    "current_tool": response.tool_calls[0]["name"],
+                    "iteration_count": (state.get("iteration_count", 0) + 1),
+                },
+            )
         else:
-            return {
-                "messages": [response],
-                "next_step": "__end__",
-                "current_tool": None,
-                "iteration_count": (state.get("iteration_count", 0) + 1),
-            }
-    
+            return Command(
+                goto="__end__",
+                update={
+                    "messages": [response],
+                    "current_tool": None,
+                    "is_final": True,
+                    "iteration_count": (state.get("iteration_count", 0) + 1),
+                },
+            )
+
     except Exception as e:
-        error_msg = f"Agent 调用失败: {str(e)}"
-        return {
-            "messages": [AIMessage(content=error_msg)],
-            "next_step": "__end__",
-            "error": error_msg,
-        }
+        error_msg = f"Agent invocation failed: {str(e)}"
+        return Command(
+            goto="__end__",
+            update={
+                "messages": [AIMessage(content=error_msg)],
+                "error": error_msg,
+                "is_final": True,
+            },
+        )
 
 
-async def tool_node(state: AgentState) -> dict:
-    """工具执行节点
-    
-    通过 L5 工具注册表执行 Agent 请求的工具调用。
+async def agent_node_with_human(state: AgentState) -> Command[Literal["tools", "human", "__end__"]]:
+    """Agent core node (with human-in-the-loop support)
+
+    Inserts an interrupt() before decision making to wait for human input confirmation.
+    Suitable for scenarios requiring approval or review.
+    """
+    llm = _get_llm()
+    tools = ToolRegistry.get_all()
+    builder = PromptBuilder()
+    messages = builder.build()
+
+    for msg in state.get("messages", []):
+        role = "user" if msg.type == "human" else "tool" if msg.type == "tool" else "assistant"
+        messages.append({"role": role, "content": msg.content})
+
+    try:
+        response = await llm.chat(messages, tools=tools if tools else None)
+
+        if hasattr(response, "tool_calls") and response.tool_calls:
+            # Pause and wait for human confirmation of the tool call
+            tool_name = response.tool_calls[0]["name"]
+            tool_args = response.tool_calls[0].get("args", {})
+
+            confirmation = interrupt({
+                "type": "tool_approval",
+                "tool": tool_name,
+                "args": tool_args,
+                "message": f"是否允许调用工具 {tool_name}？",
+            })
+
+            if confirmation is False:
+                return Command(
+                    goto="__end__",
+                    update={
+                        "messages": [AIMessage(content=f"用户取消了工具 {tool_name} 的调用")],
+                        "is_final": True,
+                    },
+                )
+
+            return Command(
+                goto="tools",
+                update={
+                    "messages": [response],
+                    "current_tool": tool_name,
+                    "iteration_count": (state.get("iteration_count", 0) + 1),
+                },
+            )
+        else:
+            return Command(
+                goto="__end__",
+                update={
+                    "messages": [response],
+                    "is_final": True,
+                    "iteration_count": (state.get("iteration_count", 0) + 1),
+                },
+            )
+
+    except Exception as e:
+        error_msg = f"Agent invocation failed: {str(e)}"
+        return Command(
+            goto="__end__",
+            update={
+                "messages": [AIMessage(content=error_msg)],
+                "error": error_msg,
+                "is_final": True,
+            },
+        )
+
+
+async def tool_node(state: AgentState) -> Command[Literal["agent", "__end__"]]:
+    """Tool execution node
+
+    Executes the tool calls requested by the Agent via the L5 tool registry.
+    Returns a Command object, automatically returning to the Agent node to continue execution.
     """
     last_message = state["messages"][-1]
-    
+
     if not hasattr(last_message, "tool_calls") or not last_message.tool_calls:
-        return {"next_step": "agent"}
-    
+        return Command(goto="agent", update={})
+
     tool_results = []
-    
+
     for tool_call in last_message.tool_calls:
         tool_name = tool_call["name"]
         tool_args = tool_call.get("args", {})
         tool_id = tool_call.get("id", "")
-        
+
         try:
-            # 通过 L5 工具注册表执行
+            # Execute via the L5 tool registry
             result = await ToolRegistry.execute(tool_name, tool_args)
             tool_results.append(
                 ToolMessage(content=str(result), tool_call_id=tool_id)
             )
         except Exception as e:
             tool_results.append(
-                ToolMessage(content=f"工具执行失败: {str(e)}", tool_call_id=tool_id)
+                ToolMessage(content=f"Tool execution failed: {str(e)}", tool_call_id=tool_id)
             )
-    
-    return {
-        "messages": tool_results,
-        "next_step": "agent",
-        "tool_results": {
-            tc.get("id", str(i)): tr.content
-            for i, (tc, tr) in enumerate(zip(last_message.tool_calls, tool_results))
+
+    return Command(
+        goto="agent",
+        update={
+            "messages": tool_results,
+            "tool_results": {
+                tc.get("id", str(i)): tr.content
+                for i, (tc, tr) in enumerate(zip(last_message.tool_calls, tool_results))
+            },
         },
+    )
+
+
+async def supervisor_node(state: AgentState) -> Command[Literal["specialist_1", "specialist_2", "__end__"]]:
+    """Supervisor dispatch node
+
+    Responsible for analyzing tasks and dispatching them to the appropriate Specialist Agent during multi-Agent orchestration.
+    """
+    llm = _get_llm()
+    messages = state.get("messages", [])
+
+    # Supervisor analyzes the task type
+    analysis_prompt = {
+        "role": "system",
+        "content": "你是一个任务分发 Supervisor。分析用户请求，决定应该由哪个 Specialist 处理。"
+                   "回复 'specialist_1' 表示搜索/查找类任务，'specialist_2' 表示分析/总结类任务。"
+                   "如果任务已完成，回复 'END'。",
     }
 
+    try:
+        supervisor_messages = [analysis_prompt]
+        for msg in messages:
+            if msg.type == "human":
+                supervisor_messages.append({"role": "user", "content": msg.content})
 
-async def router_node(state: AgentState) -> Literal["tools", "__end__"]:
-    """路由节点
-    
-    根据 Agent 的输出决定下一步：
-    - 需要工具调用 → 进入 L5 工具节点
-    - 达到最大迭代次数 → 强制结束
-    - 否则 → 结束
-    """
-    max_iterations = settings.MAX_TOOL_CALLS
-    current_iter = state.get("iteration_count", 0)
-    
-    if current_iter >= max_iterations:
-        return "__end__"
-    
-    if state.get("next_step") == "tools":
-        return "tools"
-    
-    return "__end__"
+        response = await llm.chat(supervisor_messages)
+        decision = response.content.strip().upper()
+
+        if decision == "END":
+            return Command(goto="__end__", update={"is_final": True})
+        elif decision == "SPECIALIST_2":
+            return Command(
+                goto="specialist_2",
+                update={"agent_type": "specialist_2"},
+            )
+        else:
+            return Command(
+                goto="specialist_1",
+                update={"agent_type": "specialist_1"},
+            )
+
+    except Exception as e:
+        error_msg = f"Supervisor dispatch failed: {str(e)}"
+        return Command(
+            goto="__end__",
+            update={
+                "messages": [AIMessage(content=error_msg)],
+                "error": error_msg,
+                "is_final": True,
+            },
+        )

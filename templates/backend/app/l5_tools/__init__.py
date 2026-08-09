@@ -1,5 +1,5 @@
-"""L5 - 工具执行层 (Tool Execution)
+"""L5 - Tool Execution
 
-管理 Agent 可调用的所有外部能力。
-提供工具注册、参数解析、执行引擎、结果处理和错误恢复。
+Manages all external capabilities that the Agent can invoke.
+Provides tool registration, parameter parsing, execution engine, result processing, and error recovery.
 """

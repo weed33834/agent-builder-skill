@@ -1,11 +1,11 @@
-# 模板 A: 聊天助手 (Chat)
-# 适用场景: 通用对话助手，最简单的 Agent
-# 配置差异: 低成本模型 + 最少工具 + 单 Agent
+# Template A: Chat Assistant
+# Use case: General conversational assistant, the simplest Agent
+# Configuration differences: Low-cost model + minimal tools + single Agent
 
 agent:
   name: "ChatAssistant"
   type: "chat"
-  description: "通用对话助手，可以回答用户的各种问题"
+  description: "General conversational assistant that can answer a variety of user questions"
 
 llm:
   provider: "openai"
@@ -21,6 +21,7 @@ interface:
   fallback:
     enabled: false
     models: []
+  stream_mode: "messages"
 
 prompt:
   system_prompt: |
@@ -36,7 +37,8 @@ prompt:
 agent_framework:
   graph_type: "single"
   max_iterations: 10
-  checkpointer: "memory"
+  checkpointer: "inmemory"
+  node_cache: false
 
 tools:
   enabled:
@@ -64,7 +66,7 @@ api:
 
 ui:
   type: "chat"
-  title: "聊天助手"
+  title: "Chat Assistant"
   features:
     - session_management
 

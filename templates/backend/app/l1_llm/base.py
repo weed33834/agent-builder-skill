@@ -1,6 +1,6 @@
-"""L1 - 大模型适配器抽象基类
+"""L1 - LLM Adapter Abstract Base Class
 
-定义所有 LLM 适配器必须实现的接口。
+Defines the interface that all LLM adapters must implement.
 """
 
 from abc import ABC, abstractmethod
@@ -10,52 +10,52 @@ from langchain_core.runnables import Runnable
 
 
 class LLMAdapter(ABC):
-    """LLM 适配器抽象基类
-    
-    所有模型提供商（OpenAI、Anthropic、DeepSeek、Ollama 等）
-    必须实现此接口，确保上层可以统一调用。
+    """LLM adapter abstract base class
+
+    All model providers (OpenAI, Anthropic, DeepSeek, Ollama, etc.)
+    must implement this interface to ensure unified invocation from upper layers.
     """
-    
+
     @abstractmethod
     async def invoke(self, messages: list, tools: Optional[list] = None) -> AIMessage:
-        """同步调用 LLM
-        
+        """Invoke the LLM synchronously
+
         Args:
-            messages: 消息列表（HumanMessage, SystemMessage 等）
-            tools: 可用的工具列表（可选）
+            messages: List of messages (HumanMessage, SystemMessage, etc.)
+            tools: List of available tools (optional)
         Returns:
-            AIMessage: LLM 的响应
+            AIMessage: The LLM response
         """
         ...
-    
+
     @abstractmethod
     async def stream(self, messages: list, tools: Optional[list] = None) -> AsyncIterator[str]:
-        """流式调用 LLM
-        
+        """Invoke the LLM in streaming mode
+
         Args:
-            messages: 消息列表
-            tools: 可用的工具列表（可选）
+            messages: List of messages
+            tools: List of available tools (optional)
         Yields:
-            str: 逐片返回的文本内容
+            str: Text content returned chunk by chunk
         """
         ...
-    
+
     @abstractmethod
     def bind_tools(self, tools: list) -> Runnable:
-        """绑定工具到 LLM
-        
+        """Bind tools to the LLM
+
         Args:
-            tools: 工具列表
+            tools: List of tools
         Returns:
-            Runnable: 绑定工具后的可运行对象
+            Runnable: A runnable object with tools bound
         """
         ...
-    
+
     @abstractmethod
     def get_model_info(self) -> dict:
-        """获取模型信息
-        
+        """Get model information
+
         Returns:
-            dict: 包含 provider, model, context_window 等
+            dict: Contains provider, model, context_window, etc.
         """
         ...

@@ -1,6 +1,6 @@
-"""L1 - LLM 工厂方法
+"""L1 - LLM Factory Method
 
-根据配置创建对应的 LLM 适配器实例。
+Creates the corresponding LLM adapter instance based on configuration.
 """
 
 from typing import Optional
@@ -20,20 +20,20 @@ def create_llm(
     max_tokens: int = 4096,
     **kwargs,
 ) -> LLMAdapter:
-    """根据配置创建 LLM 实例
-    
+    """Create an LLM instance based on configuration
+
     Args:
-        provider: 提供商名称 (openai, anthropic, deepseek, ollama)
-        model: 模型名称
+        provider: Provider name (openai, anthropic, deepseek, ollama)
+        model: Model name
         api_key: API Key
-        api_base: 自定义 API 地址
-        temperature: 温度参数
-        max_tokens: 最大输出 Token 数
-        **kwargs: 其他参数
+        api_base: Custom API base URL
+        temperature: Temperature parameter
+        max_tokens: Maximum output token count
+        **kwargs: Other parameters
     Returns:
-        LLMAdapter: LLM 适配器实例
+        LLMAdapter: LLM adapter instance
     Raises:
-        ValueError: 不支持的提供商
+        ValueError: Unsupported provider
     """
     common_kwargs = {
         "model": model,
@@ -41,12 +41,12 @@ def create_llm(
         "max_tokens": max_tokens,
         **kwargs,
     }
-    
+
     if api_key:
         common_kwargs["api_key"] = api_key
     if api_base:
         common_kwargs["api_base"] = api_base
-    
+
     if provider == "openai":
         return OpenAIAdapter(**common_kwargs)
     elif provider == "anthropic":
@@ -57,16 +57,16 @@ def create_llm(
         return OllamaAdapter(**common_kwargs)
     else:
         raise ValueError(
-            f"不支持的 LLM 提供商: {provider}。"
-            f"可选: openai, anthropic, deepseek, ollama"
+            f"Unsupported LLM provider: {provider}. "
+            f"Options: openai, anthropic, deepseek, ollama"
         )
 
 
 def list_available_models() -> dict:
-    """列出所有可用的模型配置
-    
+    """List all available model configurations
+
     Returns:
-        dict: 按提供商分组的模型列表
+        dict: List of models grouped by provider
     """
     return {
         "openai": {

@@ -1,5 +1,5 @@
-"""L3 - 提示工程层 (Prompt Engineering)
+"""L3 - Prompt Engineering
 
-管理所有与 LLM 交互的提示词，确保输出质量和一致性。
-包括系统提示、角色模板、Few-shot 示例、输出解析等。
+Manages all prompts for LLM interaction, ensuring output quality and consistency.
+Includes system prompts, role templates, few-shot examples, output parsing, etc.
 """

@@ -1,15 +1,15 @@
-# 模板 C: 编码助手 (Coding)
-# 适用场景: 编程辅助、代码审查、调试
-# 配置差异: Claude 模型 + 代码执行 + 文件操作
+# Template C: Coding Assistant
+# Use case: Programming assistance, code review, debugging
+# Configuration differences: Claude model + code execution + file operations
 
 agent:
   name: "CodeAssistant"
   type: "coding"
-  description: "专业编程助手，可以编写代码、审查代码、调试问题"
+  description: "Professional coding assistant that can write code, review code, and debug issues"
 
 llm:
   provider: "anthropic"
-  model: "claude-3-5-sonnet-20241022"
+  model: "claude-sonnet-4-20250514"
   temperature: 0.3
   max_tokens: 8192
 
@@ -23,6 +23,7 @@ interface:
     models:
       - provider: "openai"
         model: "gpt-4o"
+  stream_mode: "messages"
 
 prompt:
   system_prompt: |
@@ -45,7 +46,8 @@ prompt:
 agent_framework:
   graph_type: "single"
   max_iterations: 20
-  checkpointer: "memory"
+  checkpointer: "inmemory"
+  node_cache: false
 
 tools:
   enabled:
@@ -55,7 +57,26 @@ tools:
     - file_read
     - file_write
     - current_time
-  custom: []
+  custom:
+    - name: "code_execute"
+      description: "Execute code in a secure sandbox and return the result"
+      parameters:
+        language: { type: "string", description: "Programming language (python/javascript/typescript/go/rust)" }
+        code: { type: "string", description: "Code to execute" }
+        timeout: { type: "number", description: "Timeout in seconds", default: 30 }
+      sandbox:
+        enabled: true
+        type: "gvisor"
+        network: false
+        timeout: 60
+
+mcp:
+  enabled: true
+  servers:
+    - name: "code_executor"
+      transport: "stdio"
+      command: "python"
+      args: ["-m", "app.code_executor.mcp_server"]
 
 memory:
   type: "buffer"
@@ -78,7 +99,7 @@ api:
 
 ui:
   type: "chat"
-  title: "编程助手"
+  title: "Coding Assistant"
   features:
     - tool_visualization
     - session_management

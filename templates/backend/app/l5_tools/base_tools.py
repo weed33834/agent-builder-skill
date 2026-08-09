@@ -1,7 +1,12 @@
-"""L5 - 基础工具定义
+"""L5 - Base Tool Definitions
 
-提供 Agent 可用的基础工具。
-每个工具使用 @tool 装饰器注册，支持 Pydantic 参数校验。
+Provides the base tools available to the Agent.
+Each tool is registered with the @tool decorator, supporting Pydantic parameter validation.
+
+Includes:
+  - Built-in tools: web_search, web_fetch, current_time, calculate
+  - MCP tools list: can store tools discovered from MCP servers
+  - register_base_tools(): one-click registration of all base tools
 """
 
 from langchain_core.tools import tool
@@ -12,103 +17,120 @@ from datetime import datetime
 
 @tool
 async def web_search(query: str) -> str:
-    """搜索网页获取最新信息
-    
-    通过 DuckDuckGo 搜索，无需 API Key。
-    
+    """Search the web for the latest information
+
+    Searches via DuckDuckGo, no API Key required.
+
     Args:
-        query: 搜索关键词
+        query: Search keywords
     Returns:
-        搜索结果文本
+        Search result text
     """
     url = "https://api.duckduckgo.com/"
     params = {"q": query, "format": "json", "no_html": 1, "skip_disambig": 1}
-    
+
     async with httpx.AsyncClient() as client:
         try:
             resp = await client.get(url, params=params, timeout=10.0)
             data = resp.json()
-            
+
             results = []
             if data.get("Abstract"):
-                results.append(f"摘要: {data['Abstract']}")
+                results.append(f"Summary: {data['Abstract']}")
             if data.get("AbstractSource"):
-                results.append(f"来源: {data['AbstractSource']}")
-            
+                results.append(f"Source: {data['AbstractSource']}")
+
             for topic in data.get("RelatedTopics", [])[:5]:
                 if isinstance(topic, dict) and "Text" in topic:
                     results.append(topic["Text"])
-            
-            return "\n\n".join(results) if results else "未找到相关结果"
+
+            return "\n\n".join(results) if results else "No relevant results found"
         except Exception as e:
-            return f"搜索失败: {str(e)}"
+            return f"Search failed: {str(e)}"
 
 
 @tool
 async def web_fetch(url: str) -> str:
-    """获取网页内容
-    
-    获取指定 URL 的文本内容，自动清理 HTML 标签。
-    
+    """Fetch web page content
+
+    Fetches the text content of the specified URL, automatically cleaning HTML tags.
+
     Args:
-        url: 网页 URL
+        url: Web page URL
     Returns:
-        网页文本内容（最多 5000 字符）
+        Web page text content (up to 5000 characters)
     """
     async with httpx.AsyncClient() as client:
         try:
             resp = await client.get(url, timeout=15.0, follow_redirects=True)
             resp.encoding = resp.charset or "utf-8"
             text = resp.text
-            
-            # 清理 HTML
+
+            # Clean HTML
             text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.DOTALL)
             text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
             text = re.sub(r'<[^>]+>', ' ', text)
             text = re.sub(r'\s+', ' ', text).strip()
-            
+
             return text[:5000]
         except Exception as e:
-            return f"获取页面失败: {str(e)}"
+            return f"Failed to fetch page: {str(e)}"
 
 
 @tool
 async def current_time() -> str:
-    """获取当前日期和时间
-    
+    """Get the current date and time
+
     Returns:
-        当前时间字符串，如 "2026-08-08 10:30:00"
+        Current time string, e.g. "2026-08-08 10:30:00"
     """
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 @tool
 async def calculate(expression: str) -> str:
-    """执行数学计算
-    
-    支持基本运算：+ - * / % ( )
-    
+    """Perform mathematical calculations
+
+    Supports basic operations: + - * / % ( )
+
     Args:
-        expression: 数学表达式，如 "2 + 2 * 3"
+        expression: Mathematical expression, e.g. "2 + 2 * 3"
     Returns:
-        计算结果
+        Calculation result
     """
-    # 安全检查：只允许数字和基本运算符
+    # Safety check: only allow digits and basic operators
     allowed = set("0123456789.+-*/()% ")
     if not all(c in allowed for c in expression):
-        return "错误: 表达式包含非法字符"
-    
+        return "Error: expression contains illegal characters"
+
     try:
         result = eval(expression, {"__builtins__": {}}, {})
         return str(result)
     except Exception as e:
-        return f"计算错误: {str(e)}"
+        return f"Calculation error: {str(e)}"
 
 
-# 基础工具列表
+# Base tools list (built-in tools)
 BASE_TOOLS = [
     web_search,
     web_fetch,
     current_time,
     calculate,
 ]
+
+# MCP tools list (tools discovered and registered from MCP servers)
+# Type: list[langchain_core.tools.BaseTool]
+# These tools are auto-populated via ToolRegistry.register_from_mcp()
+MCP_TOOLS: list = []
+
+
+def register_base_tools():
+    """Register all base tools to the global ToolRegistry
+
+    One-click registration of all built-in base tools.
+    Should be called at application startup.
+    """
+    from .registry import ToolRegistry
+
+    for tool in BASE_TOOLS:
+        ToolRegistry.register(tool, category="base", override=True)

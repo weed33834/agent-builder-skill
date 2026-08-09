@@ -1,8 +1,8 @@
 /**
- * L9 - 侧边栏组件
+ * L9 - Sidebar Component
  * 
- * 会话列表管理，支持创建、切换、删除会话。
- * 移动端支持滑出式侧边栏。
+ * Chat list management, supporting creating, switching, and deleting chats.
+ * Supports a slide-out sidebar on mobile.
  */
 
 import type { Session } from '../../types'
@@ -31,12 +31,12 @@ export function Sidebar({
       {isOpen && <div className="sidebar-overlay" onClick={onClose} />}
       <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <h2>会话列表</h2>
-          <button className="new-chat-btn" onClick={onCreate} title="新建会话">
+          <h2>Chat List</h2>
+          <button className="new-chat-btn" onClick={onCreate} title="New chat">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 5v14M5 12h14" />
             </svg>
-            新建对话
+            New Chat
           </button>
         </div>
         <div className="sidebar-sessions">
@@ -62,7 +62,7 @@ export function Sidebar({
                     e.stopPropagation()
                     onDelete(session.id)
                   }}
-                  title="删除会话"
+                  title="Delete chat"
                 >
                   ✕
                 </button>
@@ -72,7 +72,7 @@ export function Sidebar({
         </div>
         <div className="sidebar-footer">
           <div className="sidebar-info">
-            {sessions.length} 个会话
+            {sessions.length} chats
           </div>
         </div>
       </aside>

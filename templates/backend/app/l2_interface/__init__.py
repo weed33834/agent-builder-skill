@@ -1,5 +1,5 @@
-"""L2 - 模型接口层 (Model Interface)
+"""L2 - Model Interface
 
-在 L1 之上提供统一的调用抽象，屏蔽不同提供商的差异。
-提供流式封装、自动重试、模型回退等高级功能。
+Provides a unified calling abstraction on top of L1, shielding differences between providers.
+Provides advanced features such as streaming encapsulation, automatic retry, and model fallback.
 """

@@ -1,13 +1,13 @@
 #!/bin/bash
-# 后端启动脚本
-# 用法: bash scripts/start.sh
+# Backend startup script
+# Usage: bash scripts/start.sh
 
 set -e
 
-echo "=== 安装依赖 ==="
+echo "=== Installing dependencies ==="
 pip install -r requirements.txt
 
 echo ""
-echo "=== 启动服务 ==="
-# 开发模式（热重载）
+echo "=== Starting service ==="
+# Development mode (hot reload)
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload

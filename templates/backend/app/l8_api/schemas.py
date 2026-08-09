@@ -1,6 +1,6 @@
-"""L8 - API 数据模型
+"""L8 - API Data Models
 
-定义所有 API 请求和响应的数据格式。
+Defines the data formats for all API requests and responses.
 """
 
 from typing import Optional
@@ -8,28 +8,28 @@ from pydantic import BaseModel, Field
 
 
 class ChatRequest(BaseModel):
-    """聊天请求"""
+    """Chat request"""
     message: str = Field(
         ...,
         min_length=1,
         max_length=10000,
-        description="用户消息",
+        description="User message",
     )
     thread_id: Optional[str] = Field(
         None,
-        description="会话 ID，不传则创建新会话",
+        description="Session ID; creates a new session if not provided",
     )
     stream: bool = Field(
         True,
-        description="是否使用流式响应",
+        description="Whether to use streaming response",
     )
 
 
 class ChatResponse(BaseModel):
-    """聊天响应"""
+    """Chat response"""
     type: str = Field(
         ...,
-        description="事件类型: token, tool_start, tool_end, thinking, done, error",
+        description="Event type: token, tool_start, tool_end, thinking, done, error",
     )
     content: Optional[str] = None
     thread_id: Optional[str] = None
@@ -40,7 +40,7 @@ class ChatResponse(BaseModel):
 
 
 class HealthResponse(BaseModel):
-    """健康检查响应"""
+    """Health check response"""
     status: str
     timestamp: str
     version: str
@@ -49,7 +49,7 @@ class HealthResponse(BaseModel):
 
 
 class SessionInfo(BaseModel):
-    """会话信息"""
+    """Session information"""
     id: str
     title: str
     created_at: str
@@ -58,14 +58,14 @@ class SessionInfo(BaseModel):
 
 
 class ToolInfo(BaseModel):
-    """工具信息"""
+    """Tool information"""
     name: str
     description: str
     category: str
 
 
 class ErrorResponse(BaseModel):
-    """错误响应"""
+    """Error response"""
     error: str
     detail: Optional[str] = None
     code: str = "UNKNOWN_ERROR"

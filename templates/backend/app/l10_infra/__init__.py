@@ -1,5 +1,5 @@
-"""L10 - 基础设施层 (Infrastructure)
+"""L10 - Infrastructure
 
-部署、运行和运维相关配置。
-包括配置管理、日志、监控等横切关注点。
+Deployment, runtime, and operations-related configuration.
+Includes cross-cutting concerns such as configuration management, logging, and monitoring.
 """
