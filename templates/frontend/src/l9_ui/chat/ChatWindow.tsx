@@ -17,9 +17,12 @@ import type { Message, ToolCallInfo } from '../../types'
 
 interface ChatWindowProps {
   sessionId: string
+  showToolViz?: boolean
+  showFileUpload?: boolean
+  showChartDisplay?: boolean
 }
 
-export function ChatWindow(_props: ChatWindowProps) {
+export function ChatWindow({ sessionId: _sessionId, showToolViz = true, showFileUpload = false, showChartDisplay = false }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -81,35 +84,46 @@ export function ChatWindow(_props: ChatWindowProps) {
 
           // L5: 工具调用开始
           case 'tool_start':
-            const toolCall: ToolCallInfo = {
-              tool: event.tool || '',
-              input: event.input || '',
-              status: 'running',
-            }
-            currentToolCalls = [...currentToolCalls, toolCall]
-            setMessages(prev =>
-              prev.map(m =>
-                m.id === assistantId
-                  ? { ...m, toolCalls: [...currentToolCalls] }
-                  : m
+            if (showToolViz) {
+              const toolCall: ToolCallInfo = {
+                tool: event.tool || '',
+                input: event.input || '',
+                status: 'running',
+              }
+              currentToolCalls = [...currentToolCalls, toolCall]
+              setMessages(prev =>
+                prev.map(m =>
+                  m.id === assistantId
+                    ? { ...m, toolCalls: [...currentToolCalls] }
+                    : m
+                )
               )
-            )
+            }
             break
 
-          // L5: 工具调用结束
+          // L5: 工具调用结束 - 按索引匹配最后一个同名 running 的工具
           case 'tool_end':
-            currentToolCalls = currentToolCalls.map(tc =>
-              tc.tool === event.tool
-                ? { ...tc, output: event.output, status: 'completed' }
-                : tc
-            )
-            setMessages(prev =>
-              prev.map(m =>
-                m.id === assistantId
-                  ? { ...m, toolCalls: [...currentToolCalls] }
-                  : m
+            if (showToolViz) {
+              // 找到最后一个同名且处于 running 状态的工具调用
+              for (let i = currentToolCalls.length - 1; i >= 0; i--) {
+                if (currentToolCalls[i].tool === event.tool && currentToolCalls[i].status === 'running') {
+                  currentToolCalls = [...currentToolCalls]
+                  currentToolCalls[i] = {
+                    ...currentToolCalls[i],
+                    output: event.output,
+                    status: 'completed' as const,
+                  }
+                  break
+                }
+              }
+              setMessages(prev =>
+                prev.map(m =>
+                  m.id === assistantId
+                    ? { ...m, toolCalls: [...currentToolCalls] }
+                    : m
+                )
               )
-            )
+            }
             break
 
           // L8: 流结束
@@ -126,6 +140,22 @@ export function ChatWindow(_props: ChatWindowProps) {
             )
             setIsLoading(false)
             break
+
+          // L8: 错误事件
+          case 'error':
+            setMessages(prev =>
+              prev.map(m =>
+                m.id === assistantId
+                  ? {
+                      ...m,
+                      content: m.content || `服务错误: ${event.content || '未知错误'}`,
+                      isStreaming: false,
+                    }
+                  : m
+              )
+            )
+            setIsLoading(false)
+            break
         }
       }
     } catch (error) {
@@ -133,6 +163,15 @@ export function ChatWindow(_props: ChatWindowProps) {
         prev.map(m =>
           m.id === assistantId
             ? { ...m, content: m.content || `连接错误: ${error}`, isStreaming: false }
+            : m
+        )
+      )
+    } finally {
+      // 确保流式状态被清理（防止连接断开时卡住）
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === assistantId && m.isStreaming
+            ? { ...m, isStreaming: false }
             : m
         )
       )
@@ -146,7 +185,7 @@ export function ChatWindow(_props: ChatWindowProps) {
         {messages.map(msg => (
           <div key={msg.id}>
             <MessageBubble message={msg} />
-            {msg.toolCalls && msg.toolCalls.length > 0 && (
+            {showToolViz && msg.toolCalls && msg.toolCalls.length > 0 && (
               <div className="tool-calls-container">
                 {msg.toolCalls.map((tc, i) => (
                   <ToolCall key={i} info={tc} />
@@ -157,7 +196,7 @@ export function ChatWindow(_props: ChatWindowProps) {
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <ChatInput onSend={handleSend} disabled={isLoading} />
+      <ChatInput onSend={handleSend} disabled={isLoading} showFileUpload={showFileUpload} />
     </div>
   )
 }

@@ -3,7 +3,7 @@
 定义所有 API 请求和响应的数据格式。
 """
 
-from typing import Optional, Any
+from typing import Optional
 from pydantic import BaseModel, Field
 
 

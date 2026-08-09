@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Header } from './l9_ui/layout/Header'
 import { Sidebar } from './l9_ui/layout/Sidebar'
 import { ChatWindow } from './l9_ui/chat/ChatWindow'
 import { ErrorBoundary } from './l9_ui/shared/ErrorBoundary'
+import { getAgentConfig } from './l8_api/api'
+import type { AgentConfig } from './types'
 
 export interface Session {
   id: string
@@ -16,6 +18,11 @@ export function App() {
   ])
   const [activeSession, setActiveSession] = useState('default')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [config, setConfig] = useState<AgentConfig | null>(null)
+
+  useEffect(() => {
+    getAgentConfig().then(setConfig).catch(() => {})
+  }, [])
 
   const createSession = () => {
     const id = crypto.randomUUID()
@@ -31,18 +38,26 @@ export function App() {
   }
 
   const deleteSession = (id: string) => {
-    setSessions(prev => prev.filter(s => s.id !== id))
-    if (activeSession === id) {
-      setActiveSession(sessions[0]?.id || 'default')
-    }
+    setSessions(prev => {
+      const remaining = prev.filter(s => s.id !== id)
+      if (activeSession === id) {
+        setActiveSession(remaining[0]?.id || 'default')
+      }
+      return remaining
+    })
   }
+
+  const features = config?.ui?.features || ['session_management', 'tool_visualization']
+  const showToolViz = features.includes('tool_visualization')
+  const showFileUpload = features.includes('file_upload')
+  const showChartDisplay = features.includes('chart_display')
 
   return (
     <ErrorBoundary>
       <div className="app-container">
         <Header
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          sessionTitle={sessions.find(s => s.id === activeSession)?.title || 'Agent Builder'}
+          sessionTitle={sessions.find(s => s.id === activeSession)?.title || config?.ui?.title || 'Agent'}
         />
         <div className="app-body">
           <Sidebar
@@ -55,7 +70,13 @@ export function App() {
             onClose={() => setSidebarOpen(false)}
           />
           <main className="main-content">
-            <ChatWindow key={activeSession} sessionId={activeSession} />
+            <ChatWindow
+              key={activeSession}
+              sessionId={activeSession}
+              showToolViz={showToolViz}
+              showFileUpload={showFileUpload}
+              showChartDisplay={showChartDisplay}
+            />
           </main>
         </div>
       </div>

@@ -42,8 +42,14 @@ async def agent_node(state: AgentState) -> dict:
     
     # 添加历史消息
     for msg in state.get("messages", []):
+        if msg.type == "human":
+            role = "user"
+        elif msg.type == "tool":
+            role = "tool"
+        else:
+            role = "assistant"
         messages.append({
-            "role": "user" if msg.type == "human" else "assistant",
+            "role": role,
             "content": msg.content,
         })
     
@@ -64,6 +70,7 @@ async def agent_node(state: AgentState) -> dict:
                 "messages": [response],
                 "next_step": "__end__",
                 "current_tool": None,
+                "iteration_count": (state.get("iteration_count", 0) + 1),
             }
     
     except Exception as e:
@@ -107,8 +114,8 @@ async def tool_node(state: AgentState) -> dict:
         "messages": tool_results,
         "next_step": "agent",
         "tool_results": {
-            tc["name"]: tr.content
-            for tc, tr in zip(last_message.tool_calls, tool_results)
+            tc.get("id", str(i)): tr.content
+            for i, (tc, tr) in enumerate(zip(last_message.tool_calls, tool_results))
         },
     }
 
@@ -121,7 +128,7 @@ async def router_node(state: AgentState) -> Literal["tools", "__end__"]:
     - 达到最大迭代次数 → 强制结束
     - 否则 → 结束
     """
-    max_iterations = 10
+    max_iterations = settings.MAX_TOOL_CALLS
     current_iter = state.get("iteration_count", 0)
     
     if current_iter >= max_iterations:

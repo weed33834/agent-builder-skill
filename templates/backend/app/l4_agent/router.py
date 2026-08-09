@@ -3,7 +3,7 @@
 定义 Agent 的条件路由逻辑，支持动态决策。
 """
 
-from typing import Literal, Optional, Callable, Awaitable
+from typing import Callable
 from .state import AgentState
 
 
@@ -15,7 +15,7 @@ class ConditionalRouter:
     """
     
     def __init__(self):
-        self._routes: dict[str, Callable[[AgentState], str]] = {}
+        self._routes: dict[str, tuple[Callable[[AgentState], bool], str]] = {}
         self._default_route: str = "__end__"
     
     def add_route(

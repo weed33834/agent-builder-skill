@@ -31,3 +31,14 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Generated output
+generated_agent/
+my_agent/
+
+# Cache
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage

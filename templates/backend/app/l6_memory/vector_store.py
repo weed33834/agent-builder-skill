@@ -3,8 +3,7 @@
 提供向量数据库的统一接口，支持语义搜索和 RAG 检索。
 """
 
-from typing import Optional, Any
-import json
+from typing import Optional
 import hashlib
 
 

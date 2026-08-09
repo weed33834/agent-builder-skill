@@ -46,10 +46,35 @@
 - **工具注册表**：统一管理工具注册、发现和执行
 - **SSE 流式响应**：实时推送 LLM 输出和工具调用状态
 - **多 Agent 编排**：任务分解、路由、结果聚合
-- **React 前端**：现代化聊天界面，工具调用可视化
+- **配置驱动生成**：通过 `agent.yaml` 定义 Agent 行为，`generate.py` 一键生成完整项目
+- **5 种 Agent 模板**：聊天助手、研究助手、编码助手、客服系统、数据分析
+- **React 前端**：现代化聊天界面，工具调用可视化，动态配置渲染
 - **Docker 部署**：前后端容器化，一键启动
 
 ## 快速开始
+
+### 方式一：使用模板生成 Agent
+
+```bash
+# 使用预设模板生成 Agent
+python scripts/generate.py templates/agent-types/research.yaml ./my_agent
+
+# 进入生成的目录
+cd my_agent
+
+# 配置环境变量
+cp .env.example .env
+# 编辑 .env 填入你的 LLM API Key
+
+# 启动后端
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
+
+# 启动前端
+cd frontend && npm install && npm run dev
+```
+
+### 方式二：使用 Docker
 
 ```bash
 # 1. 配置环境变量
@@ -62,23 +87,19 @@ docker-compose up -d
 # 3. 访问前端
 # http://localhost:5173
 
-# 4. 访问 API
+# 4. 访问 API 文档
 # http://localhost:8000/docs
 ```
 
-## 手动启动
-
-### 后端
+### 方式三：手动启动模板
 
 ```bash
+# 后端
 cd templates/backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
-```
 
-### 前端
-
-```bash
+# 前端
 cd templates/frontend
 npm install
 npm run dev
@@ -88,34 +109,48 @@ npm run dev
 
 ```
 agent-builder-skill/
-├── SKILL.md                    # 完整架构文档
-├── docker-compose.yml          # Docker 部署配置
-├── .env.example                # 环境变量模板
+├── SKILL.md                        # 完整技能文档（5步引导法）
+├── README.md                       # 项目说明
+├── docker-compose.yml              # Docker 部署配置
+├── .env.example                    # 环境变量模板
+├── LICENSE                         # Apache 2.0
+├── scripts/
+│   └── generate.py                 # Agent 代码生成器
 ├── templates/
-│   ├── backend/                # 后端代码
+│   ├── agent-types/                # Agent 类型模板
+│   │   ├── chat.yaml               # 聊天助手
+│   │   ├── research.yaml           # 研究助手
+│   │   ├── coding.yaml             # 编码助手
+│   │   ├── customer_service.yaml   # 客服系统（多Agent）
+│   │   └── data_analysis.yaml      # 数据分析
+│   ├── backend/                    # 后端代码模板
 │   │   ├── app/
-│   │   │   ├── l1_llm/        # 大模型适配器
-│   │   │   ├── l2_interface/  # 模型接口层
-│   │   │   ├── l3_prompt/     # 提示工程层
-│   │   │   ├── l4_agent/      # Agent 框架层
-│   │   │   ├── l5_tools/      # 工具执行层
-│   │   │   ├── l6_memory/     # 记忆与知识层
-│   │   │   ├── l7_orchestrator/ # 编排调度层
-│   │   │   ├── l8_api/        # API 服务层
-│   │   │   ├── l10_infra/     # 基础设施层
-│   │   │   └── main.py        # 应用入口
+│   │   │   ├── l1_llm/            # 大模型适配器
+│   │   │   ├── l2_interface/      # 模型接口层
+│   │   │   ├── l3_prompt/         # 提示工程层
+│   │   │   ├── l4_agent/          # Agent 框架层
+│   │   │   ├── l5_tools/          # 工具执行层
+│   │   │   ├── l6_memory/         # 记忆与知识层
+│   │   │   ├── l7_orchestrator/   # 编排调度层
+│   │   │   ├── l8_api/            # API 服务层
+│   │   │   │   ├── routes/        # 路由（chat/health/config）
+│   │   │   │   ├── middleware/    # 中间件
+│   │   │   │   └── schemas.py     # 数据模型
+│   │   │   ├── l10_infra/         # 基础设施层
+│   │   │   └── main.py            # 应用入口
 │   │   └── requirements.txt
-│   └── frontend/               # 前端代码
+│   └── frontend/                   # 前端代码模板
 │       ├── src/
-│       │   ├── l8_api/        # API 客户端
-│       │   ├── l9_ui/         # UI 组件
-│       │   │   ├── chat/      # 聊天界面
-│       │   │   ├── layout/    # 布局组件
-│       │   │   └── shared/    # 共享组件
-│       │   ├── styles/        # 样式
-│       │   └── types/         # 类型定义
+│       │   ├── l8_api/            # API 客户端（SSE）
+│       │   ├── l9_ui/             # UI 组件
+│       │   │   ├── chat/          # 聊天界面
+│       │   │   ├── layout/        # 布局组件
+│       │   │   └── shared/        # 共享组件
+│       │   ├── styles/            # 样式
+│       │   └── types/             # 类型定义
 │       └── package.json
-└── README.md
+└── scripts/
+    └── generate.py                 # 代码生成器
 ```
 
 ## 环境变量
@@ -128,12 +163,33 @@ agent-builder-skill/
 | LLM_API_BASE | 自定义 API 地址 | - |
 | LLM_TEMPERATURE | 温度参数 | 0.7 |
 | LLM_MAX_TOKENS | 最大 Token 数 | 4096 |
+| LLM_RETRY_COUNT | 重试次数 | 3 |
+| LLM_RETRY_DELAY | 重试延迟(秒) | 1.0 |
+| MODEL_FALLBACK_ENABLED | 模型回退 | false |
+| MAX_TOOL_CALLS | 最大工具调用次数 | 10 |
+| TOOL_TIMEOUT | 工具超时(秒) | 30 |
 | MEMORY_TYPE | 记忆类型 | buffer |
 | MEMORY_MAX_MESSAGES | 最大消息数 | 50 |
+| API_KEY | API 认证密钥 | - |
+| RATE_LIMIT | 限流(次/分钟) | 60 |
+| LOG_LEVEL | 日志级别 | INFO |
+| LANGCHAIN_TRACING_V2 | LangChain 追踪 | false |
+| LANGCHAIN_API_KEY | LangChain API Key | - |
+| LANGCHAIN_PROJECT | LangChain 项目名 | - |
+
+## Agent 类型模板
+
+| 模板 | 类型 | 适用场景 | 复杂度 |
+|------|------|----------|--------|
+| `chat.yaml` | 聊天助手 | 通用对话、简单问答 | 低 |
+| `research.yaml` | 研究助手 | 搜索、总结、分析信息 | 中 |
+| `coding.yaml` | 编码助手 | 编写代码、审查、调试 | 中 |
+| `customer_service.yaml` | 客服系统 | 多 Agent 协作客服 | 高 |
+| `data_analysis.yaml` | 数据分析 | 数据上传、分析、可视化 | 高 |
 
 ## 技术栈
 
-- **后端**: Python 3.11+, FastAPI, LangChain, LangGraph
+- **后端**: Python 3.12+, FastAPI, LangChain, LangGraph
 - **前端**: React 18, TypeScript, Vite
 - **部署**: Docker, Docker Compose
 - **LLM**: OpenAI, Anthropic, DeepSeek, Ollama

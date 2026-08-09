@@ -5,7 +5,6 @@
 
 from typing import Optional
 from datetime import datetime
-from collections import OrderedDict
 
 
 class ConversationBuffer:

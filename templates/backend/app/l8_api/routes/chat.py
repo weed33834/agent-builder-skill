@@ -110,8 +110,12 @@ async def chat(request: ChatRequest):
 
 
 @router.post("/chat/reset")
-async def reset_chat(thread_id: str = None):
+async def reset_chat(thread_id: str | None = None):
     """重置会话"""
     import uuid
+    if thread_id:
+        from ...l6_memory.session_manager import get_session_manager
+        session_mgr = get_session_manager()
+        session_mgr.delete_session(thread_id)
     new_thread_id = str(uuid.uuid4())
     return {"thread_id": new_thread_id, "message": "会话已重置"}

@@ -38,7 +38,7 @@ class StreamManager:
         """
         buffer = []
         
-        async for chunk in await stream_func(*args, **kwargs):
+        async for chunk in stream_func(*args, **kwargs):
             if chunk:
                 buffer.append(chunk)
                 for cb in self._callbacks:

@@ -3,7 +3,6 @@
 协调多个 Agent 的执行，管理任务分配、结果收集和错误处理。
 """
 
-from typing import Optional
 from .base import OrchestratorBase, SubTask, TaskResult
 from .decomposer import TaskDecomposer
 from .aggregator import ResultAggregator
@@ -35,7 +34,10 @@ class AgentOrchestrator(OrchestratorBase):
         self._results = []
         executed = set()
         
+        max_rounds = len(self._subtasks) + 1
+        rounds = 0
         while len(executed) < len(self._subtasks):
+            progress = False
             for task in self._subtasks:
                 if task.id in executed:
                     continue
@@ -44,6 +46,12 @@ class AgentOrchestrator(OrchestratorBase):
                     result = await self._execute_subtask(task)
                     self._results.append(result)
                     executed.add(task.id)
+                    progress = True
+            if not progress:
+                break
+            rounds += 1
+            if rounds >= max_rounds:
+                break
         
         # 3. 结果聚合
         return await self.aggregate_results(self._results)

@@ -18,9 +18,13 @@ export function MessageBubble({ message }: MessageBubbleProps) {
 
   const handleCopy = async () => {
     if (message.content) {
-      await navigator.clipboard.writeText(message.content)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      try {
+        await navigator.clipboard.writeText(message.content)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } catch {
+        // 非 HTTPS 环境下 clipboard API 可能不可用
+      }
     }
   }
 

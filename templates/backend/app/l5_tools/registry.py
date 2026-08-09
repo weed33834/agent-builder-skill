@@ -3,7 +3,7 @@
 全局工具注册中心，管理所有工具的注册、发现和执行。
 """
 
-from typing import Any, Optional
+from typing import Any
 from langchain_core.tools import BaseTool
 
 

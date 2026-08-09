@@ -5,7 +5,7 @@
  * 负责将 HTTP SSE 事件流解析为 AsyncGenerator。
  */
 
-import type { SSEEvent } from '../types'
+import type { SSEEvent, AgentConfig } from '../types'
 
 const API_BASE = '/api'
 
@@ -74,4 +74,25 @@ export async function resetChat(threadId?: string): Promise<string> {
 
   const data = await response.json()
   return data.thread_id
+}
+
+/**
+ * 获取 Agent 配置
+ * 前端根据此配置动态渲染 UI 功能
+ */
+export async function getAgentConfig(): Promise<AgentConfig> {
+  const response = await fetch(`${API_BASE}/config`)
+  if (!response.ok) {
+    return {
+      name: 'Agent',
+      type: 'chat',
+      description: '',
+      ui: {
+        type: 'chat',
+        title: 'Agent',
+        features: ['session_management', 'tool_visualization'],
+      },
+    }
+  }
+  return response.json()
 }

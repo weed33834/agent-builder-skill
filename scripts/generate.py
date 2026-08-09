@@ -469,6 +469,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .l8_api.routes.chat import router as chat_router
 from .l8_api.routes.health import router as health_router
+from .l8_api.routes.config import router as config_router
 from .l5_tools.registry import ToolRegistry
 from .l5_tools.base_tools import BASE_TOOLS
 from .l10_infra.config import settings
@@ -494,6 +495,7 @@ def create_app() -> FastAPI:
     # 路由
     app.include_router(health_router, prefix="/api", tags=["health"])
     app.include_router(chat_router, prefix="/api", tags=["chat"])
+    app.include_router(config_router, prefix="/api", tags=["config"])
 
     @app.on_event("startup")
     async def startup():
@@ -530,8 +532,7 @@ if __name__ == "__main__":
         f"{output_dir}/app/l10_infra/config.py",
         f'''"""L10 - 配置管理（由 generate.py 自动生成）"""
 
-import os
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -573,10 +574,11 @@ class Settings(BaseSettings):
     # L10: 基础设施
     LOG_LEVEL: str = "{config.get("deployment", {}).get("log_level", "INFO")}"
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        extra = "ignore"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 
 settings = Settings()
@@ -636,7 +638,7 @@ LOG_FORMAT=json
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
 pydantic>=2.0.0
-pydantic-settings>=2.0.0
+pydantic-settings>=2.5.0
 langchain-core>=0.3.0
 langgraph>=1.0.0
 httpx>=0.27.0
@@ -745,14 +747,15 @@ def generate_frontend(config: dict, output_dir: str):
   },
   "dependencies": {
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "react-markdown": "^9.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0",
-    "typescript": "^5.5.0",
-    "vite": "^5.4.0"
+    "typescript": "^5.6.0",
+    "vite": "^6.0.0"
   }
 }
 '''.strip()

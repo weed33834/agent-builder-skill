@@ -3,9 +3,7 @@
 将多个子任务的执行结果合并为结构化的最终输出。
 """
 
-from typing import Optional
 from .base import TaskResult
-from ..l3_prompt.prompt_builder import PromptBuilder
 
 
 class ResultAggregator:

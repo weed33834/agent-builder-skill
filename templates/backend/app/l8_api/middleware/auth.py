@@ -4,9 +4,8 @@
 """
 
 from typing import Optional
-from fastapi import Request, HTTPException
+from fastapi import Request
 from fastapi.responses import JSONResponse
-import time
 import hmac
 
 

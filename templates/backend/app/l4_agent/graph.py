@@ -10,7 +10,6 @@ from langgraph.checkpoint.memory import MemorySaver
 
 from .state import AgentState
 from .nodes import agent_node, tool_node, router_node
-from ..l6_memory.session_manager import get_session_manager
 from ..l10_infra.config import settings
 
 
@@ -121,7 +120,10 @@ def get_graph() -> StateGraph:
     """获取全局图实例"""
     global _graph
     if _graph is None:
-        graph = build_single_agent_graph()
+        if settings.LLM_PROVIDER:
+            graph = build_single_agent_graph()
+        else:
+            graph = build_single_agent_graph()
         _graph = compile_graph(graph)
     return _graph
 

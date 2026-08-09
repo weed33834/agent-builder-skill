@@ -3,7 +3,7 @@
 实现自动重试（指数退避）和模型回退机制。
 """
 
-from typing import TypeVar, Callable, Awaitable, Optional
+from typing import TypeVar, Callable, Awaitable
 import asyncio
 import logging
 
@@ -72,8 +72,10 @@ class RetryHandler:
                     logger.error(
                         f"调用失败，已耗尽所有重试次数: {e}"
                     )
-        
-        raise last_exception
+
+        if last_exception:
+            raise last_exception
+        raise RuntimeError("重试器: 没有异常但也未成功")
 
 
 class FallbackChain:
@@ -118,5 +120,7 @@ class FallbackChain:
                     f"模型 {model_config['model']} 失败"
                     f"({i+1}/{len(self.models)}): {e}"
                 )
-        
-        raise last_exception
+
+        if last_exception:
+            raise last_exception
+        raise RuntimeError("FallbackChain: 没有可用的备用模型")

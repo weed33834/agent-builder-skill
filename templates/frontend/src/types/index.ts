@@ -42,3 +42,29 @@ export interface ToolCallInfo {
   status: 'running' | 'completed' | 'error'
   error?: string
 }
+
+/** 会话 - L9 UI 层 */
+export interface Session {
+  id: string
+  title: string
+  createdAt: Date
+}
+
+/** Agent 配置 - 从 L8 API /api/config 获取 */
+export interface AgentConfig {
+  name: string
+  type: string
+  description: string
+  ui: {
+    type: string
+    title: string
+    features: string[]
+  }
+  llm?: {
+    provider: string
+    model: string
+  }
+  tools?: {
+    count: number
+  }
+}

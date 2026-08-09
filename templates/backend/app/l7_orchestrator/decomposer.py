@@ -36,9 +36,9 @@ class TaskDecomposer:
         # 分析任务类型，生成对应的子任务
         if any(kw in task_lower for kw in ["搜索", "调研", "research", "search"]):
             subtasks = self._create_research_tasks(task)
-        elif any(kw in task_lower for kw in ["分析", "分析", "analyze", "analysis"]):
+        elif any(kw in task_lower for kw in ["分析", "analyze", "analysis"]):
             subtasks = self._create_analysis_tasks(task)
-        elif any(kw in task_lower for kw in ["对比", "比较", "compare", "对比"]):
+        elif any(kw in task_lower for kw in ["对比", "比较", "compare"]):
             subtasks = self._create_comparison_tasks(task)
         else:
             # 默认：单任务

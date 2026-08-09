@@ -3,7 +3,7 @@
 将 LLM 的非结构化输出解析为结构化数据。
 """
 
-from typing import TypeVar, Generic, Optional, Any
+from typing import TypeVar, Generic, Optional
 from pydantic import BaseModel
 import json
 import re

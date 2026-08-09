@@ -5,7 +5,7 @@
  * 移动端支持滑出式侧边栏。
  */
 
-import type { Session } from '../../App'
+import type { Session } from '../../types'
 
 interface SidebarProps {
   sessions: Session[]
