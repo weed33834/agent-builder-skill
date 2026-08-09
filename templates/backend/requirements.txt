@@ -1,6 +1,6 @@
 # FastAPI service
 fastapi>=0.115.0
-uvicorn[standard]>=0.32.0
+uvicorn[standard]>=0.52.1
 pydantic>=2.9.0
 pydantic-settings>=2.5.0
 
