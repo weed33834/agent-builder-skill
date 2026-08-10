@@ -33,6 +33,7 @@ tiktoken>=0.8.0
 # redis>=5.2.0              # optional distributed cache
 
 # L7: A2A / orchestration (M6.15-M6.17)
+pyyaml>=6.0.0             # workflow YAML definitions (WorkflowExecutor.load)
 # a2a-sdk>=0.2.0            # optional official A2A SDK
 
 # L8: API extras

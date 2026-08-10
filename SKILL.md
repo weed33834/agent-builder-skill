@@ -781,7 +781,7 @@ ui:
   features: [tool_visualization, session_management]
 ```
 
-**Key code differences (LangGraph v1.0+)**:
+**Key code differences — LangGraph adapter (v1.0+)**: 
 ```python
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import Command
@@ -886,15 +886,15 @@ async def generate_chart(data: str, chart_type: str = "bar") -> str:
 │  Execution engine / Result processing                    │
 ├──────────────────────────────────────────────────────────┤
 │  L4   Agent Framework Layer                               │
-│  LangGraph graph / State management / Node caching /     │
-│  Command routing / Checkpointing                          │
+│  AgentRuntime / 6 adapters / State / Node caching /      │
+│  (bare/LangGraph/OpenAI-Agents/Claude-SDK/ADK/AutoGen)   │
 ├──────────────────────────────────────────────────────────┤
 │  L3   Prompt Engineering Layer                            │
 │  System prompts / Role templates / Few-shot / Output     │
 │  parsing / Instruction injection                          │
 ├──────────────────────────────────────────────────────────┤
 │  L2   Model Interface Layer                              │
-│  LangChain unified abstraction / Model switching /        │
+│  Provider factory (8 vendors) / Model switching /        │
 │  Retry / Fallback / Streaming                            │
 ├──────────────────────────────────────────────────────────┤
 │  L1   LLM Foundation Layer                               │
@@ -1006,7 +1006,7 @@ class PromptBuilder:
 
 #### L4 - Agent Framework Layer
 
-The core orchestration layer, building stateful Agent execution graphs based on LangGraph v1.0+.
+The core orchestration layer: a framework-agnostic `AgentRuntime` with a pluggable adapter registry. Six adapters ship out of the box — `bare` (stdlib-native), `langgraph`, `openai-agents`, `claude-sdk`, `adk`, `autogen` — selected via `agent.yaml` (`framework.name`).
 
 | Module | Responsibility | Key Implementation |
 |--------|----------------|---------------------|
@@ -1551,12 +1551,12 @@ if __name__ == "__main__":
 | Layer | Technology | Version | Description |
 |-------|------------|---------|-------------|
 | **L1 LLM** | GPT-4o / Claude / DeepSeek / Ollama | - | Multiple model support |
-| **L2 Model Interface** | LangChain Core | 0.3+ | Unified LLM call abstraction |
-| **L3 Prompt Engineering** | LangChain Prompts | 0.3+ | Prompt templates and parsers |
-| **L4 Agent Framework** | LangGraph | 1.0+ | Stateful Agent orchestration graph (GA'd Oct 2025) |
-| **L5 Tool Execution** | LangChain Tools / MCP | 0.3+ / 2026-07-28 | Tool registration & execution + MCP stateless protocol |
-| **L6 Memory & Knowledge** | LangChain Memory / ChromaDB | 0.3+ / 0.6+ | Memory and vector retrieval |
-| **L7 Orchestration** | LangGraph (multi-Agent) / A2A | 1.0+ / 1.0 | Multi-Agent collaboration + cross-Agent communication protocol |
+| **L2 Model Interface** | Provider factory (8 vendor adapters) + langchain_core messages | - | Unified LLM call abstraction (openai/anthropic/deepseek/ollama/gemini/qwen/glm/kimi) |
+| **L3 Prompt Engineering** | Native prompt_builder / role_templates | - | Prompt templates, few-shot, output parsers, sanitizer |
+| **L4 Agent Framework** | AgentRuntime + 6 adapters | - | bare / LangGraph / OpenAI Agents / Claude SDK / ADK / AutoGen (framework-agnostic) |
+| **L5 Tool Execution** | Native registry/executor + MCP | 2026-07-28 | Tool registration & execution + MCP client/server (stateless) |
+| **L6 Memory & Knowledge** | VectorStore (stdlib) / ChromaDB | 0.6+ | Memory and vector retrieval (stdlib-first, optional backends) |
+| **L7 Orchestration** | Supervisor/Router/Workflow + A2A | 1.0 | Multi-Agent collaboration + cross-Agent communication protocol |
 | **L8 API Service** | FastAPI + SSE | 0.115+ | High-performance async API |
 | **L9 Frontend UI** | React 19 + TypeScript | 19+ / 5.7+ | Modern frontend |
 | **L10 Infrastructure** | Docker + Docker Compose | 27+ / 2.27+ | Deployment and operations |

@@ -35,7 +35,7 @@
 │  Docker / Env config / Monitoring / Logs / CI/CD / 容灾备份 │
 ├──────────────────────────────────────────────────────────┤
 │  L9   Frontend UI Layer (前端展示层)                      │
-│  React 18 / Chat / 管理台 12 组件 / 流式渲染 / 响应式     │
+│  React 19 / Chat / 管理台 12 组件 / 流式渲染 / 响应式     │
 ├──────────────────────────────────────────────────────────┤
 │  L8   API Service Layer (API 服务层)                      │
 │  FastAPI 40+ 端点 / SSE 流式 / Auth & RBAC / 限流 / 中间件 │
@@ -205,7 +205,7 @@ agent-builder-skill/
     │   │   ├── l8_api/             # API 层（40+ 端点/中间件）
     │   │   └── l10_infra/          # 基础设施层
     │   └── tests/                  # 后端测试
-    └── frontend/                   # 前端模板（React 18 + TS）
+    └── frontend/                   # 前端模板（React 19 + TS）
         └── src/
             ├── l8_api/             # API 客户端（SSE）
             └── l9_ui/              # chat/ + admin/(12 组件) + layout/ + shared/
@@ -237,7 +237,7 @@ agent-builder-skill/
 
 - **后端**：Python 3.11+/3.12、FastAPI、Pydantic v2、pytest
 - **Agent 框架**：LangGraph / OpenAI Agents SDK / Claude SDK / ADK / AutoGen（+ bare 原生）
-- **前端**：React 18、TypeScript 5、Vite
+- **前端**：React 19、TypeScript 5、Vite
 - **部署**：Docker、Docker Compose、GitHub Actions CI
 - **LLM**：OpenAI、Anthropic、DeepSeek、Qwen、Kimi、GLM、Gemini、Ollama
 - **协议**：MCP（模型上下文协议）、A2A（Agent 间协议，GB/Z 185-2026）
