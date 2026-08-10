@@ -239,6 +239,9 @@ def get_graph() -> StateGraph:
         # Multi-Agent graph
         agents = orchestrator.get("agents", [])
         agent_names = [a.get("name", f"agent_{i}") for i, a in enumerate(agents)]
+        sub_agent_nodes = "".join('    workflow.add_node("%s", agent_node)\n' % name for name in agent_names)
+        sub_agent_route_map = ", ".join('"%s": "%s"' % (n, n) for n in agent_names)
+        sub_agent_list = ", ".join('"%s"' % n for n in agent_names)
 
         write_file(
             f"{output_dir}/app/l4_agent/graph.py",
@@ -264,8 +267,7 @@ def build_multi_agent_graph() -> StateGraph:
     workflow.add_node("supervisor", agent_node)
 
     # Sub-agents
-    {''.join(f'    workflow.add_node("{name}", agent_node)\\n' for name in agent_names)}
-
+{sub_agent_nodes}
     # Aggregator agent
     workflow.add_node("aggregator", agent_node)
 
@@ -276,13 +278,13 @@ def build_multi_agent_graph() -> StateGraph:
         "supervisor",
         router_node,
         {{
-            {', '.join(f'"{name}": "{name}"' for name in agent_names)},
+            {sub_agent_route_map},
             END: END,
         }},
     )
 
     # Sub-agents → Aggregator
-    for name in [{', '.join(f'"{name}"' for name in agent_names)}]:
+    for name in [{sub_agent_list}]:
         workflow.add_edge(name, "aggregator")
 
     workflow.add_edge("aggregator", END)
@@ -336,7 +338,7 @@ async def web_search(query: str) -> str:
             for topic in data.get("RelatedTopics", [])[:5]:
                 if isinstance(topic, dict) and "Text" in topic:
                     results.append(topic["Text"])
-            return "\\n\\n".join(results) if results else "未找到相关结果"
+            return chr(10).join(results) if results else "未找到相关结果"
         except Exception as e:
             return f"搜索失败: {str(e)}"
 ''')
@@ -355,7 +357,7 @@ async def web_fetch(url: str) -> str:
             text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.DOTALL)
             text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
             text = re.sub(r'<[^>]+>', ' ', text)
-            text = re.sub(r'\\s+', ' ', text).strip()
+            text = re.sub(r'\s+', ' ', text).strip()
             return text[:5000]
         except Exception as e:
             return f"获取页面失败: {str(e)}"
@@ -391,7 +393,7 @@ async def calculate(expression: str) -> str:
         name = ct.get("name", "custom_tool")
         desc = ct.get("description", "Custom tool")
         params = ct.get("parameters", {})
-        param_docs = "\\n".join(f"        {k}: {v.get('description', '')}" for k, v in params.items())
+        param_docs = chr(10).join("        %s: %s" % (k, v.get('description', '')) for k, v in params.items())
         param_str = ", ".join(f"{k}: str" for k in params.keys())
 
         custom_tool_defs.append(f'''
@@ -406,10 +408,10 @@ async def {name}({param_str}) -> str:
 ''')
 
     # Base tools list
-    base_tools_list = "\n    ".join(f"{t}," for t in enabled_tools) if enabled_tools else "# No base tools"
+    base_tools_list = "\n    ".join("%s," % t for t in enabled_tools) if enabled_tools else "# No base tools"
 
     # Custom tools list
-    custom_tools_list = "\n    ".join(f"{ct.get('name', 'custom_tool')}," for ct in custom_tools) if custom_tools else "# No custom tools"
+    custom_tools_list = "\n    ".join("%s," % ct.get("name", "custom_tool") for ct in custom_tools) if custom_tools else "# No custom tools"
 
     write_file(
         f"{output_dir}/app/l5_tools/base_tools.py",
@@ -869,7 +871,7 @@ export async function* streamChat(
     if (done) break
 
     buffer += decoder.decode(value, { stream: true })
-    const lines = buffer.split('\\n')
+    const lines = buffer.split(String.fromCharCode(10))
     buffer = lines.pop() || ''
 
     for (const line of lines) {
