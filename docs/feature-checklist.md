@@ -10,29 +10,31 @@
 > - **可验证规格书**：docs/full-spec.md（**页面级 P0-P10 全量规格**：每项=是什么+怎么做+管理增删改调+前端页面+后端接口+状态；
 >   含豆包/GPT 网页端功能对照表、前后端对齐矩阵（后端功能前端不隐藏）、缺口清单与补齐路线）
 > - **模块级深度规格**：docs/deep-spec/（**每个模块写深写全**：资产模型全字段 + 配置项全清单 + 管理界面增删改调/辅助功能 + 运行时真实嵌入链路 + 安全权限 + 前后端对齐矩阵 + 验证方法。
->   目标：拒绝空壳——每项功能可验证真实工作，而非只有按钮和路由。当前已覆盖：01 提示词系统 / 02 沙箱系统 / 03 上下文管理，其余模块见 00-template.md 索引，持续补全中）
+>   目标：拒绝空壳——每项功能可验证真实工作，而非只有按钮和路由。**已全量完成 15 份**：01 提示词 / 02 沙箱 / 03 上下文 / 04 工具 / 05 记忆 / 06 模型 / 07 编排工作流 / 08 语音 / 09 定时任务 / 10 技能插件 / 11 评估 / 12 监控告警 / 13 权限 IAM / 14 Agent 生命周期 / 15 对话体验细节（气泡/联网搜索/上传/输入区/任务卡等逐点细化）。每个 M 板块下方挂载对应深度规格入口）
+> - **对标应用分析**：docs/comparison-2026.md（Codex / ChatGPT / Claude Code / WorkBuddy 功能全景对比 + 独有高级功能吸收清单：工作树隔离/移动端审批/会话分叉/侧边问题/画布模式/任务卡/三模式/专家市场等，标 ✅🔶⬜ 映射到各模块）
+> - **验收测试清单**：docs/acceptance-test.md（15 模块 104 条可执行验收项，逐条=步骤+预期结果，全绿=完整性验收通过）
 
 ---
 
 ## 📋 模块总览（14 大板块，256+ 功能项）
 
-| 模块 | 板块 | 功能项数 | 对标来源 |
-|------|------|---------|---------|
-| M0 | Agent 类型模板（通用 + 垂直 + 框架选型） | 24 | 各厂 Agent 商店 + 框架生态 |
-| M1 | LLM 接入层 | 18 | OpenAI/Anthropic/Google/国产 |
-| M2 | 提示工程 | 13 | Anthropic 八条原则 |
-| M3 | Agent 核心运行时 | 20 | Claude Agent SDK / LangGraph / 框架中立 |
-| M4 | 工具系统 | 21 | MCP / Claude Code / OpenAI Tools |
-| M5 | 记忆与知识 | 16 | MemGPT / 记忆综述论文 |
-| M6 | 编排与多 Agent | 24 | A2A / AutoGen / Swarm / LangGraph |
-| M7 | API 服务层 | 16 | OpenAI Assistants / 生产规范 |
-| M8 | 前端 UI | 23 | ChatGPT / Claude / 管理控制台设计 |
-| M9 | 基础设施与 DevOps | 15 | 12-Factor / 生产规范 |
-| M10 | 评估体系 | 14 | Anthropic 评测驱动 / 论文 |
-| M11 | 安全与合规 | 14 | OWASP LLM / Prompt Guard |
-| M12 | 高级能力 | 24 | 各厂前沿功能 |
-| M13 | 可观测性 | 12 | OTel / LangSmith / AgentOps |
-| **合计** | | **≈260** | |
+| 模块 | 板块 | 功能项数 | 对标来源 | 深度规格 |
+|------|------|---------|---------|---------|
+| M0 | Agent 类型模板（通用 + 垂直 + 框架选型） | 24 | 各厂 Agent 商店 + 框架生态 | —（模板表见下） |
+| M1 | LLM 接入层 | 18 | OpenAI/Anthropic/Google/国产 | 06-models.md |
+| M2 | 提示工程 | 13 | Anthropic 八条原则 | 01-prompt-system.md |
+| M3 | Agent 核心运行时 | 20 | Claude Agent SDK / LangGraph / 框架中立 | 15-ux-detail.md（对话层） |
+| M4 | 工具系统 | 21 | MCP / Claude Code / OpenAI Tools | 04-tools.md + 02-sandbox.md |
+| M5 | 记忆与知识 | 16 | MemGPT / 记忆综述论文 | 05-memory.md + 03-context.md |
+| M6 | 编排与多 Agent | 24 | A2A / AutoGen / Swarm / LangGraph | 07-workflow.md |
+| M7 | API 服务层 | 16 | OpenAI Assistants / 生产规范 | 08-voice.md（语音入口） |
+| M8 | 前端 UI | 23 | ChatGPT / Claude / 管理控制台设计 | 15-ux-detail.md + admin-console-design.md |
+| M9 | 基础设施与 DevOps | 15 | 12-Factor / 生产规范 | 09-schedule.md + 12-monitor.md |
+| M10 | 评估体系 | 14 | Anthropic 评测驱动 / 论文 | 11-eval.md |
+| M11 | 安全与合规 | 14 | OWASP LLM / Prompt Guard | 13-iam.md |
+| M12 | 高级能力 | 24 | 各厂前沿功能 | 10-skill-plugin.md + 14-agent-lifecycle.md |
+| M13 | 可观测性 | 12 | OTel / LangSmith / AgentOps | 12-monitor.md |
+| **合计** | | **≈260** | | **docs/deep-spec/01-15** | |
 
 > 各模块按"生成物完整性"排序：M0 决定生成什么类型，M1-M6 决定智能体能力，M7-M9 决定能不能上线，M10-M13 决定质量和安全。
 
