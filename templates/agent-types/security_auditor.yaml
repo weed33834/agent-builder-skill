@@ -1,0 +1,80 @@
+# Template: Security Auditor Assistant
+# Use case: 安全审计：配置检查、依赖漏洞、合规评估
+# Configuration differences: 强模型 + 代码执行 + 结构化审计报告
+
+agent:
+  name: "SecurityAuditorAgent"
+  type: "security_auditor"
+  description: "安全审计：配置检查、依赖漏洞、合规评估"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o"
+  temperature: 0.2
+  max_tokens: 8192
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: false
+    models: []
+  stream_mode: "messages"
+
+prompt:
+  system_prompt: |
+    你是一位安全审计专家。审计时：
+    1. 检查配置与权限（越权、弱口令、密钥泄露）
+    2. 检查依赖与已知漏洞 (CVE)
+    3. 检查数据保护与合规（隐私、GDPR/个保法）
+    4. 输出审计报告：风险等级 / 位置 / 影响 / 修复建议
+
+    按风险等级排序，给出可执行的修复步骤。
+  role_template: "default"
+  output_format: "markdown"
+
+agent_framework:
+  graph_type: "single"
+  max_iterations: 12
+  checkpointer: "inmemory"
+  node_cache: false
+
+tools:
+  enabled:
+    - run_code
+    - current_time
+    - web_search
+  custom: []
+
+memory:
+  type: "summary"
+  max_messages: 50
+  knowledge:
+    enabled: true
+    vector_store: "chroma"
+
+orchestration:
+  mode: "single"
+  max_subtasks: 5
+  timeout: 180
+
+api:
+  auth_enabled: false
+  rate_limit: 60
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "安全审计员"
+  features:
+    - session_management
+    - markdown_rendering
+
+deployment:
+  type: "docker"
+  log_level: "INFO"
+  debug: false

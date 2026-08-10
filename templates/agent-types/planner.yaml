@@ -1,0 +1,81 @@
+# Template: Planner Assistant
+# Use case: 复杂目标拆解为可执行任务计划并跟踪执行
+# Configuration differences: 强模型 + Supervisor 编排 + 任务跟踪
+
+agent:
+  name: "PlannerAgent"
+  type: "planner"
+  description: "把复杂目标拆解为可执行的任务计划并跟踪执行"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o"
+  temperature: 0.7
+  max_tokens: 4096
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: false
+    models: []
+  stream_mode: "messages"
+
+prompt:
+  system_prompt: |
+    你是一位任务规划专家。你的工作方式：
+    1. 分析用户目标，拆解为结构化子任务
+    2. 每个子任务明确：目标、输入、输出、依赖
+    3. 使用编排层执行子任务并汇总结果
+    4. 输出最终结论与后续建议
+
+    采用规划-执行-反思循环。
+  role_template: "default"
+  output_format: "markdown"
+
+agent_framework:
+  graph_type: "supervisor"
+  max_iterations: 15
+  checkpointer: "inmemory"
+  node_cache: false
+
+tools:
+  enabled:
+    - current_time
+    - calculate
+    - web_search
+  custom: []
+
+memory:
+  type: "summary"
+  max_messages: 50
+  knowledge:
+    enabled: false
+    vector_store: "chroma"
+
+orchestration:
+  mode: "supervisor"
+  max_subtasks: 8
+  timeout: 300
+
+api:
+  auth_enabled: false
+  rate_limit: 60
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "任务规划器"
+  features:
+    - session_management
+    - tool_visualization
+    - task_tracking
+
+deployment:
+  type: "docker"
+  log_level: "INFO"
+  debug: false

@@ -54,3 +54,37 @@ def _get_tool_count() -> int:
         return len(ToolRegistry.get_all())
     except Exception:
         return 0
+
+
+# ===== M8: Runtime config update (SettingsPanel) =====
+from typing import Optional
+from pydantic import BaseModel
+
+
+class ConfigUpdateRequest(BaseModel):
+    """Partial runtime config update (whitelisted keys only, M11 SEC-02)"""
+
+    llm_provider: Optional[str] = None
+    llm_model: Optional[str] = None
+    llm_temperature: Optional[float] = None
+    llm_max_tokens: Optional[int] = None
+    memory_type: Optional[str] = None
+    rate_limit_enabled: Optional[bool] = None
+
+
+@router.put("/config")
+async def update_agent_config(req: ConfigUpdateRequest):
+    """Update whitelisted runtime settings (M8 配置面板)"""
+    updates = req.model_dump(exclude_none=True)
+    mapping = {
+        "llm_provider": "LLM_PROVIDER",
+        "llm_model": "LLM_MODEL",
+        "llm_temperature": "LLM_TEMPERATURE",
+        "llm_max_tokens": "LLM_MAX_TOKENS",
+        "memory_type": "MEMORY_TYPE",
+        "rate_limit_enabled": "RATE_LIMIT_ENABLED",
+    }
+    for k, v in updates.items():
+        if k in mapping:
+            setattr(settings, mapping[k], v)
+    return {"ok": True, "applied": list(updates.keys())}

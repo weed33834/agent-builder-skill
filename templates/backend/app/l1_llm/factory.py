@@ -9,6 +9,10 @@ from .openai_adapter import OpenAIAdapter
 from .anthropic_adapter import AnthropicAdapter
 from .deepseek_adapter import DeepSeekAdapter
 from .ollama_adapter import OllamaAdapter
+from .gemini_adapter import GeminiAdapter
+from .qwen_adapter import QwenAdapter
+from .glm_adapter import GLMAdapter
+from .kimi_adapter import KimiAdapter
 
 
 def create_llm(
@@ -55,6 +59,14 @@ def create_llm(
         return DeepSeekAdapter(**common_kwargs)
     elif provider == "ollama":
         return OllamaAdapter(**common_kwargs)
+    elif provider == "gemini":
+        return GeminiAdapter(**common_kwargs)
+    elif provider == "qwen":
+        return QwenAdapter(**common_kwargs)
+    elif provider == "glm":
+        return GLMAdapter(**common_kwargs)
+    elif provider == "kimi":
+        return KimiAdapter(**common_kwargs)
     else:
         raise ValueError(
             f"Unsupported LLM provider: {provider}. "
@@ -87,5 +99,21 @@ def list_available_models() -> dict:
         "ollama": {
             "models": ["qwen2.5:7b", "llama3.1:8b", "mistral:7b"],
             "default": "qwen2.5:7b",
+        },
+        "gemini": {
+            "models": ["gemini-2.5-pro", "gemini-2.5-flash"],
+            "default": "gemini-2.5-flash",
+        },
+        "qwen": {
+            "models": ["qwen-max", "qwen-plus", "qwen-turbo"],
+            "default": "qwen-plus",
+        },
+        "glm": {
+            "models": ["glm-4.6", "glm-4.5", "glm-4-air"],
+            "default": "glm-4.6",
+        },
+        "kimi": {
+            "models": ["kimi-k2", "moonshot-v1-8k"],
+            "default": "kimi-k2",
         },
     }

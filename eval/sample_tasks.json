@@ -1,0 +1,12 @@
+[
+  {"input": "写一个 Python 函数计算斐波那契数列第 n 项", "expected": "fib", "expected_tool": "run_code", "category": "coding"},
+  {"input": "什么是 RAG？用一句话解释", "expected": "检索增强生成", "category": "knowledge"},
+  {"input": "把这句话翻译成英文：今天天气很好", "expected": "The weather is nice today", "category": "translation"},
+  {"input": "总结这段文字：模型上线前必须做离线评估。", "expected": "离线评估", "category": "summarization"},
+  {"input": "帮我查一下上海今天的气温", "expected_tool": "weather_search", "category": "tool_use"},
+  {"input": "计算 23 * 47 等于多少", "expected": "1081", "category": "math"},
+  {"input": "用 3 句话介绍多智能体系统", "expected": "多个", "category": "knowledge"},
+  {"input": "这段代码有什么问题：for i in range(10) print(i)", "expected": "缩进", "category": "code_review"},
+  {"input": "将列表 [3,1,2] 排序", "expected": "[1, 2, 3]", "category": "coding"},
+  {"input": "解释 A2A 协议的作用", "expected": "agent", "category": "knowledge"}
+]

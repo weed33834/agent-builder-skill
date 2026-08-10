@@ -192,7 +192,7 @@ Max iterations: {max_iterations}
 """
 
 from typing import Optional
-from langgraph.graph import StateGraph, END
+from langgraph.graph import StateGraph, START, END, Command
 from langgraph.checkpoint.memory import MemorySaver
 
 from .state import AgentState
@@ -204,7 +204,7 @@ def build_single_agent_graph() -> StateGraph:
     workflow = StateGraph(AgentState)
     workflow.add_node("agent", agent_node)
     workflow.add_node("tools", tool_node)
-    workflow.set_entry_point("agent")
+    workflow.add_edge(START, "agent")
     workflow.add_conditional_edges(
         "agent",
         router_node,
@@ -217,10 +217,18 @@ def build_single_agent_graph() -> StateGraph:
     return workflow
 
 
-def compile_graph(graph: StateGraph) -> StateGraph:
-    """Compile the graph, adding checkpoint support"""
+def compile_graph(graph: StateGraph, cache: Optional[str] = None) -> StateGraph:
+    """Compile the graph, adding checkpoint (memory) support
+
+    Args:
+        graph: StateGraph to compile
+        cache: Node cache strategy ("inmemory" or None)
+    """
     checkpointer = MemorySaver()
-    return graph.compile(checkpointer=checkpointer)
+    compile_kwargs = {{"checkpointer": checkpointer}}
+    if cache:
+        compile_kwargs["cache"] = cache
+    return graph.compile(**compile_kwargs)
 
 
 _graph = None
@@ -252,7 +260,7 @@ Sub-agents: {', '.join(agent_names)}
 """
 
 from typing import Optional
-from langgraph.graph import StateGraph, END
+from langgraph.graph import StateGraph, START, END, Command
 from langgraph.checkpoint.memory import MemorySaver
 
 from .state import AgentState
@@ -271,7 +279,7 @@ def build_multi_agent_graph() -> StateGraph:
     # Aggregator agent
     workflow.add_node("aggregator", agent_node)
 
-    workflow.set_entry_point("supervisor")
+    workflow.add_edge(START, "supervisor")
 
     # Conditional routing
     workflow.add_conditional_edges(
@@ -291,10 +299,18 @@ def build_multi_agent_graph() -> StateGraph:
     return workflow
 
 
-def compile_graph(graph: StateGraph) -> StateGraph:
-    """Compile the graph, adding checkpoint support"""
+def compile_graph(graph: StateGraph, cache: Optional[str] = None) -> StateGraph:
+    """Compile the graph, adding checkpoint (memory) support
+
+    Args:
+        graph: StateGraph to compile
+        cache: Node cache strategy ("inmemory" or None)
+    """
     checkpointer = MemorySaver()
-    return graph.compile(checkpointer=checkpointer)
+    compile_kwargs = {{"checkpointer": checkpointer}}
+    if cache:
+        compile_kwargs["cache"] = cache
+    return graph.compile(**compile_kwargs)
 
 
 _graph = None

@@ -259,3 +259,36 @@ export async function getAgentConfig(): Promise<AgentConfig> {
   }
   return response.json()
 }
+
+/**
+ * Update the Agent runtime configuration (M8 配置面板)
+ */
+export async function updateAgentConfig(config: Record<string, unknown>): Promise<{ ok: boolean }> {
+  const response = await fetch(`${API_BASE}/config`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config),
+  })
+  if (!response.ok) throw new Error(`update config failed: ${response.status}`)
+  return response.json()
+}
+
+/**
+ * Transcribe uploaded audio via the backend voice service (M12 语音)
+ */
+export async function transcribeAudio(file: Blob): Promise<{ text: string }> {
+  const form = new FormData()
+  form.append('file', file, 'recording.webm')
+  const response = await fetch(`${API_BASE}/voice/transcribe`, { method: 'POST', body: form })
+  if (!response.ok) throw new Error(`transcribe failed: ${response.status}`)
+  return response.json()
+}
+
+/**
+ * Synthesize assistant text into audio (M12 语音 TTS)
+ */
+export async function speakText(text: string): Promise<Blob> {
+  const response = await fetch(`${API_BASE}/voice/speak?text=${encodeURIComponent(text)}`)
+  if (!response.ok) throw new Error(`tts failed: ${response.status}`)
+  return response.blob()
+}

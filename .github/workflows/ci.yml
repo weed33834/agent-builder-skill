@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        working-directory: templates/backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest pytest-asyncio
+      - name: Lint (compile check)
+        working-directory: templates/backend
+        run: |
+          python -m compileall app -q
+      - name: Run tests
+        working-directory: templates/backend
+        run: |
+          python -m pytest tests -v
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: templates/frontend/package-lock.json
+      - name: Install
+        working-directory: templates/frontend
+        run: npm ci || npm install
+      - name: Type check + build
+        working-directory: templates/frontend
+        run: |
+          npx tsc --noEmit
+          npm run build
+
+  validate-generator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install generator deps
+        run: pip install pyyaml
+      - name: Smoke-run generator
+        run: |
+          python scripts/generate.py --output /tmp/ci_agent --name ci_smoke --type chat
+          test -f /tmp/ci_agent/app/main.py && echo "generator OK"

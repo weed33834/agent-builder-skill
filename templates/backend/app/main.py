@@ -5,6 +5,7 @@ FastAPI application instantiation, registers all routes and middleware.
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 from .l8_api.routes.chat import router as chat_router
 from .l8_api.routes.health import router as health_router
@@ -12,6 +13,7 @@ from .l8_api.routes.config import router as config_router
 from .l8_api.routes.sessions import router as sessions_router
 from .l8_api.routes.tools import router as tools_router
 from .l8_api.routes.a2a import router as a2a_router
+from .l8_api.routes.voice import router as voice_router
 from .l8_api.middleware.auth import AuthMiddleware
 from .l8_api.middleware.logging import RequestLoggingMiddleware
 from .l8_api.middleware.rate_limit import RateLimitMiddleware
@@ -26,6 +28,43 @@ setup_logging()
 logger = get_logger(__name__)
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan: init all layers on startup, cleanup on shutdown
+    (replaces deprecated @app.on_event, FastAPI >= 0.93)
+    """
+    logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}...")
+
+    # L5: Register base tools
+    for tool in BASE_TOOLS:
+        ToolRegistry.register(tool, category="general")
+        logger.info(f"  Registered tool: {tool.name}")
+
+    # L4: Initialize Agent graph
+    from .l4_agent.graph import get_graph
+    graph = get_graph()
+    logger.info("  Agent graph initialized")
+
+    # L7: Initialize A2A server (M6.16)
+    from .l8_api.routes.a2a import init_a2a_server
+    init_a2a_server(handler=None)
+    logger.info("  A2A server ready at /.well-known/agent.json")
+
+    logger.info(f"  LLM provider: {settings.LLM_PROVIDER}")
+    logger.info(f"  Model: {settings.LLM_MODEL}")
+    logger.info(f"  Registered tools: {len(ToolRegistry.get_all())}")
+    logger.info(f"{settings.APP_NAME} started successfully")
+
+    yield
+
+    logger.info("Shutting down application...")
+    # Close MCP client connections (M4.16)
+    from .l5_tools.mcp_client import mcp_client
+    await mcp_client.disconnect_all()
+    ToolRegistry.clear()
+    logger.info("Application closed")
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application"""
 
@@ -33,6 +72,7 @@ def create_app() -> FastAPI:
         title=settings.APP_NAME,
         version=settings.APP_VERSION,
         description="Universal Agent Builder - 10-Layer Architecture Agent Application",
+        lifespan=lifespan,
     )
 
     # ===== L10: Infrastructure =====
@@ -69,50 +109,13 @@ def create_app() -> FastAPI:
     app.include_router(sessions_router, prefix="/api", tags=["sessions"])
     app.include_router(tools_router, prefix="/api", tags=["tools"])
     app.include_router(a2a_router, prefix="", tags=["a2a"])
+    app.include_router(voice_router, prefix="/api", tags=["voice"])
 
     # ===== L10: Metrics endpoint (M13.2) =====
     @app.get("/metrics")
     async def metrics_endpoint():
         """Prometheus-format metrics (M13.2)"""
         return metrics.export_prometheus()
-
-    # ===== Startup/Shutdown Events =====
-    @app.on_event("startup")
-    async def startup():
-        """Initialize all layers on application startup"""
-        logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}...")
-
-        # L5: Register base tools
-        for tool in BASE_TOOLS:
-            ToolRegistry.register(tool, category="general")
-            logger.info(f"  Registered tool: {tool.name}")
-
-        # L4: Initialize Agent graph
-        from .l4_agent.graph import get_graph
-        graph = get_graph()
-        logger.info(f"  Agent graph initialized")
-
-        # L7: Initialize A2A server (M6.16)
-        from .l8_api.routes.a2a import init_a2a_server
-        init_a2a_server(handler=None)
-        logger.info(f"  A2A server ready at /.well-known/agent.json")
-
-        logger.info(f"  LLM provider: {settings.LLM_PROVIDER}")
-        logger.info(f"  Model: {settings.LLM_MODEL}")
-        logger.info(f"  Registered tools: {len(ToolRegistry.get_all())}")
-        logger.info(f"{settings.APP_NAME} started successfully")
-
-    @app.on_event("shutdown")
-    async def shutdown():
-        """Cleanup on application shutdown"""
-        logger.info("Shutting down application...")
-
-        # Close MCP client connections (M4.16)
-        from .l5_tools.mcp_client import mcp_client
-        await mcp_client.disconnect_all()
-
-        ToolRegistry.clear()
-        logger.info("Application closed")
 
     return app
 

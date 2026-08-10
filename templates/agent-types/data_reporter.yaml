@@ -1,0 +1,81 @@
+# Template: Data Reporter Assistant
+# Use case: 数据分析与可视化报告生成
+# Configuration differences: 分析模型 + RAG 知识 + 计算/代码工具
+
+agent:
+  name: "DataReporterAgent"
+  type: "data_reporter"
+  description: "数据分析与可视化报告生成"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o"
+  temperature: 0.4
+  max_tokens: 8192
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: false
+    models: []
+  stream_mode: "messages"
+
+prompt:
+  system_prompt: |
+    你是一位数据分析师。工作流程：
+    1. 理解数据与业务问题
+    2. 执行分析（计算、统计、可视化）
+    3. 输出结论 + 数据支撑 + 图表描述
+    4. 给出可执行的业务建议
+
+    输出 markdown 报告，包含数据指标与图表。
+  role_template: "default"
+  output_format: "markdown"
+
+agent_framework:
+  graph_type: "single"
+  max_iterations: 12
+  checkpointer: "inmemory"
+  node_cache: false
+
+tools:
+  enabled:
+    - calculate
+    - run_code
+    - current_time
+  custom: []
+
+memory:
+  type: "rag"
+  max_messages: 50
+  knowledge:
+    enabled: true
+    vector_store: "chroma"
+
+orchestration:
+  mode: "single"
+  max_subtasks: 5
+  timeout: 180
+
+api:
+  auth_enabled: false
+  rate_limit: 60
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "数据分析师"
+  features:
+    - session_management
+    - markdown_rendering
+    - artifact_viewer
+
+deployment:
+  type: "docker"
+  log_level: "INFO"
+  debug: false
