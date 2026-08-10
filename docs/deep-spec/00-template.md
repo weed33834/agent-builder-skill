@@ -58,14 +58,15 @@
 | 01-prompt-system.md | 提示词系统 | ✅ 深度版 |
 | 02-sandbox.md | 沙箱系统 | ✅ 深度版 |
 | 03-context.md | 上下文管理 | ✅ 深度版 |
-| 04-tools.md | 工具系统 | 📝 待写 |
-| 05-memory.md | 记忆系统 | 📝 待写 |
-| 06-models.md | 模型管理 | 📝 待写 |
-| 07-workflow.md | 编排工作流 | 📝 待写 |
-| 08-voice.md | 语音系统 | 📝 待写 |
-| 09-schedule.md | 定时任务 | 📝 待写 |
-| 10-skill-plugin.md | 技能与插件 | 📝 待写 |
-| 11-eval.md | 评估体系 | 📝 待写 |
-| 12-monitor.md | 监控告警 | 📝 待写 |
-| 13-iam.md | 权限体系 | 📝 待写 |
-| 14-agent-lifecycle.md | Agent 生命周期 | 📝 待写 |
+| 04-tools.md | 工具系统 | ✅ 深度版 |
+| 05-memory.md | 记忆系统 | ✅ 深度版 |
+| 06-models.md | 模型管理 | ✅ 深度版 |
+| 07-workflow.md | 编排工作流 | ✅ 深度版 |
+| 08-voice.md | 语音系统 | ✅ 深度版 |
+| 09-schedule.md | 定时任务 | ✅ 深度版 |
+| 10-skill-plugin.md | 技能与插件 | ✅ 深度版 |
+| 11-eval.md | 评估体系 | ✅ 深度版 |
+| 12-monitor.md | 监控告警 | ✅ 深度版 |
+| 13-iam.md | 权限体系 | ✅ 深度版 |
+| 14-agent-lifecycle.md | Agent 生命周期 | ✅ 深度版 |
+| 15-ux-detail.md | 对话体验全集（14 交互域 800+ 细节点） | ✅ 深度版 |
