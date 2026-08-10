@@ -76,6 +76,25 @@ def setup_logging(
     logging.getLogger("urllib3").setLevel(logging.WARNING)
 
 
+class StructuredLogger(logging.Logger):
+    """Logger that accepts arbitrary **kwargs and merges them into `extra` so
+    the JSONFormatter can emit structured fields (fixes pre-existing
+    `Logger._log() got an unexpected keyword argument` failures)."""
+
+    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False,
+             stacklevel=1, **kwargs):  # noqa: A002
+        if kwargs:
+            merged = dict(extra or {})
+            merged.setdefault("extra", {})
+            if not isinstance(merged["extra"], dict):
+                merged["extra"] = {}
+            merged["extra"].update(kwargs)
+            extra = merged
+        super()._log(level, msg, args, exc_info=exc_info, extra=extra,
+                     stack_info=stack_info, stacklevel=stacklevel)
+
+
 def get_logger(name: str) -> logging.Logger:
-    """Get a Logger instance"""
+    """Get a Logger instance (supports structured **kwargs)"""
+    logging.setLoggerClass(StructuredLogger)
     return logging.getLogger(name)

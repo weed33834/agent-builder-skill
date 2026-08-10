@@ -9,7 +9,10 @@
  */
 
 import { useState } from 'react'
-import { adminListAgents, adminSaveAgent, adminSaveAgentGraph } from '../../l8_api/api'
+import {
+  adminListAgents, adminSaveAgent, adminDeleteAgent, adminSaveAgentGraph,
+  adminGenerateAgent, adminImportAgent, adminListAgentTemplates, adminPublishAgent,
+} from '../../l8_api/api'
 
 interface GraphNode {
   id: string
@@ -57,6 +60,19 @@ export function AgentGraph() {
     framework: 'langgraph',
   })
   const [notice, setNotice] = useState('')
+  const [generateDesc, setGenerateDesc] = useState('')
+  const [templates, setTemplates] = useState<{ name: string; desc: string }[]>([])
+  const [aiBusy, setAiBusy] = useState(false)
+
+  const loadTemplates = async () => {
+    try {
+      const res = await adminListAgentTemplates()
+      setTemplates((res.items as unknown as { name: string; desc: string }[]) || [])
+    } catch {
+      setTemplates([])
+    }
+  }
+  void loadTemplates()
 
   const refresh = async () => {
     try {
@@ -103,6 +119,52 @@ export function AgentGraph() {
     setEdges((prev) => [...prev, { from: 'llm', to: `tool_${prev.length}` }])
   }
 
+  const deleteAgent = async (id: string) => {
+    try {
+      await adminDeleteAgent(id)
+      setNotice('Agent 已删除')
+      setSelectedId(null)
+      void refresh()
+    } catch (e) {
+      setNotice(`删除失败: ${String(e)}`)
+    }
+  }
+
+  const generateAgent = async () => {
+    if (!generateDesc.trim()) return
+    setAiBusy(true)
+    try {
+      const res = await adminGenerateAgent({ description: generateDesc })
+      const draft = res.draft as { name: string; description: string; system_prompt: string }
+      setForm({ name: draft.name, description: draft.description, system_prompt: draft.system_prompt, tools: '', framework: 'langgraph' })
+      setNotice('已根据描述生成 Agent 草稿，点击「保存模板」入库')
+    } catch (e) {
+      setNotice(`AI 生成失败: ${String(e)}`)
+    } finally {
+      setAiBusy(false)
+    }
+  }
+
+  const importAgent = async () => {
+    const yaml = window.prompt('粘贴 Agent 配置（YAML/JSON），或留空使用示例')
+    try {
+      await adminImportAgent({ format: 'yaml', content: yaml ?? 'name: imported\nsystem_prompt: "你是导入的 Agent"' })
+      setNotice('Agent 已导入（草稿状态）')
+      void refresh()
+    } catch (e) {
+      setNotice(`导入失败: ${String(e)}`)
+    }
+  }
+
+  const publishAgent = async (id: string) => {
+    try {
+      await adminPublishAgent(id, { traffic: 100 })
+      setNotice('Agent 已发布（100% 流量）')
+    } catch (e) {
+      setNotice(`发布失败: ${String(e)}`)
+    }
+  }
+
   return (
     <div className="admin-layout" data-testid="admin-agents">
       {/* 左侧：模板列表 */}
@@ -120,6 +182,10 @@ export function AgentGraph() {
           >
             <span>{a.name}</span>
             <small>{a.framework} · {a.enabled ? '在线' : '停用'}</small>
+            <div className="admin-actions" style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+              <button className="admin-btn sm ghost" onClick={e => { e.stopPropagation(); publishAgent(a.id) }}>发布</button>
+              <button className="admin-btn sm ghost" onClick={e => { e.stopPropagation(); deleteAgent(a.id) }}>删</button>
+            </div>
           </button>
         ))}
       </aside>
@@ -127,6 +193,35 @@ export function AgentGraph() {
       {/* 右侧：详情 */}
       <section className="admin-detail">
         <h3>创建 Agent 模板</h3>
+        <div className="admin-actions" style={{ marginBottom: 10 }}>
+          <input
+            placeholder="描述一个 Agent，如「帮我做个写周报的助手」"
+            value={generateDesc}
+            onChange={e => setGenerateDesc(e.target.value)}
+            style={{ flex: 1, minWidth: 220 }}
+          />
+          <button className="btn-primary" onClick={generateAgent} disabled={aiBusy}>
+            {aiBusy ? <span className="spin" /> : '✨ AI 生成'}
+          </button>
+          <button className="btn-primary" onClick={importAgent}>📥 导入</button>
+        </div>
+        {templates.length > 0 && (
+          <div style={{ marginBottom: 12, fontSize: 12 }}>
+            <strong>模板市场：</strong>
+            {templates.map(t => (
+              <button
+                key={t.name}
+                className="admin-btn sm ghost"
+                title={t.desc}
+                onClick={() => {
+                  setForm({ name: t.name, description: t.desc, system_prompt: t.desc || `You are a ${t.name} assistant.`, tools: '', framework: 'langgraph' })
+                }}
+              >
+                {t.name}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="form-grid">
           <label>
             名称

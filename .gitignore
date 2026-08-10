@@ -36,6 +36,9 @@ Thumbs.db
 generated_agent/
 my_agent/
 
+# Runtime data (JSON persistence / uploads)
+data/
+
 # Cache
 .mypy_cache/
 .pytest_cache/

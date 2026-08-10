@@ -62,6 +62,15 @@ _DEFAULTS: Dict[str, Dict[str, Any]] = {
     "evaluations": {"items": [], "results": []},
     "alerts": {"items": []},
     "settings": {},
+    # 新增集合 (M4/M5/M6/M9/M10/M11/M12/G11/M13)
+    "security": {"users": [], "roles": {}, "api_keys": [], "audit_log": [], "permission_matrix": {}},
+    "a2a_registry": {"agents": []},
+    "a2a_tasks": {"tasks": []},
+    "alert_history": {"events": []},
+    "traces": {"traces": []},
+    "logs": {"entries": []},
+    "drift": {"series": [], "alerts": []},
+    "tasks": {"items": []},
 }
 
 
@@ -146,6 +155,17 @@ async def create_prompt(payload: dict):
         "source": payload.get("source", "manual"),  # manual | ai | import
         "tags": payload.get("tags", []),
         "version": 1,
+        # M2: version history (each save appends a snapshot) + A/B traffic split
+        "versions": [
+            {
+                "version": 1,
+                "content": content,
+                "name": payload.get("name", "untitled"),
+                "ts": int(time.time()),
+                "note": "initial",
+            }
+        ],
+        "ab": {"enabled": False, "variants": {}, "traffic": 50},
         "created_at": int(time.time()),
     }
     return _upsert("prompts", item)
@@ -156,11 +176,74 @@ async def update_prompt(prompt_id: str, payload: dict):
     data = _load("prompts")
     for item in data["items"]:
         if item["id"] == prompt_id:
-            item.update({k: v for k, v in payload.items() if k not in ("id", "created_at")})
-            item["version"] = int(item.get("version", 1)) + 1
+            prev_version = int(item.get("version", 1))
+            item.update({k: v for k, v in payload.items() if k not in ("id", "created_at", "versions", "ab")})
+            item["version"] = prev_version + 1
+            # M2: append a version snapshot for diff / rollback
+            versions = item.setdefault("versions", [])
+            versions.append(
+                {
+                    "version": item["version"],
+                    "content": item.get("content", ""),
+                    "name": item.get("name", ""),
+                    "ts": int(time.time()),
+                    "note": payload.get("note", ""),
+                }
+            )
+            item["versions"] = versions[-200:]
             _save("prompts", data)
             _audit("prompt.update", prompt_id)
             return item
+    raise HTTPException(status_code=404, detail="prompt not found")
+
+
+@router.get("/admin/prompts/{prompt_id}/versions")
+async def list_prompt_versions(prompt_id: str):
+    """M2: 提示词版本历史 (用于 diff / 回滚)。"""
+    item = _find("prompts", prompt_id)
+    return {"prompt_id": prompt_id, "versions": item.get("versions", [])}
+
+
+@router.post("/admin/prompts/{prompt_id}/rollback")
+async def rollback_prompt(prompt_id: str, payload: dict):
+    """M2: 回滚到指定版本。contract: {version} -> {ok, current_version}"""
+    version = int(payload.get("version", 1))
+    data = _load("prompts")
+    for item in data["items"]:
+        if item["id"] == prompt_id:
+            versions = item.get("versions", [])
+            target = next((v for v in versions if v["version"] == version), None)
+            if not target:
+                raise HTTPException(status_code=404, detail=f"version {version} not found")
+            versions.append(
+                {"version": item.get("version", 0) + 1, "content": item.get("content", ""),
+                 "name": item.get("name", ""), "ts": int(time.time()),
+                 "note": "rollback to v{}".format(version)}
+            )
+            item["version"] = versions[-1]["version"]
+            item["content"] = target["content"]
+            item["name"] = target.get("name", item.get("name", ""))
+            item["versions"] = versions[-200:]
+            _save("prompts", data)
+            _audit("prompt.rollback", prompt_id, f"to v{version}")
+            return {"ok": True, "current_version": item["version"], "content": item["content"]}
+    raise HTTPException(status_code=404, detail="prompt not found")
+
+
+@router.post("/admin/prompts/{prompt_id}/ab")
+async def set_prompt_ab(prompt_id: str, payload: dict):
+    """M2: A/B 分流配置。contract: {enabled, variants, traffic} -> {ok, ab}"""
+    data = _load("prompts")
+    for item in data["items"]:
+        if item["id"] == prompt_id:
+            item["ab"] = {
+                "enabled": bool(payload.get("enabled", False)),
+                "variants": payload.get("variants", {}),  # {variant_id: {content, weight}}
+                "traffic": int(payload.get("traffic", 50)),
+            }
+            _save("prompts", data)
+            _audit("prompt.ab", prompt_id)
+            return {"ok": True, "ab": item["ab"]}
     raise HTTPException(status_code=404, detail="prompt not found")
 
 
@@ -732,3 +815,611 @@ async def upsert_role(payload: dict):
     _save("security", data)
     _audit("security.role", role)
     return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# M1 — Model key pool / fallback chain (模型 key 池与回退链)
+# ---------------------------------------------------------------------------
+@router.post("/admin/models/{model_id}/keys")
+async def manage_model_keys(model_id: str, payload: dict):
+    """增删 key 池条目。contract: {action: add|remove, key?, } -> {ok, key_pool}"""
+    action = payload.get("action", "add")
+    data = _load("models")
+    for m in data["items"]:
+        if m["id"] == model_id:
+            pool = m.setdefault("key_pool", [])
+            if action == "add":
+                key = payload.get("key", "")
+                if not key:
+                    raise HTTPException(status_code=400, detail="key is required")
+                pool.append({"id": _new_id("k"), "key": key, "masked": key[:4] + "****", "enabled": True})
+            elif action == "remove":
+                kid = payload.get("key_id")
+                pool[:] = [k for k in pool if k.get("id") != kid]
+            _save("models", data)
+            return {"ok": True, "key_pool": pool}
+    raise HTTPException(status_code=404, detail="model not found")
+
+
+@router.post("/admin/models/{model_id}/fallback")
+async def set_model_fallback(model_id: str, payload: dict):
+    """配置回退链。contract: {fallback: [{provider, model, base_url, api_key}]} -> {ok}"""
+    data = _load("models")
+    for m in data["items"]:
+        if m["id"] == model_id:
+            m["fallback"] = payload.get("fallback", [])
+            _save("models", data)
+            return {"ok": True, "fallback": m["fallback"]}
+    raise HTTPException(status_code=404, detail="model not found")
+
+
+# ---------------------------------------------------------------------------
+# M5 — Knowledge base document management (知识库文档管理)
+# ---------------------------------------------------------------------------
+def _chunk_text(text: str, size: int = 500, overlap: int = 50) -> list[str]:
+    """按字符分块 (生产可换用 tokenizer/语义切分)。"""
+    text = (text or "").strip()
+    if not text:
+        return []
+    if len(text) <= size:
+        return [text]
+    chunks, start = [], 0
+    while start < len(text):
+        chunks.append(text[start:start + size])
+        start += size - overlap
+    return chunks
+
+
+@router.get("/admin/memory/kbs")
+async def list_kbs():
+    """知识库列表 (含文档数/分块参数)。"""
+    data = _load("memory")
+    store = data.get("vector_store", {})
+    kbs = []
+    for kb_id, chunks in store.items():
+        kbs.append({
+            "id": kb_id,
+            "name": data.get("kb_meta", {}).get(kb_id, {}).get("name", kb_id),
+            "doc_count": len({c.get("doc_id", "") for c in chunks}),
+            "chunk_count": len(chunks),
+            "embedding": data.get("kb_meta", {}).get(kb_id, {}).get("embedding", settings.EMBEDDING_MODEL),
+        })
+    return {"items": kbs, "total": len(kbs)}
+
+
+@router.post("/admin/memory/kbs")
+async def create_kb(payload: dict):
+    """创建知识库。contract: {id?, name, chunk_size?, overlap?, embedding?}"""
+    kb_id = payload.get("id") or payload.get("name") or _new_id("kb")
+    data = _load("memory")
+    data.setdefault("vector_store", {}).setdefault(kb_id, [])
+    data.setdefault("kb_meta", {})[kb_id] = {
+        "name": payload.get("name", kb_id),
+        "chunk_size": int(payload.get("chunk_size", settings.RAG_CHUNK_SIZE)),
+        "overlap": int(payload.get("overlap", settings.RAG_CHUNK_OVERLAP)),
+        "embedding": payload.get("embedding", settings.EMBEDDING_MODEL),
+    }
+    _save("memory", data)
+    _audit("kb.create", kb_id)
+    return {"ok": True, "id": kb_id}
+
+
+@router.delete("/admin/memory/kbs/{kb_id}")
+async def delete_kb(kb_id: str):
+    data = _load("memory")
+    data.get("vector_store", {}).pop(kb_id, None)
+    data.get("kb_meta", {}).pop(kb_id, None)
+    _save("memory", data)
+    _audit("kb.delete", kb_id)
+    return {"ok": True}
+
+
+@router.get("/admin/memory/kbs/{kb_id}/documents")
+async def list_kb_documents(kb_id: str):
+    """知识库文档列表 (按 doc_id 聚合)。"""
+    chunks = _load("memory").get("vector_store", {}).get(kb_id, [])
+    docs: Dict[str, dict] = {}
+    for c in chunks:
+        doc_id = c.get("doc_id", "")
+        if doc_id not in docs:
+            docs[doc_id] = {"id": doc_id, "name": c.get("doc_name", doc_id), "chunk_count": 0, "created_at": c.get("ts")}
+        docs[doc_id]["chunk_count"] += 1
+    return {"items": list(docs.values()), "total": len(docs)}
+
+
+@router.post("/admin/memory/kbs/{kb_id}/documents")
+async def add_kb_document(kb_id: str, payload: dict):
+    """上传/添加文档并分块入库。contract: {name?, content} -> {ok, doc_id, chunks}"""
+    content = payload.get("content", "")
+    if not content:
+        raise HTTPException(status_code=400, detail="document content is required")
+    data = _load("memory")
+    meta = data.setdefault("kb_meta", {}).get(kb_id, {})
+    size = int(meta.get("chunk_size", settings.RAG_CHUNK_SIZE))
+    overlap = int(meta.get("overlap", settings.RAG_CHUNK_OVERLAP))
+    store = data.setdefault("vector_store", {}).setdefault(kb_id, [])
+    doc_id = _new_id("doc")
+    doc_name = payload.get("name") or f"document_{doc_id}"
+    ts = int(time.time())
+    for i, text in enumerate(_chunk_text(content, size, overlap)):
+        store.append({
+            "id": _new_id("chunk"), "doc_id": doc_id, "doc_name": doc_name,
+            "text": text, "meta": payload.get("meta", {}), "ts": ts, "index": i,
+        })
+    _save("memory", data)
+    _audit("kb.document.add", doc_id, kb_id)
+    return {"ok": True, "doc_id": doc_id, "chunks": len(store) and sum(1 for c in store if c.get("doc_id") == doc_id)}
+
+
+@router.delete("/admin/memory/kbs/{kb_id}/documents/{doc_id}")
+async def delete_kb_document(kb_id: str, doc_id: str):
+    data = _load("memory")
+    store = data.get("vector_store", {}).get(kb_id, [])
+    before = len(store)
+    data["vector_store"][kb_id] = [c for c in store if c.get("doc_id") != doc_id]
+    if len(data["vector_store"][kb_id]) == before:
+        raise HTTPException(status_code=404, detail="document not found")
+    _save("memory", data)
+    _audit("kb.document.delete", doc_id)
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# M4 — Tool test-run & hot-reload (工具试跑与热加载)
+# ---------------------------------------------------------------------------
+@router.post("/admin/tools/{tool_id}/run")
+async def run_tool(tool_id: str, payload: dict):
+    """工具试跑: 用给定参数执行工具返回结果 (生产接 ToolExecutor)。
+    contract: {params} -> {ok, result, latency_ms}"""
+    data = _load("tools")
+    tool = next((t for t in data["items"] if t["id"] == tool_id), None)
+    if not tool:
+        raise HTTPException(status_code=404, detail="tool not found")
+    started = time.monotonic()
+    try:
+        from ...l5_tools.executor import ToolExecutor
+        result = await ToolExecutor().execute(tool.get("name"), payload.get("params", {}))
+        return {"ok": True, "result": result, "latency_ms": int((time.monotonic() - started) * 1000)}
+    except Exception as exc:  # noqa: BLE001
+        return {"ok": False, "error": str(exc), "latency_ms": int((time.monotonic() - started) * 1000)}
+
+
+@router.post("/admin/tools/reload")
+async def reload_tools(payload: dict = None):
+    """热加载工具: 从插件目录扫描注册工具。
+    contract: {dir?} -> {ok, registered}"""
+    tool_dir = (payload or {}).get("dir", "")
+    registered = 0
+    if tool_dir:
+        try:
+            from ...l10_infra.plugin_manager import PluginManager
+            pm = PluginManager([tool_dir])
+            pm.load_all()
+            discovered = pm.list_info()
+            data = _load("tools")
+            for d in discovered:
+                if not any(t.get("name") == d.get("name") for t in data["items"]):
+                    data["items"].append({
+                        "id": _new_id("t"), "name": d.get("name", ""),
+                        "description": d.get("description", ""), "schema": d.get("schema", {}),
+                        "endpoint": d.get("endpoint", ""), "enabled": True,
+                        "params": {}, "source": "hot-reload", "created_at": int(time.time()),
+                    })
+                    registered += 1
+            _save("tools", data)
+        except Exception:  # noqa: BLE001
+            registered = 0
+    return {"ok": True, "registered": registered}
+
+
+# ---------------------------------------------------------------------------
+# M11 — IAM: users / api_keys / permission matrix / audit (权限与用户管理)
+# ---------------------------------------------------------------------------
+@router.get("/admin/security/users")
+async def list_users():
+    sec = _load("security")
+    return {"items": sec.get("users", []), "total": len(sec.get("users", []))}
+
+
+@router.post("/admin/security/users")
+async def create_user(payload: dict):
+    """新增/邀请用户。contract: {username, role?, email?} -> {ok, user}"""
+    username = payload.get("username") or payload.get("email") or ""
+    if not username:
+        raise HTTPException(status_code=400, detail="username is required")
+    data = _load("security")
+    users = data.setdefault("users", [])
+    user = {
+        "id": _new_id("u"),
+        "username": username,
+        "email": payload.get("email", ""),
+        "role": payload.get("role", "viewer"),  # admin | developer | viewer
+        "status": "invited",
+        "created_at": int(time.time()),
+    }
+    users.append(user)
+    _save("security", data)
+    _audit("security.user.create", user["id"])
+    return {"ok": True, "user": user}
+
+
+@router.put("/admin/security/users/{user_id}")
+async def update_user(user_id: str, payload: dict):
+    data = _load("security")
+    for u in data.get("users", []):
+        if u["id"] == user_id:
+            if "role" in payload:
+                u["role"] = payload["role"]
+            if "status" in payload:
+                u["status"] = payload["status"]
+            _save("security", data)
+            _audit("security.user.update", user_id, f"role={u['role']}")
+            return {"ok": True, "user": u}
+    raise HTTPException(status_code=404, detail="user not found")
+
+
+@router.delete("/admin/security/users/{user_id}")
+async def delete_user(user_id: str):
+    data = _load("security")
+    before = len(data.get("users", []))
+    data["users"] = [u for u in data.get("users", []) if u["id"] != user_id]
+    if len(data["users"]) == before:
+        raise HTTPException(status_code=404, detail="user not found")
+    _save("security", data)
+    return {"ok": True}
+
+
+@router.get("/admin/security/api_keys")
+async def list_api_keys():
+    sec = _load("security")
+    return {"items": sec.get("api_keys", []), "total": len(sec.get("api_keys", []))}
+
+
+@router.post("/admin/security/api_keys")
+async def create_api_key(payload: dict):
+    """生成 API Key。contract: {name?, scope?, expires_at?} -> {ok, key, id}"""
+    import secrets
+    data = _load("security")
+    keys = data.setdefault("api_keys", [])
+    token = secrets.token_urlsafe(32)
+    item = {
+        "id": _new_id("ak"),
+        "name": payload.get("name", "default"),
+        "key": f"sk-{token}",  # 生产仅存哈希
+        "scope": payload.get("scope", "read"),
+        "status": "active",
+        "created_at": int(time.time()),
+    }
+    keys.append(item)
+    _save("security", data)
+    _audit("security.api_key.create", item["id"])
+    return {"ok": True, "id": item["id"], "key": item["key"]}
+
+
+@router.delete("/admin/security/api_keys/{key_id}")
+async def revoke_api_key(key_id: str):
+    data = _load("security")
+    for k in data.get("api_keys", []):
+        if k["id"] == key_id:
+            k["status"] = "revoked"
+            _save("security", data)
+            return {"ok": True}
+    raise HTTPException(status_code=404, detail="api_key not found")
+
+
+@router.put("/admin/security/permissions")
+async def set_permission_matrix(payload: dict):
+    """权限矩阵: {matrix: {module: {role: [actions]}}} -> {ok}"""
+    data = _load("security")
+    data["permission_matrix"] = payload.get("matrix", {})
+    _save("security", data)
+    _audit("security.permissions", "global")
+    return {"ok": True}
+
+
+@router.get("/admin/security/audit")
+async def get_audit_log():
+    sec = _load("security")
+    return {"items": sec.get("audit_log", [])[-500:], "total": len(sec.get("audit_log", []))}
+
+
+# ---------------------------------------------------------------------------
+# M12 — Agent AI 生成 / 导入 / 模板市场 / 发布灰度
+# ---------------------------------------------------------------------------
+@router.post("/admin/agents/generate")
+async def generate_agent(payload: dict):
+    """AI 生成 Agent 草稿。contract: {description, kind?} -> {draft, yaml}"""
+    desc = payload.get("description", "")
+    if not desc:
+        raise HTTPException(status_code=400, detail="description is required")
+    kind = payload.get("kind", "chat")
+    # 生产走 LLM; 此处产出结构化 yaml 草稿
+    import yaml as _yaml
+    draft = {
+        "name": f"agent_{_new_id('a')[2:]}",
+        "type": kind,
+        "description": desc,
+        "system_prompt": f"You are an expert assistant. Task: {desc}",
+        "tools": [],
+        "framework": "langgraph",
+        "graph": {"nodes": [], "edges": []},
+        "memory": "buffer",
+    }
+    return {"draft": draft, "yaml": _yaml.safe_dump(draft, allow_unicode=True, sort_keys=False)}
+
+
+@router.post("/admin/agents/import")
+async def import_agent(payload: dict):
+    """导入 Agent (yaml/json/平台转换)。contract: {format, content, source?} -> {imported, items}"""
+    fmt = payload.get("format", "yaml")
+    content = payload.get("content", "")
+    source = payload.get("source", "")
+    if not content:
+        raise HTTPException(status_code=400, detail="content is required")
+    item = {"id": _new_id("a"), "name": f"imported_{source or fmt}", "system_prompt": content,
+            "tools": [], "framework": "langgraph", "graph": {}, "enabled": False,
+            "source": f"import:{fmt}", "created_at": int(time.time())}
+    if fmt == "json":
+        try:
+            parsed = json.loads(content)
+            item["name"] = parsed.get("name", item["name"])
+            item["system_prompt"] = parsed.get("system_prompt", parsed.get("description", content))
+            item["tools"] = parsed.get("tools", [])
+            item["framework"] = parsed.get("framework", "langgraph")
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="invalid json")
+    _upsert("agents", item)
+    _audit("agent.import", item["id"], source)
+    return {"imported": 1, "items": [item]}
+
+
+@router.get("/admin/agents/templates")
+async def list_agent_templates_market():
+    """模板市场: 内置 agent-types 模板列表。"""
+    templates_dir = Path(__file__).resolve().parents[4] / "agent-types"
+    items = []
+    if templates_dir.exists():
+        for f in sorted(templates_dir.glob("*.yaml")):
+            try:
+                import yaml as _yaml
+                doc = _yaml.safe_load(f.read_text(encoding="utf-8"))
+            except Exception:  # noqa: BLE001
+                doc = {}
+            items.append({"name": f.stem, "path": str(f), "desc": doc.get("description", "") if doc else ""})
+    return {"items": items, "total": len(items)}
+
+
+@router.post("/admin/agents/{agent_id}/publish")
+async def publish_agent(agent_id: str, payload: dict):
+    """发布版本 / 灰度流量。contract: {version?, traffic?} -> {ok, version, traffic}"""
+    data = _load("agents")
+    for a in data["items"]:
+        if a["id"] == agent_id:
+            a["published_version"] = int(payload.get("version", a.get("published_version", 1)))
+            a["gray_traffic"] = int(payload.get("traffic", 100))
+            a["status"] = "published"
+            _save("agents", data)
+            return {"ok": True, "version": a["published_version"], "traffic": a["gray_traffic"]}
+    raise HTTPException(status_code=404, detail="agent not found")
+
+
+# ---------------------------------------------------------------------------
+# M6 — A2A 远端注册表 + 任务监控 (编排)
+# ---------------------------------------------------------------------------
+@router.get("/admin/a2a")
+async def list_a2a_registry():
+    """A2A 远端 Agent 注册表。"""
+    data = _load("a2a_registry")
+    return {"items": data.get("agents", []), "total": len(data.get("agents", []))}
+
+
+@router.post("/admin/a2a")
+async def register_a2a_agent(payload: dict):
+    """注册远端 Agent (Agent Card URL 导入)。contract: {name?, url} -> {ok, agent}"""
+    url = payload.get("url", "")
+    if not url:
+        raise HTTPException(status_code=400, detail="url is required")
+    data = _load("a2a_registry")
+    agent = {
+        "id": _new_id("a2a"),
+        "name": payload.get("name") or url.rstrip("/").split("/")[-1] or "remote",
+        "url": url,
+        "card": payload.get("card", {}),
+        "status": "registered",
+        "created_at": int(time.time()),
+    }
+    data.setdefault("agents", []).append(agent)
+    _save("a2a_registry", data)
+    _audit("a2a.register", agent["id"], url)
+    return {"ok": True, "agent": agent}
+
+
+@router.delete("/admin/a2a/{agent_id}")
+async def delete_a2a_agent(agent_id: str):
+    data = _load("a2a_registry")
+    before = len(data.get("agents", []))
+    data["agents"] = [a for a in data.get("agents", []) if a["id"] != agent_id]
+    if len(data["agents"]) == before:
+        raise HTTPException(status_code=404, detail="a2a agent not found")
+    _save("a2a_registry", data)
+    return {"ok": True}
+
+
+@router.get("/admin/a2a/tasks")
+async def list_a2a_tasks():
+    """任务运行监控。"""
+    data = _load("a2a_tasks")
+    return {"items": data.get("tasks", []), "total": len(data.get("tasks", []))}
+
+
+# ---------------------------------------------------------------------------
+# M9 — 告警通知历史
+# ---------------------------------------------------------------------------
+@router.get("/admin/alerts/history")
+async def get_alert_history(limit: int = 100):
+    data = _load("alert_history")
+    events = data.get("events", [])[-limit:]
+    return {"items": events, "total": len(events)}
+
+
+# ---------------------------------------------------------------------------
+# M10 — Trace / Log / Data-drift 查看器 (质量层)
+# ---------------------------------------------------------------------------
+@router.get("/admin/traces")
+async def list_traces(limit: int = 50):
+    """Trace 列表。"""
+    data = _load("traces")
+    items = data.get("traces", [])[-limit:]
+    return {"items": items, "total": len(items)}
+
+
+@router.get("/admin/traces/{trace_id}")
+async def get_trace(trace_id: str):
+    data = _load("traces")
+    for t in data.get("traces", []):
+        if t["id"] == trace_id:
+            return t
+    raise HTTPException(status_code=404, detail="trace not found")
+
+
+@router.get("/admin/logs")
+async def get_logs(level: str = "", service: str = "", limit: int = 100):
+    """结构化日志查看器。"""
+    data = _load("logs")
+    items = data.get("entries", [])
+    if level:
+        items = [e for e in items if e.get("level", "").upper() == level.upper()]
+    if service:
+        items = [e for e in items if e.get("service") == service]
+    return {"items": items[-limit:], "total": len(items)}
+
+
+@router.get("/admin/drift")
+async def get_drift():
+    """数据漂移检测。"""
+    data = _load("drift")
+    return {"series": data.get("series", []), "alerts": data.get("alerts", [])}
+
+
+# ---------------------------------------------------------------------------
+# G11 — 定时任务管理 (schedule)
+# ---------------------------------------------------------------------------
+@router.get("/admin/tasks")
+async def list_schedule_tasks():
+    data = _load("tasks")
+    return {"items": data.get("items", []), "total": len(data.get("items", []))}
+
+
+@router.post("/admin/tasks")
+async def create_schedule_task(payload: dict):
+    """定时任务。contract: {name, cron, action, enabled?} -> {ok, item}"""
+    name = payload.get("name")
+    if not name:
+        raise HTTPException(status_code=400, detail="name is required")
+    data = _load("tasks")
+    item = {
+        "id": payload.get("id") or _new_id("t"),
+        "name": name,
+        "cron": payload.get("cron", "0 9 * * *"),
+        "action": payload.get("action", {}),
+        "enabled": bool(payload.get("enabled", True)),
+        "last_run": payload.get("last_run"),
+        "created_at": int(time.time()),
+    }
+    data.setdefault("items", []).append(item)
+    _save("tasks", data)
+    return {"ok": True, "item": item}
+
+
+@router.delete("/admin/tasks/{task_id}")
+async def delete_schedule_task(task_id: str):
+    data = _load("tasks")
+    before = len(data.get("items", []))
+    data["items"] = [t for t in data.get("items", []) if t["id"] != task_id]
+    if len(data["items"]) == before:
+        raise HTTPException(status_code=404, detail="task not found")
+    _save("tasks", data)
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# M13 — 备份 / 迁移
+# ---------------------------------------------------------------------------
+@router.get("/admin/backup")
+async def export_backup():
+    """全量导出配置包 (yaml)。"""
+    kinds = ["prompts", "tools", "memory", "agents", "models", "workflows",
+             "evaluations", "alerts", "settings", "security", "tasks", "a2a_registry"]
+    bundle = {k: _load(k) for k in kinds}
+    bundle["_meta"] = {"exported_at": int(time.time()), "version": settings.APP_VERSION}
+    return bundle
+
+
+@router.post("/admin/backup/restore")
+async def restore_backup(payload: dict):
+    """恢复配置包。contract: {bundle} -> {ok, restored}"""
+    bundle = payload.get("bundle", {}) or {}
+    restored = 0
+    kinds = ["prompts", "tools", "memory", "agents", "models", "workflows",
+             "evaluations", "alerts", "settings", "security", "tasks", "a2a_registry"]
+    for k in kinds:
+        if k in bundle and isinstance(bundle[k], dict):
+            _save(k, bundle[k])
+            restored += 1
+    _audit("backup.restore", "global", f"{restored} collections")
+    return {"ok": True, "restored": restored}
+
+
+# ---------------------------------------------------------------------------
+# 23-cost-billing — Usage & cost tracking (用量与成本计费)
+# ---------------------------------------------------------------------------
+@router.get("/admin/usage")
+async def get_usage(days: int = 7):
+    """用量/成本汇总（按日/模型/会话 + 预算）。"""
+    from ...l10_infra.usage import get_usage_summary
+    return get_usage_summary(days)
+
+
+@router.post("/admin/usage/budget")
+async def set_usage_budget(payload: dict):
+    """设置月度预算。contract: {monthly_usd, enabled}"""
+    from ...l10_infra.usage import set_budget
+    return set_budget(float(payload.get("monthly_usd", 100.0)), bool(payload.get("enabled", True)))
+
+
+# ---------------------------------------------------------------------------
+# 25-performance-engineering — Circuit breaker status (熔断器)
+# ---------------------------------------------------------------------------
+@router.get("/admin/breakers")
+async def list_circuit_breakers():
+    from ...l10_infra.circuit_breaker import get_circuit_breakers
+    return {"items": get_circuit_breakers().list()}
+
+
+# ---------------------------------------------------------------------------
+# M13 / M10 — 运行期观测：写入 trace / 日志 / 告警事件 (供观测端点读取)
+# ---------------------------------------------------------------------------
+def record_trace(span: dict) -> None:
+    """记录一条 trace span (供运行时调用)。"""
+    data = _load("traces")
+    data.setdefault("traces", []).append({
+        "id": _new_id("tr"), "ts": int(time.time() * 1000), **span,
+    })
+    data["traces"] = data["traces"][-1000:]
+    _save("traces", data)
+
+
+def record_log(entry: dict) -> None:
+    """记录一条结构化日志。"""
+    data = _load("logs")
+    data.setdefault("entries", []).append({"ts": int(time.time() * 1000), **entry})
+    data["entries"] = data["entries"][-2000:]
+    _save("logs", data)
+
+
+def record_alert_event(event: dict) -> None:
+    """记录一条告警触发事件。"""
+    data = _load("alert_history")
+    data.setdefault("events", []).append({"ts": int(time.time() * 1000), **event})
+    data["events"] = data["events"][-1000:]
+    _save("alert_history", data)

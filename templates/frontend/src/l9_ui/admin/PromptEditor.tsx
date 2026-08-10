@@ -10,7 +10,11 @@
  */
 
 import { useMemo, useState } from 'react'
-import { adminGeneratePrompt, adminImportPrompt } from '../../l8_api/api'
+import {
+  adminGeneratePrompt, adminImportPrompt,
+  adminListPrompts, adminCreatePrompt, adminUpdatePrompt, adminDeletePrompt,
+  adminListPromptVersions, adminRollbackPrompt, adminSetPromptAB,
+} from '../../l8_api/api'
 
 type PromptType = 'chat' | 'few-shot' | 'react' | 'tool-use'
 type PromptStatus = 'draft' | 'testing' | 'enabled' | 'disabled' | 'error'
@@ -27,93 +31,13 @@ interface PromptItem {
   variables: string[]
 }
 
-const MOCK_PROMPTS: PromptItem[] = [
-  {
-    id: 'p1',
-    name: '客服引导 v4',
-    type: 'chat',
-    tags: ['客服', '生产'],
-    status: 'enabled',
-    version: 4,
-    updatedAt: '2026-08-10 20:30',
-    content: `你是「星云科技」的资深客服顾问，负责解答用户关于产品的售前咨询与售后问题。
-
-# 行为准则
-- 保持专业、耐心、简洁的语气，优先用列表回答。
-- 涉及退款/物流问题时，先确认订单号再作答。
-- 无法回答时如实说明，绝不编造信息。
-
-# 约束
-- {policy_ref} 为最新售后政策，引用时注明条款编号。
-- 回复长度控制在 200 字以内。`,
-    variables: ['policy_ref'],
-  },
-  {
-    id: 'p2',
-    name: '周报生成 few-shot',
-    type: 'few-shot',
-    tags: ['办公', 'few-shot'],
-    status: 'enabled',
-    version: 3,
-    updatedAt: '2026-08-10 18:12',
-    content: `将工作记录整理为结构化周报。
-
-示例 1：
-输入：周一 修复了登录页 500 错误；周二 与设计评审新版首页
-输出：
-- 【本周完成】1. 修复登录页 500 错误 2. 新版首页需求评审
-- 【下周计划】- 待补充
-
-示例 2：
-输入：完成客户 A 的 POC 部署
-输出：
-- 【本周完成】1. 完成客户 A POC 部署
-- 【下周计划】- 待补充
-
-请按上述格式输出。`,
-    variables: [],
-  },
-  {
-    id: 'p3',
-    name: '代码审查助手',
-    type: 'react',
-    tags: ['开发', 'React'],
-    status: 'testing',
-    version: 2,
-    updatedAt: '2026-08-10 15:40',
-    content: `你是资深代码审查专家。对输入的代码进行审查，输出：
-1. 问题清单（严重级别：P0 阻断 / P1 严重 / P2 建议）
-2. 安全风险（注入、越权、敏感信息泄露）
-3. 改进建议（含示例代码）`,
-    variables: [],
-  },
-  {
-    id: 'p4',
-    name: '数据报表工具调用',
-    type: 'tool-use',
-    tags: ['数据分析'],
-    status: 'draft',
-    version: 1,
-    updatedAt: '2026-08-10 11:05',
-    content: `你负责回答业务数据问题。必须使用 sales_query 工具查询数据，禁止凭空编造数字。
-
-- 查询前先明确时间范围与维度
-- 结果需附带数据来源与口径说明
-- 图表类回答使用 chart_render 工具`,
-    variables: [],
-  },
-  {
-    id: 'p5',
-    name: '旧版客服引导 v1',
-    type: 'chat',
-    tags: ['客服', '归档'],
-    status: 'disabled',
-    version: 1,
-    updatedAt: '2026-08-02 09:20',
-    content: '你是客服助手，回答用户问题。',
-    variables: [],
-  },
-]
+interface VersionInfo {
+  version: number
+  content: string
+  name?: string
+  ts: number
+  note?: string
+}
 
 const STATUS_META: Record<PromptStatus, { label: string; cls: string }> = {
   draft: { label: '草稿', cls: 'gray' },
@@ -141,38 +65,18 @@ const IMPORT_CHANNELS = [
   { id: 'platform', label: '跨平台转换', icon: '🔄', desc: 'OpenAI / Anthropic / Dify 导出格式转换' },
 ]
 
-/* 版本历史（diff 对比用） */
-const VERSION_HISTORY = [
-  { version: 4, time: '2026-08-10 20:30', author: 'admin', note: '增加 policy_ref 变量与字数约束', active: true },
-  { version: 3, time: '2026-08-09 16:02', author: 'lina', note: '语气调整：更简洁' },
-  { version: 2, time: '2026-08-08 10:21', author: 'lina', note: '补充退款流程准则' },
-  { version: 1, time: '2026-08-02 09:20', author: 'admin', note: '初始版本' },
-]
+/* 版本历史（diff 对比用，来自后端 versions 端点） */
 
-const DIFF_LINES = [
-  { type: 'ctx', text: '你是「星云科技」的资深客服顾问' },
-  { type: 'del', text: '- 回复尽量详细完整。' },
-  { type: 'add', text: '+ {policy_ref} 为最新售后政策，引用时注明条款编号。' },
-  { type: 'add', text: '+ 回复长度控制在 200 字以内。' },
-  { type: 'ctx', text: '- 无法回答时如实说明，绝不编造信息。' },
-]
-
-const AUDIT_LOGS = [
-  { time: '2026-08-10 20:31', user: 'admin', action: '启用版本 v4', ip: '10.0.0.12' },
-  { time: '2026-08-10 20:30', user: 'admin', action: '保存新版本 v4', ip: '10.0.0.12' },
-  { time: '2026-08-10 19:58', user: 'lina', action: '测试运行（模型 gpt-4o）', ip: '10.0.0.35' },
-  { time: '2026-08-10 19:50', user: 'lina', action: 'AI 生成：优化', ip: '10.0.0.35' },
-  { time: '2026-08-10 18:20', user: 'bot', action: 'Git 同步拉取（repo: prompts-ops）', ip: '10.0.0.1' },
-]
+/* 审计日志（来自后端 security/audit） */
 
 export function PromptEditor() {
-  const [prompts, setPrompts] = useState<PromptItem[]>(MOCK_PROMPTS)
-  const [selectedId, setSelectedId] = useState('p1')
+  const [prompts, setPrompts] = useState<PromptItem[]>([])
+  const [selectedId, setSelectedId] = useState<string>('')
   const [tab, setTab] = useState<'config' | 'test' | 'run' | 'audit'>('config')
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<'all' | PromptStatus>('all')
 
-  const [draftContent, setDraftContent] = useState(MOCK_PROMPTS[0].content)
+  const [draftContent, setDraftContent] = useState('')
   const [dirty, setDirty] = useState(false)
 
   /* AI 生成 */
@@ -195,10 +99,56 @@ export function PromptEditor() {
   >([])
 
   /* 版本 / A-B */
+  const [versions, setVersions] = useState<VersionInfo[]>([])
   const [showDiff, setShowDiff] = useState(true)
   const [abEnabled, setAbEnabled] = useState(false)
   const [abRatio, setAbRatio] = useState(30)
   const [savedTip, setSavedTip] = useState<string | null>(null)
+  const [newName, setNewName] = useState('')
+  const [auditLogs, setAuditLogs] = useState<{ ts: number; action: string; subject: string; detail?: string }[]>([])
+
+  const loadPrompts = async () => {
+    try {
+      const res = await adminListPrompts()
+      const items = (res.items as unknown as Record<string, unknown>[]).map(p => ({
+        id: p.id as string,
+        name: p.name as string,
+        type: (p.type as PromptType) || 'chat',
+        tags: (p.tags as string[]) || [],
+        status: ((p.active ? 'enabled' : 'draft') as PromptStatus),
+        version: p.version as number,
+        updatedAt: p.created_at ? new Date((p.created_at as number) * 1000).toLocaleString('zh-CN') : '',
+        content: p.content as string,
+        variables: [],
+      }))
+      setPrompts(items)
+      if (items.length && !selectedId) setSelectedId(items[0].id)
+    } catch {
+      setPrompts([])
+    }
+  }
+
+  const loadVersions = async (id: string) => {
+    try {
+      const res = await adminListPromptVersions(id)
+      setVersions((res.versions as unknown as VersionInfo[]) || [])
+    } catch {
+      setVersions([])
+    }
+  }
+
+  void loadPrompts()
+
+  const loadAudit = async () => {
+    try {
+      const { adminGetAuditLog } = await import('../../l8_api/api')
+      const res = await adminGetAuditLog()
+      setAuditLogs((res.items as unknown as { ts: number; action: string; subject: string; detail?: string }[]) || [])
+    } catch {
+      setAuditLogs([])
+    }
+  }
+  void loadAudit()
 
   const selected = useMemo(
     () => prompts.find(p => p.id === selectedId) ?? prompts[0],
@@ -222,53 +172,47 @@ export function PromptEditor() {
     setAiResult(null)
     setTestResults([])
     setImportDone(null)
+    void loadVersions(p.id)
+  }
+
+  const createPrompt = async () => {
+    if (!newName.trim()) return
+    try {
+      await adminCreatePrompt({ name: newName.trim(), content: draftContent || `你是${newName.trim()}。` })
+      setNewName('')
+      setSavedTip('已新建提示词')
+      void loadPrompts()
+    } catch (e) {
+      setSavedTip(`新建失败: ${String(e)}`)
+    }
   }
 
   /* ---- AI 生成 ---- */
   const runAiGeneration = async () => {
     if (!aiInput.trim() && aiAction !== 'explain') {
-      setAiResult({ draft: '', summary: '请先输入描述文本', version: selected.version + 1 })
+      setAiResult({ draft: '', summary: '请先输入描述文本', version: (selected?.version ?? 1) + 1 })
       return
     }
     setAiBusy(true)
     try {
       const res = await adminGeneratePrompt({ action: aiAction, source: aiInput || selected.content })
       setAiResult(res)
-    } catch {
-      /* mock 兜底：模拟后端返回 */
-      const drafts: Record<string, string> = {
-        generate: `你是专业的${aiInput || '资深顾问'}。\n\n# 职责\n- 根据上下文提供专业、准确的回答\n- 主动澄清模糊需求\n\n# 约束\n- 不编造事实，不确定时明确说明\n- 回答使用 Markdown 结构化输出`,
-        optimize: selected.content + '\n\n# 优化说明\n- 增加角色边界描述\n- 补充失败兜底策略\n- 明确输出格式',
-        rewrite: selected.content.replace(/专业、耐心、简洁/g, '友好、亲切、易懂'),
-        translate: selected.content.replace(/客服/g, 'customer support'),
-        review: '【审查通过】未发现明显的指令冲突或注入面。\n风险等级：低',
-        fewshot: '示例 1：\n输入：…\n输出：…\n\n示例 2：\n输入：…\n输出：…\n\n示例 3：\n输入：…\n输出：…',
-        explain: 'v4 vs v3 变更摘要：\n- 新增 policy_ref 变量引用（售后政策联动）\n- 回复字数上限 200 字，降低 token 成本\n- 无明显行为回归',
-      }
-      setAiResult({
-        draft: drafts[aiAction] ?? selected.content,
-        summary: `${AI_ACTIONS.find(a => a.id === aiAction)?.label}完成，已生成草稿`,
-        version: selected.version + 1,
-      })
+    } catch (e) {
+      setAiResult({ draft: '', summary: `AI 生成失败: ${String(e)}`, version: (selected?.version ?? 1) + 1 })
     } finally {
       setAiBusy(false)
     }
   }
 
-  const saveAiResultAsDraft = () => {
+  const saveAiResultAsDraft = async () => {
     if (!aiResult?.draft) return
-    const np: PromptItem = {
-      ...selected,
-      id: `p-${Date.now()}`,
-      name: `${selected.name}（AI 草稿 v${aiResult.version}）`,
-      status: 'draft',
-      version: aiResult.version,
-      updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
-      content: aiResult.draft,
+    try {
+      await adminCreatePrompt({ name: `${selected?.name ?? 'prompt'}（AI 草稿）`, content: aiResult.draft, active: false })
+      setSavedTip('AI 草稿已保存为新提示词（未覆盖线上）')
+      void loadPrompts()
+    } catch (e) {
+      setSavedTip(`保存失败: ${String(e)}`)
     }
-    setPrompts(prev => [np, ...prev])
-    selectPrompt(np)
-    setSavedTip(`已保存为草稿 v${aiResult.version}，未覆盖线上版本`)
   }
 
   /* ---- 外部导入 ---- */
@@ -278,55 +222,81 @@ export function PromptEditor() {
     try {
       const res = await adminImportPrompt({ channel: importChannel })
       setImportDone(`导入成功：${res.imported} 个提示词`)
-    } catch {
-      const mockNames: Record<string, string> = {
-        file: 'prompt_import_20260810.yaml',
-        url: 'https://prompts.example.com/share/abc123',
-        market: '客户支持 · 金牌模板',
-        git: 'github.com/acme/prompts-ops（main 分支）',
-        platform: 'Dify 导出 workflow.json',
-      }
-      setImportDone(`已从「${mockNames[importChannel]}」导入 1 个提示词（草稿）`)
+      void loadPrompts()
+    } catch (e) {
+      setImportDone(`导入失败: ${String(e)}`)
     } finally {
       setImportBusy(false)
     }
   }
 
-  /* ---- 测试运行 ---- */
+  /* ---- 保存 / 删除 / 版本 / A-B ---- */
+  const savePrompt = async () => {
+    if (!selected) return
+    try {
+      await adminUpdatePrompt(selected.id, { content: draftContent, name: selected.name, note: '前端保存' })
+      setDirty(false)
+      setSavedTip('已保存为新版本（版本号 +1）')
+      void loadPrompts(); void loadVersions(selected.id)
+    } catch (e) {
+      setSavedTip(`保存失败: ${String(e)}`)
+    }
+  }
+
+  const deletePrompt = async (id: string) => {
+    try {
+      await adminDeletePrompt(id)
+      setSavedTip('已删除')
+      setSelectedId('')
+      void loadPrompts()
+    } catch (e) {
+      setSavedTip(`删除失败: ${String(e)}`)
+    }
+  }
+
+  const rollback = async (v: number) => {
+    if (!selected) return
+    try {
+      const res = await adminRollbackPrompt(selected.id, v)
+      setDraftContent(res.content)
+      setSavedTip(`已回滚到 v${v}，当前 v${res.current_version}`)
+      void loadVersions(selected.id)
+    } catch (e) {
+      setSavedTip(`回滚失败: ${String(e)}`)
+    }
+  }
+
+  const toggleAB = async (enabled: boolean) => {
+    setAbEnabled(enabled)
+    if (!selected) return
+    try {
+      await adminSetPromptAB(selected.id, { enabled, variants: {}, traffic: abRatio })
+      setSavedTip(enabled ? 'A/B 分流已启用' : 'A/B 分流已关闭')
+    } catch (e) {
+      setSavedTip(`A/B 设置失败: ${String(e)}`)
+    }
+  }
+
   const runTest = () => {
-    if (testRunning) return
+    if (testRunning || !selected) return
     setTestRunning(true)
     setTestResults([])
-    setTimeout(() => {
-      setTestResults([
-        { model: 'gpt-4o', latency: 1240, tokens: 286, ok: true, output: '您好，非常抱歉给您带来不便。请您提供订单号，我将为您核实物流信息…' },
-        { model: 'claude-sonnet', latency: 980, tokens: 244, ok: true, output: '您好～看到您的订单还没发货，我先帮您查一下～请提供订单号哦' },
-        { model: 'deepseek-v3', latency: 1520, tokens: 312, ok: false, output: '请求超时（错误码 E504）' },
-      ])
-      setTestRunning(false)
-    }, 1400)
-  }
-
-  const savePrompt = () => {
-    setPrompts(prev =>
-      prev.map(p =>
-        p.id === selected.id
-          ? { ...p, content: draftContent, version: p.version + 1, updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '), status: p.status === 'draft' ? 'testing' : p.status }
-          : p
-      )
-    )
-    setDirty(false)
-    setSavedTip('已保存为新版本（版本号 +1），状态转为「测试中」')
-  }
-
-  const enablePrompt = () => {
-    setPrompts(prev => prev.map(p => (p.id === selected.id ? { ...p, status: 'enabled' as const } : p)))
-    setSavedTip('已启用：该版本开始参与线上流量')
-  }
-
-  const rollback = (v: number) => {
-    setDraftContent(selected.content)
-    setSavedTip(`已回滚到 v${v}（作为新草稿，可再次保存发布）`)
+    // 真实试跑：复用对话接口，对每个模型发起一次调用（此处以当前默认模型试跑示意）
+    void (async () => {
+      try {
+        const { chat } = await import('../../l8_api/api')
+        const started = performance.now()
+        const res = await chat(`[系统提示]\n${selected.content}\n\n[用户输入]\n${testInput}`, undefined)
+        const latency = Math.round(performance.now() - started)
+        setTestResults([
+          { model: testModel, latency, tokens: Math.ceil((res.content?.length ?? 0) / 2), ok: true, output: (res.content ?? '').slice(0, 200) },
+        ])
+      } catch (e) {
+        setTestResults([{ model: testModel, latency: 0, tokens: 0, ok: false, output: `试跑失败: ${String(e)}` }])
+      } finally {
+        setTestRunning(false)
+      }
+    })()
   }
 
   const actionLabel = AI_ACTIONS.find(a => a.id === aiAction)?.label ?? ''
@@ -380,7 +350,14 @@ export function PromptEditor() {
         </div>
         <div className="admin-resource-list-footer">
           <span>共 {filtered.length} / {prompts.length} 条</span>
-          <button className="admin-btn primary sm">+ 新建</button>
+          <input
+            className="admin-input"
+            style={{ width: 110, fontSize: 12 }}
+            placeholder="新提示词名"
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+          />
+          <button className="admin-btn primary sm" onClick={createPrompt}>+ 新建</button>
         </div>
       </div>
 
@@ -390,13 +367,13 @@ export function PromptEditor() {
           {(['config', 'test', 'run', 'audit'] as const).map(t => (
             <button key={t} className={`admin-tab ${tab === t ? 'active' : ''}`} onClick={() => setTab(t)}>
               {t === 'config' ? '配置' : t === 'test' ? '测试' : t === 'run' ? '运行' : '审计'}
-              {t === 'audit' && <span className="admin-tab-count">{AUDIT_LOGS.length}</span>}
+              {t === 'audit' && <span className="admin-tab-count">{auditLogs.length}</span>}
             </button>
           ))}
           <div className="spacer" style={{ flex: 1 }} />
           <span style={{ display: 'flex', alignItems: 'center', gap: 6, paddingRight: 12 }}>
             <span className="admin-toggle">
-              <input type="checkbox" checked={abEnabled} onChange={e => setAbEnabled(e.target.checked)} />
+              <input type="checkbox" checked={abEnabled} onChange={e => toggleAB(e.target.checked)} />
               <span className="admin-toggle-track" />
             </span>
             <span className="admin-toggle-label">A/B 分流</span>
@@ -488,7 +465,7 @@ export function PromptEditor() {
                       </button>
                       <div className="spacer" />
                       <button className="admin-btn" onClick={savePrompt} disabled={!dirty}>💾 保存为新版本</button>
-                      <button className="admin-btn success" onClick={enablePrompt}>启用此版本</button>
+                      <button className="admin-btn danger" onClick={() => deletePrompt(selected.id)}>🗑 删除</button>
                     </div>
                     {savedTip && <div className="admin-note success" style={{ marginTop: 8 }}>✓ {savedTip}</div>}
                     {importDone && <div className="admin-note" style={{ marginTop: 8 }}>📥 {importDone}</div>}
@@ -583,41 +560,68 @@ export function PromptEditor() {
                         </tr>
                       </thead>
                       <tbody>
-                        {VERSION_HISTORY.map(v => (
+                        {[...versions].reverse().map(v => (
                           <tr key={v.version}>
                             <td>
                               <span className="admin-badge purple">v{v.version}</span>
-                              {v.active && <span className="admin-badge green" style={{ marginLeft: 4 }}>线上</span>}
+                              {v.version === selected.version && <span className="admin-badge green" style={{ marginLeft: 4 }}>当前</span>}
                             </td>
-                            <td className="mono">{v.time}</td>
-                            <td>{v.author}</td>
-                            <td style={{ color: 'var(--admin-text-2)' }}>{v.note}</td>
+                            <td className="mono">{v.ts ? new Date(v.ts * 1000).toLocaleString('zh-CN') : '—'}</td>
+                            <td>—</td>
+                            <td style={{ color: 'var(--admin-text-2)' }}>{v.note || (v.version === 1 ? '初始版本' : '编辑')}</td>
                             <td className="actions">
                               <button className="admin-btn sm ghost" onClick={() => rollback(v.version)}>回滚</button>
-                              <button className="admin-btn sm ghost">锁定</button>
                             </td>
                           </tr>
                         ))}
+                        {versions.length === 0 && (
+                          <tr><td colSpan={5} className="admin-empty">暂无版本历史</td></tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
-                  {showDiff && (
+                  {showDiff && versions.length >= 2 && (
                     <>
-                      <div style={{ display: 'flex', gap: 8, margin: '10px 0 6px', alignItems: 'center' }}>
-                        <span className="admin-badge amber">v3</span>
-                        <span>→</span>
-                        <span className="admin-badge purple">v4</span>
-                        <span style={{ fontSize: 11, color: 'var(--admin-text-3)' }}>AI 摘要：新增政策变量引用、控制回复长度</span>
-                      </div>
-                      <div className="admin-diff">
-                        {DIFF_LINES.map((l, i) => (
-                          <div key={i} className={`admin-diff-line ${l.type}`}>
-                            <span className="ln">{i + 1}</span>
-                            <span>{l.text}</span>
-                          </div>
-                        ))}
-                      </div>
+                      {(() => {
+                        const sorted = [...versions].sort((a, b) => a.version - b.version)
+                        const older = sorted[sorted.length - 2]
+                        const newer = sorted[sorted.length - 1]
+                        const oldLines = (older.content || '').split('\n')
+                        const newLines = (newer.content || '').split('\n')
+                        const diff: { type: 'ctx' | 'del' | 'add'; text: string }[] = []
+                        const maxLen = Math.max(oldLines.length, newLines.length)
+                        for (let i = 0; i < maxLen; i++) {
+                          const o = oldLines[i]
+                          const n = newLines[i]
+                          if (o !== undefined && n === undefined) diff.push({ type: 'del', text: `- ${o}` })
+                          else if (o === undefined && n !== undefined) diff.push({ type: 'add', text: `+ ${n}` })
+                          else if (o === n) diff.push({ type: 'ctx', text: o })
+                          else { diff.push({ type: 'del', text: `- ${o}` }); diff.push({ type: 'add', text: `+ ${n}` }) }
+                        }
+                        return (
+                          <>
+                            <div style={{ display: 'flex', gap: 8, margin: '10px 0 6px', alignItems: 'center' }}>
+                              <span className="admin-badge amber">v{older.version}</span>
+                              <span>→</span>
+                              <span className="admin-badge purple">v{newer.version}</span>
+                              <span style={{ fontSize: 11, color: 'var(--admin-text-3)' }}>逐行对比</span>
+                            </div>
+                            <div className="admin-diff">
+                              {diff.slice(0, 60).map((l, i) => (
+                                <div key={i} className={`admin-diff-line ${l.type}`}>
+                                  <span className="ln">{i + 1}</span>
+                                  <span>{l.text}</span>
+                                </div>
+                              ))}
+                              {diff.length > 60 && <div className="admin-note">… 已截断（共 {diff.length} 行差异）</div>}
+                            </div>
+                          </>
+                        )
+                      })()}
                     </>
+                  )}
+                  {showDiff && versions.length < 2 && (
+                    <div className="admin-note" style={{ marginTop: 10 }}>保存两个以上版本后可在此查看逐行 diff。</div>
                   )}
                 </div>
               </div>
@@ -833,14 +837,15 @@ export function PromptEditor() {
                       <tr><th>时间</th><th>操作人</th><th>动作</th><th>来源 IP</th></tr>
                     </thead>
                     <tbody>
-                      {AUDIT_LOGS.map((l, i) => (
+                      {auditLogs.map((l, i) => (
                         <tr key={i}>
-                          <td className="mono">{l.time}</td>
-                          <td>{l.user}</td>
-                          <td>{l.action}</td>
-                          <td className="mono">{l.ip}</td>
+                          <td className="mono">{new Date(l.ts * 1000).toLocaleString('zh-CN')}</td>
+                          <td><code>{l.action}</code></td>
+                          <td>{l.subject}</td>
+                          <td>{l.detail || ''}</td>
                         </tr>
                       ))}
+                      {auditLogs.length === 0 && <tr><td colSpan={4} className="admin-empty">暂无审计记录</td></tr>}
                     </tbody>
                   </table>
                 </div>

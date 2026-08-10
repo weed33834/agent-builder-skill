@@ -11,11 +11,13 @@
 
 import { useState, useRef, useEffect, useCallback, KeyboardEvent, DragEvent } from 'react'
 import type { FileUploadInfo } from '../../types'
+import { uploadAttachment } from '../../l8_api/api'
 
 interface ChatInputProps {
   onSend: (message: string) => void
   disabled: boolean
   showFileUpload?: boolean
+  sessionId?: string
 }
 
 /**
@@ -32,7 +34,7 @@ function estimateTokens(text: string): number {
   return Math.ceil(chineseChars / 1.5 + otherChars / 4)
 }
 
-export function ChatInput({ onSend, disabled, showFileUpload = false }: ChatInputProps) {
+export function ChatInput({ onSend, disabled, showFileUpload = false, sessionId }: ChatInputProps) {
   const [input, setInput] = useState('')
   const [files, setFiles] = useState<FileUploadInfo[]>([])
   const [isDragOver, setIsDragOver] = useState(false)
@@ -104,33 +106,47 @@ export function ChatInput({ onSend, disabled, showFileUpload = false }: ChatInpu
 
     setFiles(prev => [...prev, ...newFiles])
 
-    // Simulate upload progress (should actually call the upload API)
-    newFiles.forEach((fileInfo) => {
-      let progress = 0
-      const interval = setInterval(() => {
-        progress += Math.random() * 30
-        if (progress >= 100) {
-          progress = 100
-          clearInterval(interval)
-          setFiles(prev =>
-            prev.map(f =>
-              f.id === fileInfo.id
-                ? { ...f, uploadProgress: 100, status: 'uploaded' as const }
-                : f
+    // Real upload via the L8 sessions attachment API (G5). Without a sessionId,
+    // fall back to a simulated progress so the UI still demonstrates the flow.
+    droppedFiles.forEach((file, idx) => {
+      const fileInfo = newFiles[idx]
+      if (sessionId) {
+        uploadAttachment(sessionId, file)
+          .then(() => {
+            setFiles(prev =>
+              prev.map(f => (f.id === fileInfo.id ? { ...f, uploadProgress: 100, status: 'uploaded' as const } : f))
             )
-          )
-        } else {
-          setFiles(prev =>
-            prev.map(f =>
-              f.id === fileInfo.id
-                ? { ...f, uploadProgress: Math.round(progress) }
-                : f
+          })
+          .catch(() => {
+            setFiles(prev => prev.map(f => (f.id === fileInfo.id ? { ...f, status: 'error' as const } : f)))
+          })
+      } else {
+        let progress = 0
+        const interval = setInterval(() => {
+          progress += Math.random() * 30
+          if (progress >= 100) {
+            progress = 100
+            clearInterval(interval)
+            setFiles(prev =>
+              prev.map(f =>
+                f.id === fileInfo.id
+                  ? { ...f, uploadProgress: 100, status: 'uploaded' as const }
+                  : f
+              )
             )
-          )
-        }
-      }, 300)
+          } else {
+            setFiles(prev =>
+              prev.map(f =>
+                f.id === fileInfo.id
+                  ? { ...f, uploadProgress: Math.round(progress) }
+                  : f
+              )
+            )
+          }
+        }, 300)
+      }
     })
-  }, [showFileUpload, disabled])
+  }, [showFileUpload, disabled, sessionId])
 
   const removeFile = (fileId: string) => {
     setFiles(prev => prev.filter(f => f.id !== fileId))

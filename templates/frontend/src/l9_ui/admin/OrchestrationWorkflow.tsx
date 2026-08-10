@@ -8,7 +8,10 @@
  */
 
 import { useState } from 'react'
-import { adminListWorkflows, adminSaveWorkflow } from '../../l8_api/api'
+import {
+  adminListWorkflows, adminSaveWorkflow, adminDeleteWorkflow,
+  adminListA2A, adminRegisterA2A, adminDeleteA2A, adminListA2ATasks,
+} from '../../l8_api/api'
 
 interface Workflow {
   id: string
@@ -18,12 +21,19 @@ interface Workflow {
   framework: string
   enabled: boolean
   steps: string[]
+  graph?: { nodes?: { label?: string }[] }
 }
+
+interface A2AAgent { id: string; name: string; url: string; status: string }
+interface A2ATask { id: string; name?: string; status?: string }
 
 const MODES = ['sequential', 'fanout', 'router', 'supervisor', 'hierarchical']
 
 export function OrchestrationWorkflow() {
   const [workflows, setWorkflows] = useState<Workflow[]>([])
+  const [a2aAgents, setA2aAgents] = useState<A2AAgent[]>([])
+  const [a2aTasks, setA2aTasks] = useState<A2ATask[]>([])
+  const [a2aUrl, setA2aUrl] = useState('')
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -42,6 +52,18 @@ export function OrchestrationWorkflow() {
     }
   }
   void refresh()
+
+  const refreshA2A = async () => {
+    try {
+      const agents = await adminListA2A()
+      setA2aAgents((agents.items as unknown as A2AAgent[]) || [])
+      const tasks = await adminListA2ATasks()
+      setA2aTasks((tasks.items as unknown as A2ATask[]) || [])
+    } catch {
+      setA2aAgents([]); setA2aTasks([])
+    }
+  }
+  void refreshA2A()
 
   const save = async () => {
     if (!form.name) return
@@ -104,7 +126,7 @@ export function OrchestrationWorkflow() {
       <h3>已有工作流</h3>
       <table className="admin-table">
         <thead>
-          <tr><th>名称</th><th>模式</th><th>框架</th><th>步骤</th><th>状态</th></tr>
+          <tr><th>名称</th><th>模式</th><th>框架</th><th>步骤</th><th>状态</th><th>操作</th></tr>
         </thead>
         <tbody>
           {workflows.map((w) => (
@@ -112,10 +134,54 @@ export function OrchestrationWorkflow() {
               <td>{w.name}</td>
               <td>{w.mode}</td>
               <td>{w.framework}</td>
-              <td>{(w.steps ?? []).join(' → ')}</td>
+              <td>{Array.isArray(w.steps) ? w.steps.join(' → ') : (w.graph as { nodes?: { label?: string }[] } | undefined)?.nodes?.map(n => n.label).join(' → ') ?? '—'}</td>
               <td>{w.enabled ? '在线' : '停用'}</td>
+              <td>
+                <button className="admin-btn danger sm" onClick={async () => { await adminDeleteWorkflow(w.id); void refresh() }}>删除</button>
+              </td>
             </tr>
           ))}
+        </tbody>
+      </table>
+
+      <h3>A2A 远端 Agent 注册表</h3>
+      <div className="form-grid">
+        <label className="span-2">
+          Agent Card URL
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input value={a2aUrl} onChange={e => setA2aUrl(e.target.value)} placeholder="https://example.com/agent" style={{ flex: 1 }} />
+            <button className="btn-primary" onClick={async () => {
+              if (!a2aUrl.trim()) return
+              await adminRegisterA2A({ url: a2aUrl.trim() })
+              setA2aUrl('')
+              void refreshA2A()
+            }}>注册</button>
+          </div>
+        </label>
+      </div>
+      <table className="admin-table">
+        <thead><tr><th>名称</th><th>URL</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          {a2aAgents.map(a => (
+            <tr key={a.id}>
+              <td>{a.name}</td>
+              <td className="mono">{a.url}</td>
+              <td>{a.status}</td>
+              <td><button className="admin-btn danger sm" onClick={async () => { await adminDeleteA2A(a.id); void refreshA2A() }}>删除</button></td>
+            </tr>
+          ))}
+          {a2aAgents.length === 0 && <tr><td colSpan={4} className="admin-empty">暂无远端 Agent</td></tr>}
+        </tbody>
+      </table>
+
+      <h3>任务监控（最近 {a2aTasks.length}）</h3>
+      <table className="admin-table">
+        <thead><tr><th>任务</th><th>状态</th></tr></thead>
+        <tbody>
+          {a2aTasks.map(t => (
+            <tr key={t.id}><td className="mono">{t.name || t.id}</td><td>{t.status || '—'}</td></tr>
+          ))}
+          {a2aTasks.length === 0 && <tr><td colSpan={2} className="admin-empty">暂无任务</td></tr>}
         </tbody>
       </table>
       {notice && <p className="admin-notice">{notice}</p>}

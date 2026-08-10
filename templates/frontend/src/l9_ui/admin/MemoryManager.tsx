@@ -9,7 +9,11 @@
  */
 
 import { useState } from 'react'
-import { adminGetMemory, adminQueryMemory, adminSaveMemory } from '../../l8_api/api'
+import {
+  adminGetMemory, adminQueryMemory, adminSaveMemory,
+  adminListKBs, adminCreateKB, adminDeleteKB,
+  adminListKBDocs, adminAddKBDoc, adminDeleteKBDoc,
+} from '../../l8_api/api'
 
 interface MemoryEntry {
   id: string
@@ -24,16 +28,41 @@ interface Hit {
   source: string
 }
 
+interface KB { id: string; name: string; doc_count: number; chunk_count: number; embedding: string }
+interface KBDoc { id: string; name: string; chunk_count: number }
+
 export function MemoryManager() {
-  const [tab, setTab] = useState<'short' | 'vector' | 'query'>('short')
+  const [tab, setTab] = useState<'short' | 'vector' | 'query' | 'kbdocs'>('short')
   const [ephemeral, setEphemeral] = useState<MemoryEntry[]>([])
   const [kbs, setKbs] = useState<Record<string, number>>({})
+  const [kbList, setKbList] = useState<KB[]>([])
+  const [docs, setDocs] = useState<KBDoc[]>([])
   const [stats, setStats] = useState<Record<string, number>>({})
   const [newEntry, setNewEntry] = useState('')
   const [query, setQuery] = useState('')
   const [kbId, setKbId] = useState('default')
   const [hits, setHits] = useState<Hit[]>([])
   const [notice, setNotice] = useState('')
+  // KB document tab state (M5)
+  const [newKbName, setNewKbName] = useState('')
+  const [chunkSize, setChunkSize] = useState(500)
+  const [embedding, setEmbedding] = useState('text-embedding-3-small')
+  const [selKb, setSelKb] = useState<string | null>(null)
+  const [docName, setDocName] = useState('')
+  const [docContent, setDocContent] = useState('')
+
+  const loadKBs = async () => {
+    try {
+      const res = await adminListKBs()
+      setKbList(res.items as KB[])
+    } catch { setKbList([]) }
+  }
+  const loadDocs = async (kb: string) => {
+    try {
+      const res = await adminListKBDocs(kb)
+      setDocs(res.items as KBDoc[])
+    } catch { setDocs([]) }
+  }
 
   const refresh = async () => {
     try {
@@ -45,6 +74,7 @@ export function MemoryManager() {
     } catch {
       /* 后端未就绪时保持空态 */
     }
+    void loadKBs()
   }
   void refresh()
 
@@ -79,9 +109,9 @@ export function MemoryManager() {
       </div>
 
       <div className="tabs">
-        {(['short', 'vector', 'query'] as const).map((t) => (
+        {(['short', 'vector', 'kbdocs', 'query'] as const).map((t) => (
           <button key={t} className={tab === t ? 'tab active' : 'tab'} onClick={() => setTab(t)}>
-            {t === 'short' ? '短期记忆' : t === 'vector' ? '向量库' : '检索测试'}
+            {t === 'short' ? '短期记忆' : t === 'vector' ? '向量库' : t === 'kbdocs' ? '知识库文档' : '检索测试'}
           </button>
         ))}
       </div>
@@ -133,6 +163,74 @@ export function MemoryManager() {
               ))}
             </tbody>
           </table>
+        </section>
+      )}
+
+      {tab === 'kbdocs' && (
+        <section>
+          <div className="admin-actions">
+            <input placeholder="知识库名称" value={newKbName} onChange={e => setNewKbName(e.target.value)} style={{ width: 160 }} />
+            <input type="number" placeholder="chunk_size" value={chunkSize} onChange={e => setChunkSize(Number(e.target.value))} style={{ width: 100 }} title="分块大小" />
+            <select value={embedding} onChange={e => setEmbedding(e.target.value)} title="嵌入模型">
+              <option value="text-embedding-3-small">text-embedding-3-small</option>
+              <option value="text-embedding-3-large">text-embedding-3-large</option>
+              <option value="bge-m3">bge-m3</option>
+            </select>
+            <button className="btn-primary" onClick={async () => {
+              if (!newKbName) return
+              await adminCreateKB({ name: newKbName, chunk_size: chunkSize, embedding })
+              setNewKbName('')
+              setNotice(`知识库「${newKbName}」已创建`)
+              void loadKBs()
+            }}>创建知识库</button>
+          </div>
+
+          {kbList.length > 0 && (
+            <div className="admin-kb-list">
+              {kbList.map(kb => (
+                <div key={kb.id} className="admin-kb-card">
+                  <div className="admin-kb-head">
+                    <strong>{kb.name}</strong>
+                    <span className="badge">{kb.doc_count} 文档 / {kb.chunk_count} chunks</span>
+                    <span className="admin-kb-meta">{kb.embedding}</span>
+                    <button className="admin-btn danger sm" onClick={() => adminDeleteKB(kb.id).then(() => { void loadKBs(); if (selKb === kb.id) setSelKb(null) })}>删除</button>
+                  </div>
+                  {selKb === kb.id && (
+                    <div className="admin-kb-docs">
+                      <div className="admin-actions">
+                        <input placeholder="文档名（可选）" value={docName} onChange={e => setDocName(e.target.value)} style={{ width: 140 }} />
+                        <textarea placeholder="粘贴文档内容…" value={docContent} onChange={e => setDocContent(e.target.value)} rows={2} />
+                        <button className="btn-primary" onClick={async () => {
+                          if (!docContent) return
+                          await adminAddKBDoc(kb.id, { name: docName || undefined, content: docContent })
+                          setDocContent(''); setDocName('')
+                          setNotice(`文档已写入「${kb.name}」并分块`)
+                          void loadDocs(kb.id); void loadKBs()
+                        }}>上传文档</button>
+                      </div>
+                      <table className="admin-table">
+                        <thead><tr><th>文档</th><th>Chunks</th><th>操作</th></tr></thead>
+                        <tbody>
+                          {docs.map(d => (
+                            <tr key={d.id}>
+                              <td>{d.name}</td>
+                              <td>{d.chunk_count}</td>
+                              <td><button className="admin-btn danger sm" onClick={() => adminDeleteKBDoc(kb.id, d.id).then(() => void loadDocs(kb.id))}>删除</button></td>
+                            </tr>
+                          ))}
+                          {docs.length === 0 && <tr><td colSpan={3} className="admin-empty">暂无文档</td></tr>}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  <button className="admin-btn ghost sm" onClick={() => { setSelKb(selKb === kb.id ? null : kb.id); void loadDocs(kb.id) }}>
+                    {selKb === kb.id ? '收起' : '管理文档'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          {kbList.length === 0 && <p className="admin-empty">暂无知识库，请先创建</p>}
         </section>
       )}
 

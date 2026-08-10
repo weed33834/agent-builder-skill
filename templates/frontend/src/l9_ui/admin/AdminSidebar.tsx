@@ -15,6 +15,8 @@ export type AdminSection =
   | 'workflows'
   | 'evaluations'
   | 'monitoring'
+  | 'security'
+  | 'schedule'
   | 'settings'
 
 export interface SidebarBadges {
@@ -65,7 +67,11 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: '系统',
-    items: [{ id: 'settings', label: '系统设置', icon: '⚙️' }],
+    items: [
+      { id: 'security', label: '权限安全', icon: '🔐' },
+      { id: 'schedule', label: '定时任务', icon: '⏰' },
+      { id: 'settings', label: '系统设置', icon: '⚙️' },
+    ],
   },
 ]
 

@@ -11,7 +11,8 @@ LangGraph v1.0 pattern:
 """
 
 from typing import Optional, Any
-from langgraph.graph import StateGraph, START, END, Command
+from langgraph.graph import StateGraph, START, END
+from langgraph.types import Command
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 

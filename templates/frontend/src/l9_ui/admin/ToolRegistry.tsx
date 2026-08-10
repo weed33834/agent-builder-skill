@@ -10,7 +10,9 @@
  */
 
 import { useState } from 'react'
-import { adminTestMCP } from '../../l8_api/api'
+import {
+  adminListTools, adminRegisterTool, adminDeleteTool, adminUpdateTool, adminRunTool, adminReloadTools, adminTestMCP, getMCPStatus,
+} from '../../l8_api/api'
 
 interface ToolDef {
   id: string
@@ -24,62 +26,6 @@ interface ToolDef {
   timeout: number
   schema: { name: string; type: string; required: boolean; enum?: string[]; def: string }[]
 }
-
-const MOCK_TOOLS: ToolDef[] = [
-  {
-    id: 't1', name: 'web_search', group: 'builtin', desc: '联网搜索，返回标题+摘要+链接', enabled: true, danger: 'read',
-    calls: 12840, failRate: 0.4, timeout: 8,
-    schema: [
-      { name: 'query', type: 'string', required: true, def: '' },
-      { name: 'count', type: 'integer', required: false, def: '10' },
-      { name: 'region', type: 'string', required: false, enum: ['us-en', 'uk-en', 'de-de'], def: 'us-en' },
-    ],
-  },
-  {
-    id: 't2', name: 'sales_query', group: 'custom', desc: '查询公司销售数据（BI 接口）', enabled: true, danger: 'read',
-    calls: 3204, failRate: 0.8, timeout: 15,
-    schema: [
-      { name: 'dimension', type: 'string', required: true, enum: ['product', 'region', 'channel'], def: '' },
-      { name: 'from', type: 'string', required: true, def: '2026-08-01' },
-      { name: 'to', type: 'string', required: true, def: '2026-08-10' },
-      { name: 'granularity', type: 'string', required: false, enum: ['day', 'week', 'month'], def: 'day' },
-    ],
-  },
-  {
-    id: 't3', name: 'file_write', group: 'custom', desc: '写入项目文件（路径白名单限定）', enabled: true, danger: 'write',
-    calls: 486, failRate: 1.2, timeout: 5,
-    schema: [
-      { name: 'path', type: 'string', required: true, def: '' },
-      { name: 'content', type: 'string', required: true, def: '' },
-    ],
-  },
-  {
-    id: 't4', name: 'exec_shell', group: 'custom', desc: '执行 shell 命令（高危）', enabled: false, danger: 'shell',
-    calls: 96, failRate: 3.1, timeout: 30,
-    schema: [
-      { name: 'command', type: 'string', required: true, def: '' },
-      { name: 'workdir', type: 'string', required: false, def: '/workspace' },
-    ],
-  },
-  {
-    id: 't5', name: 'github_api', group: 'mcp', desc: 'GitHub MCP：issues / PR / 仓库操作', enabled: true, danger: 'write',
-    calls: 1892, failRate: 0.6, timeout: 12,
-    schema: [
-      { name: 'action', type: 'string', required: true, enum: ['list_issues', 'create_issue', 'merge_pr'], def: '' },
-      { name: 'repo', type: 'string', required: true, def: 'acme/app' },
-      { name: 'assignee', type: 'string', required: false, def: '' },
-    ],
-  },
-  {
-    id: 't6', name: 'slack_notify', group: 'mcp', desc: 'Slack 消息推送（#ops 频道）', enabled: true, danger: 'write',
-    calls: 754, failRate: 0.2, timeout: 6,
-    schema: [
-      { name: 'channel', type: 'string', required: true, def: '#ops' },
-      { name: 'text', type: 'string', required: true, def: '' },
-      { name: 'thread_ts', type: 'string', required: false, def: '' },
-    ],
-  },
-]
 
 const GROUP_LABEL: Record<ToolDef['group'], string> = {
   builtin: '内置工具',
@@ -102,19 +48,13 @@ interface McpConnection {
   status: 'connected' | 'disconnected' | 'error'
 }
 
-const MOCK_MCP: McpConnection[] = [
-  { id: 'm1', name: 'GitHub MCP', transport: 'http', endpoint: 'https://mcp.example.com/github', tools: 12, status: 'connected' },
-  { id: 'm2', name: 'Slack MCP', transport: 'http', endpoint: 'https://mcp.example.com/slack', tools: 8, status: 'connected' },
-  { id: 'm3', name: '本地 Filesystem', transport: 'stdio', endpoint: 'npx -y @modelcontextprotocol/server-filesystem', tools: 6, status: 'connected' },
-  { id: 'm4', name: '数据库 MCP', transport: 'sse', endpoint: 'https://db-mcp.internal/sse', tools: 0, status: 'error' },
-]
-
 export function ToolRegistry() {
-  const [tools, setTools] = useState<ToolDef[]>(MOCK_TOOLS)
-  const [selectedId, setSelectedId] = useState('t2')
+  const [tools, setTools] = useState<ToolDef[]>([])
+  const [mcps, setMcps] = useState<McpConnection[]>([])
+  const [selectedId, setSelectedId] = useState('')
   const [groupFilter, setGroupFilter] = useState<'all' | ToolDef['group']>('all')
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({ t2: true })
-  const [testArgs, setTestArgs] = useState('{"dimension":"product","from":"2026-08-01","to":"2026-08-10"}')
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  const [testArgs, setTestArgs] = useState('{}')
   const [testRunning, setTestRunning] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; latency: number; output: string } | null>(null)
 
@@ -129,33 +69,114 @@ export function ToolRegistry() {
 
   const [toast, setToast] = useState<string | null>(null)
 
+  const loadTools = async () => {
+    try {
+      const res = await adminListTools()
+      const items = (res.items as unknown as Record<string, unknown>[]).map(t => {
+        const schema = (t.schema as Record<string, unknown>) || {}
+        const props = (schema.properties as Record<string, Record<string, unknown>>) || {}
+        const required = (schema.required as string[]) || []
+        return {
+          id: t.id as string,
+          name: t.name as string,
+          group: (t.source === 'hot-reload' || t.endpoint ? 'custom' : 'builtin') as ToolDef['group'],
+          desc: (t.description as string) || '',
+          enabled: t.enabled as boolean,
+          danger: 'read' as ToolDef['danger'],
+          calls: 0,
+          failRate: 0,
+          timeout: (t.timeout as number) || 30,
+          schema: Object.entries(props).map(([name, p]) => ({
+            name,
+            type: (p.type as string) || 'string',
+            required: required.includes(name),
+            enum: p.enum as string[] | undefined,
+            def: p.default !== undefined ? String(p.default) : '',
+          })),
+        }
+      })
+      setTools(items)
+      if (items.length && !selectedId) setSelectedId(items[0].id)
+    } catch {
+      setTools([])
+    }
+  }
+
+  const loadMCP = async () => {
+    try {
+      const res = await getMCPStatus()
+      setMcps(res.servers.map(s => ({
+        id: s.id, name: s.name, transport: 'http' as const, endpoint: s.name,
+        tools: s.tools, status: s.status as McpConnection['status'],
+      })))
+    } catch {
+      setMcps([])
+    }
+  }
+
+  void loadTools()
+  void loadMCP()
+
   const selected = tools.find(t => t.id === selectedId) ?? tools[0]
   const filtered = tools.filter(t => groupFilter === 'all' || t.group === groupFilter)
   const enabledCount = tools.filter(t => t.enabled).length
-  const mcpOk = MOCK_MCP.filter(m => m.status === 'connected').length
+  const mcpOk = mcps.filter(m => m.status === 'connected').length
 
-  const toggleTool = (id: string) => {
+  const toggleTool = async (id: string) => {
     const tool = tools.find(t => t.id === id)
     if (tool?.danger === 'shell' && tool.enabled) {
       if (!window.confirm('高危工具（可执行 shell）停用后 Agent 将无法使用，确认继续？')) return
     }
-    setTools(prev => prev.map(t => (t.id === id ? { ...t, enabled: !t.enabled } : t)))
-    setToast(`工具「${tool?.name}」已${tools.find(t => t.id === id)?.enabled ? '停用' : '启用'}（热加载生效）`)
+    try {
+      await adminUpdateTool(id, { enabled: !tool?.enabled })
+      setTools(prev => prev.map(t => (t.id === id ? { ...t, enabled: !t.enabled } : t)))
+      setToast(`工具「${tool?.name}」已${tool?.enabled ? '停用' : '启用'}`)
+    } catch (e) {
+      setToast(`操作失败: ${String(e)}`)
+    }
   }
 
-  const runToolTest = () => {
+  const runToolTest = async () => {
+    if (testRunning || !selected) return
     setTestRunning(true)
     setTestResult(null)
-    setTimeout(() => {
+    try {
+      let args = {}
+      try { args = JSON.parse(testArgs || '{}') } catch { args = { input: testArgs } }
+      const res = await adminRunTool(selected.id, args)
       setTestResult({
-        ok: Math.random() > 0.2,
-        latency: 180 + Math.round(Math.random() * 500),
-        output: selected.danger === 'shell'
-          ? 'exit 0 · 8 files modified (dry-run)'
-          : `[{"date":"2026-08-10","revenue":1284300,"dimension":"product"}], rows: 12`,
+        ok: res.ok,
+        latency: res.latency_ms,
+        output: res.ok ? JSON.stringify(res.result) : String(res.error ?? '执行失败'),
       })
+    } catch (e) {
+      setTestResult({ ok: false, latency: 0, output: `试跑失败: ${String(e)}` })
+    } finally {
       setTestRunning(false)
-    }, 1200)
+    }
+  }
+
+  const registerTool = async () => { /* inlined into the + 注册工具 button */ }
+  void registerTool
+
+  const deleteTool = async (id: string) => {
+    try {
+      await adminDeleteTool(id)
+      setToast('工具已删除')
+      void loadTools()
+    } catch (e) {
+      setToast(`删除失败: ${String(e)}`)
+    }
+  }
+
+  const hotReload = async () => {
+    try {
+      const res = await adminReloadTools()
+      setToast(`热加载完成，新注册 ${res.registered} 个工具`)
+      void loadTools()
+    } catch (e) {
+      setToast(`热加载失败: ${String(e)}`)
+    }
   }
 
   const runMCPConnect = async () => {
@@ -221,7 +242,7 @@ export function ToolRegistry() {
         </div>
         <div className="admin-stat-card">
           <div className="admin-stat-label">🔌 MCP 服务</div>
-          <div className="admin-stat-value">{mcpOk}/{MOCK_MCP.length}</div>
+          <div className="admin-stat-value">{mcpOk}/{mcps.length}</div>
           <div className="admin-stat-delta down">▼ 1 个异常</div>
         </div>
         <div className="admin-stat-card">
@@ -248,7 +269,13 @@ export function ToolRegistry() {
               ))}
               <span className="admin-divider v" />
               <button className="admin-btn primary sm" onClick={() => setWizardOpen(true)}>+ 连接 MCP</button>
-              <button className="admin-btn sm">+ 注册工具</button>
+              <button className="admin-btn sm" onClick={() => {
+                const name = window.prompt('输入工具名称（注册为自定义工具）')
+                if (name) {
+                  adminRegisterTool({ name, description: '自定义工具', enabled: true, schema: {} }).then(() => { setToast('工具已注册'); void loadTools() })
+                }
+              }}>+ 注册工具</button>
+              <button className="admin-btn sm" onClick={hotReload}>♻ 热加载</button>
             </div>
           </div>
           <div className="admin-card-body tight" style={{ padding: '8px 12px' }}>
@@ -307,8 +334,8 @@ export function ToolRegistry() {
                               </table>
                             </div>
                             <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                              <button className="admin-btn sm">权限白名单</button>
-                              <button className="admin-btn sm">安全限制</button>
+                              <button className="admin-btn sm" onClick={() => deleteTool(t.id)}>🗑 删除</button>
+                              <button className="admin-btn sm ghost">安全限制</button>
                               <button className="admin-btn sm ghost">查看审计</button>
                             </div>
                           </div>
@@ -359,7 +386,7 @@ export function ToolRegistry() {
             </div>
             <div className="admin-card-body tight" style={{ padding: '8px 12px' }}>
               <div className="admin-list">
-                {MOCK_MCP.map(m => (
+                {mcps.map(m => (
                   <div className="admin-list-item" key={m.id}>
                     <span className={`admin-lamp ${m.status === 'connected' ? 'green' : m.status === 'error' ? 'red' : 'gray'}`} />
                     <div className="admin-list-item-main">
@@ -373,6 +400,7 @@ export function ToolRegistry() {
                     </div>
                   </div>
                 ))}
+                {mcps.length === 0 && <div className="admin-empty">未检测到 MCP 服务，可在「连接 MCP」向导中接入</div>}
               </div>
             </div>
           </div>

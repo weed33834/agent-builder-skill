@@ -10,6 +10,7 @@ from fastapi.responses import StreamingResponse
 from ..schemas import ChatRequest
 from ...l4_agent.graph import get_graph, get_graph_config
 from ...l6_memory.session_manager import get_session_manager
+from ...l10_infra.config import settings
 
 router = APIRouter()
 
@@ -94,6 +95,15 @@ async def chat(request: ChatRequest):
         # Save the assistant response
         if full_response:
             await session_mgr.add_message(thread_id, "assistant", full_response)
+
+        # 23-cost-billing: record usage (tokens estimated from I/O text length)
+        try:
+            from ...l10_infra.usage import record_usage
+            est_in = max(10, len((request.message or "")) // 2)
+            est_out = max(10, len(full_response) // 2)
+            record_usage(thread_id, settings.LLM_PROVIDER, settings.LLM_MODEL, est_in, est_out)
+        except Exception:  # noqa: BLE001
+            pass
         
         # Stream end
         yield f"data: {json.dumps({'type': 'done', 'thread_id': thread_id, 'tool_calls': tool_call_count})}\n\n"

@@ -345,7 +345,25 @@
 
 ## 四、缺口清单（对照豆包/GPT 网页端与各 Agent 项目）
 
-> 状态：⬜ = 完全缺失，🔶 = 部分实现。按用户要求"该写的都要写完"，以下为当前缺口全集。
+> 状态：⬜ = 完全缺失，🔶 = 部分实现，✅ = 已补齐。按用户要求"该写的都要写完"，以下为缺口全集。
+>
+> **2026-08-11 补全说明**：本批次已把下表中的绝大部分缺口补齐到"后端端点就绪 + 前端页面入口"标准：
+> - **会话工作空间（G1-G5）**：分组 / 搜索 / 收藏 / 分享链接 / 导出 MD / 附件上传，后端 `sessions.py` 全量端点 + 前端 Sidebar/App/ChatInput 已接通（会话持久化到 `data/sessions.json`）。
+> - **管理端点**：`admin.py` 从 34 路由扩展至 78 路由，覆盖 M1 key 池、M2 版本/回滚/A-B、M4 工具试跑/热加载、M5 知识库文档/分块/嵌入、M6 A2A 注册表/任务、M9 告警历史、M10 Trace/日志/漂移、M11 IAM 用户/APIKey/权限矩阵/审计、M12 Agent 生成/导入/模板市场/发布、G11 定时任务、M13 备份迁移。
+> - **前端新页面**：`SecurityPanel`（权限安全 IAM）、`SchedulePanel`（定时任务）；`MemoryManager` 新增"知识库文档"标签。
+> - 同时修复 3 个预存 bug（`langgraph.graph.Command` 导入、`logging` 缺 `Optional`、结构化日志不支持 kwargs）。
+>
+> **2026-08-11 第二轮（真实实现，消除空壳）**：同步远程 deep-spec 16-21 后，
+> 新增真实底层算法模块并接入管理页——`l10_infra/text_processing.py`（jieba 分词/TF-IDF+TextRank 关键词/清洗/摘要）、
+> `l6_memory/retrieval.py`（BM25+向量 RRF 混合检索+引用溯源）、`l3_prompt/output_validator.py`（结构化输出校验）、
+> `/api/nlp/*` 端点；并把 PromptEditor/ToolRegistry/ModelConfig/AgentGraph/OrchestrationWorkflow/MonitoringPanel/SettingsPanel
+> 全部从 mock 数据接入真实后端（版本 diff/回滚、工具试跑/热加载、A2A 注册表、备份恢复、Trace/日志/漂移 等）。
+>
+> **2026-08-11 第三轮（治理/成本/安全/性能落地）**：同步远程 deep-spec 22-31 后，新增
+> `usage.py`（成本计费：按模型计价/按日-模型-会话聚合 + 月度预算，接入对话管线，`/api/admin/usage`）、
+> `ai_security.py`（prompt 注入双引擎检测/PII 脱敏/内容过滤，`/api/security/scan|redact`）、
+> `circuit_breaker.py`（熔断器 trip/half-open/reset，`/api/security/breakers`）；
+> MonitoringPanel 新增「成本计费」「安全扫描」标签；全量同步文档与配置（CHANGELOG 0.5.0 / .env.example 全量 / requirements / docs/README 索引）。
 
 ### 4.1 页面/交互层缺口（用户可直接感知）
 

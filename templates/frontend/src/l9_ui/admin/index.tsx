@@ -20,6 +20,8 @@ import { OrchestrationWorkflow } from './OrchestrationWorkflow'
 import { EvaluationDashboard } from './EvaluationDashboard'
 import { MonitoringPanel } from './MonitoringPanel'
 import { SettingsPanel } from './SettingsPanel'
+import { SecurityPanel } from './SecurityPanel'
+import { SchedulePanel } from './SchedulePanel'
 import './Styles.css'
 
 const SECTION_META: Record<AdminSection, { title: string; crumb: string }> = {
@@ -32,6 +34,8 @@ const SECTION_META: Record<AdminSection, { title: string; crumb: string }> = {
   workflows: { title: '编排管理', crumb: '协同 / 编排' },
   evaluations: { title: '评估管理', crumb: '协同 / 评估' },
   monitoring: { title: '监控告警', crumb: '协同 / 监控' },
+  security: { title: '权限安全', crumb: '系统 / 权限安全' },
+  schedule: { title: '定时任务', crumb: '系统 / 定时任务' },
   settings: { title: '系统设置', crumb: '系统 / 设置' },
 }
 
@@ -204,6 +208,8 @@ export function AdminConsole() {
           {active === 'workflows' && <OrchestrationWorkflow />}
           {active === 'evaluations' && <EvaluationDashboard />}
           {active === 'monitoring' && <MonitoringPanel />}
+          {active === 'security' && <SecurityPanel />}
+          {active === 'schedule' && <SchedulePanel />}
           {active === 'settings' && <SettingsPanel />}
         </div>
       </div>

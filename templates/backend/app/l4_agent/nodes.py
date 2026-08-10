@@ -10,7 +10,7 @@ LangGraph v1.0 pattern:
 """
 
 from typing import Literal
-from langgraph.graph import Command
+from langgraph.types import Command
 from langgraph.types import interrupt
 from langchain_core.messages import AIMessage, ToolMessage
 

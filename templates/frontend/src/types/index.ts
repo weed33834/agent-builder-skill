@@ -140,11 +140,14 @@ export interface SubagentCallInfo {
   completedAt?: Date
 }
 
-/** Session - L9 UI layer */
+/** Session - L9 UI layer (extended for workspace G1-G5) */
 export interface Session {
   id: string
   title: string
   createdAt: Date
+  groupId?: string
+  favorite?: boolean
+  updatedAt?: Date
 }
 
 /** MCP server connection status */

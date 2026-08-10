@@ -467,7 +467,7 @@ export function ChatWindow({
           </button>
         </div>
       )}
-      <ChatInput onSend={handleSend} disabled={isLoading} showFileUpload={showFileUpload} />
+      <ChatInput onSend={handleSend} disabled={isLoading} showFileUpload={showFileUpload} sessionId={_sessionId} />
     </div>
   )
 }

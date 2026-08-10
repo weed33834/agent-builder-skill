@@ -7,7 +7,7 @@
  */
 
 import { useState } from 'react'
-import { adminGetSettings, adminUpdateSettings } from '../../l8_api/api'
+import { adminGetSettings, adminUpdateSettings, adminExportBackup, adminRestoreBackup } from '../../l8_api/api'
 
 export function SettingsPanel() {
   const [form, setForm] = useState({
@@ -18,6 +18,7 @@ export function SettingsPanel() {
     max_tokens: 4096,
   })
   const [notice, setNotice] = useState('')
+  const [backupJson, setBackupJson] = useState('')
 
   const refresh = async () => {
     try {
@@ -97,6 +98,61 @@ export function SettingsPanel() {
         <button className="btn-primary" onClick={save}>保存设置</button>
       </div>
       {notice && <p className="admin-notice">{notice}</p>}
+
+      <h3>备份 / 迁移（M13）</h3>
+      <div className="form-grid">
+        <label className="span-2">
+          导出当前全部配置（提示词/模型/工具/Agent/记忆/编排/告警/权限等）
+          <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+            <button
+              className="btn-primary"
+              onClick={async () => {
+                try {
+                  const bundle = await adminExportBackup()
+                  const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' })
+                  const a = document.createElement('a')
+                  a.href = URL.createObjectURL(blob)
+                  a.download = `agent-builder-backup-${Date.now()}.json`
+                  a.click()
+                  URL.revokeObjectURL(a.href)
+                  setNotice('备份已导出')
+                } catch (e) {
+                  setNotice(`导出失败: ${String(e)}`)
+                }
+              }}
+            >
+              ⬇ 导出备份
+            </button>
+          </div>
+        </label>
+        <label className="span-2">
+          从备份恢复（粘贴导出的 JSON）
+          <textarea
+            rows={4}
+            value={backupJson}
+            onChange={e => setBackupJson(e.target.value)}
+            placeholder="粘贴备份 JSON…"
+            style={{ fontFamily: 'var(--admin-mono)', fontSize: 11.5 }}
+          />
+        </label>
+      </div>
+      <div className="admin-actions">
+        <button
+          className="btn-primary"
+          disabled={!backupJson.trim()}
+          onClick={async () => {
+            try {
+              const bundle = JSON.parse(backupJson)
+              const res = await adminRestoreBackup(bundle)
+              setNotice(`已恢复 ${res.restored} 个配置集合`)
+            } catch (e) {
+              setNotice(`恢复失败: ${String(e)}`)
+            }
+          }}
+        >
+          ⬆ 恢复备份
+        </button>
+      </div>
     </div>
   )
 }

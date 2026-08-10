@@ -10,7 +10,10 @@
  */
 
 import { useState } from 'react'
-import { adminTestModel, type AdminTestResult } from '../../l8_api/api'
+import {
+  adminTestModel, adminListModels, adminAddModel, adminDeleteModel,
+  type AdminTestResult,
+} from '../../l8_api/api'
 
 interface Provider {
   id: string
@@ -76,6 +79,33 @@ export function ModelConfig() {
   const [timeoutMs, setTimeoutMs] = useState(60)
   const [maxRetries, setMaxRetries] = useState(3)
   const [showKeys, setShowKeys] = useState(false)
+
+  /* 真实模型管理（后端 /api/admin/models） */
+  const [realModels, setRealModels] = useState<Record<string, unknown>[]>([])
+  const [addForm, setAddForm] = useState({ provider: '', model: '', base_url: '', api_key: '' })
+  const [modelNotice, setModelNotice] = useState('')
+
+  const loadRealModels = async () => {
+    try {
+      const res = await adminListModels()
+      setRealModels(res.items as unknown as Record<string, unknown>[])
+    } catch {
+      setRealModels([])
+    }
+  }
+  void loadRealModels()
+
+  const addRealModel = async () => {
+    if (!addForm.provider || !addForm.model) { setModelNotice('请填写 provider 与 model'); return }
+    try {
+      await adminAddModel(addForm)
+      setModelNotice('模型已添加')
+      setAddForm({ provider: '', model: '', base_url: '', api_key: '' })
+      void loadRealModels()
+    } catch (e) {
+      setModelNotice(`添加失败: ${String(e)}`)
+    }
+  }
 
   const active = providers.find(p => p.id === activeProvider) ?? providers[0]
 
@@ -397,6 +427,49 @@ export function ModelConfig() {
                   </table>
                 </div>
               )}
+            </div>
+          </div>
+
+          <div className="admin-card">
+            <div className="admin-card-header">
+              <span className="admin-card-title">已配置模型（后端真实数据）</span>
+              <span className="admin-card-sub">/api/admin/models CRUD</span>
+            </div>
+            <div className="admin-card-body">
+              <div className="admin-form-row" style={{ gap: 6, marginBottom: 10 }}>
+                <input className="admin-input" style={{ width: 110 }} placeholder="provider" value={addForm.provider} onChange={e => setAddForm({ ...addForm, provider: e.target.value })} />
+                <input className="admin-input" style={{ width: 130 }} placeholder="model" value={addForm.model} onChange={e => setAddForm({ ...addForm, model: e.target.value })} />
+                <input className="admin-input" style={{ flex: 1 }} placeholder="base_url（可选）" value={addForm.base_url} onChange={e => setAddForm({ ...addForm, base_url: e.target.value })} />
+                <input className="admin-input" style={{ flex: 1 }} placeholder="api_key（可选）" value={addForm.api_key} onChange={e => setAddForm({ ...addForm, api_key: e.target.value })} />
+                <button className="admin-btn primary sm" onClick={addRealModel}>+ 添加</button>
+              </div>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead><tr><th>Provider</th><th>模型</th><th>Base URL</th><th>Key 池</th><th>操作</th></tr></thead>
+                  <tbody>
+                    {realModels.map(m => (
+                      <tr key={m.id as string}>
+                        <td>{m.provider as string}</td>
+                        <td className="mono">{m.model as string}</td>
+                        <td className="mono" style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{(m.base_url as string) || '—'}</td>
+                        <td className="mono">{(m.key_pool as unknown[] | undefined)?.length ?? 0}</td>
+                        <td>
+                          <button
+                            className="admin-btn danger sm"
+                            onClick={async () => {
+                              if (!window.confirm(`删除模型 ${m.model as string}？`)) return
+                              await adminDeleteModel(m.id as string)
+                              void loadRealModels()
+                            }}
+                          >删除</button>
+                        </td>
+                      </tr>
+                    ))}
+                    {realModels.length === 0 && <tr><td colSpan={5} className="admin-empty">暂无已配置模型</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+              {modelNotice && <div className="admin-note" style={{ marginTop: 8 }}>{modelNotice}</div>}
             </div>
           </div>
 

@@ -14,6 +14,8 @@ from .l8_api.routes.sessions import router as sessions_router
 from .l8_api.routes.tools import router as tools_router
 from .l8_api.routes.a2a import router as a2a_router
 from .l8_api.routes.voice import router as voice_router
+from .l8_api.routes.nlp import router as nlp_router
+from .l8_api.routes.security import router as security_router
 from .l8_api.routes.admin import router as admin_router
 from .l8_api.middleware.auth import AuthMiddleware
 from .l8_api.middleware.logging import RequestLoggingMiddleware
@@ -111,6 +113,8 @@ def create_app() -> FastAPI:
     app.include_router(tools_router, prefix="/api", tags=["tools"])
     app.include_router(a2a_router, prefix="", tags=["a2a"])
     app.include_router(voice_router, prefix="/api", tags=["voice"])
+    app.include_router(nlp_router, prefix="/api", tags=["nlp"])
+    app.include_router(security_router, prefix="/api", tags=["security"])
     app.include_router(admin_router, prefix="/api", tags=["admin"])
 
     # ===== L10: Metrics endpoint (M13.2) =====

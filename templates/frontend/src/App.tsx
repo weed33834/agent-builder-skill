@@ -3,29 +3,75 @@ import { Header } from './l9_ui/layout/Header'
 import { Sidebar } from './l9_ui/layout/Sidebar'
 import { ChatWindow } from './l9_ui/chat/ChatWindow'
 import { ErrorBoundary } from './l9_ui/shared/ErrorBoundary'
+import { AdminConsole } from './l9_ui/admin'
 import { getAgentConfig, getMCPStatus, discoverMCPTools } from './l8_api/api'
-import type { AgentConfig, MCPConnection, MCPToolDescriptor } from './types'
+import * as sessionsApi from './l8_api/api'
+import type { AgentConfig, MCPConnection, MCPToolDescriptor, Session } from './types'
 
-export interface Session {
+const sessionGroupsApi = sessionsApi.listSessionGroups
+
+export interface SessionGroup {
   id: string
-  title: string
-  createdAt: Date
+  name: string
+  session_count: number
+}
+
+type View = 'chat' | 'admin'
+
+function toUiSession(s: sessionsApi.SessionMeta): Session {
+  return {
+    id: s.id,
+    title: s.title,
+    createdAt: new Date(s.created_at),
+    updatedAt: new Date(s.updated_at),
+    groupId: s.group_id || '',
+    favorite: s.favorite === true,
+  }
 }
 
 export function App() {
-  const [sessions, setSessions] = useState<Session[]>([
-    { id: 'default', title: 'New Chat', createdAt: new Date() },
-  ])
-  const [activeSession, setActiveSession] = useState('default')
+  const [view, setView] = useState<View>('chat')
+  const [sessions, setSessions] = useState<Session[]>([])
+  const [groups, setGroups] = useState<SessionGroup[]>([])
+  const [activeSession, setActiveSession] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [config, setConfig] = useState<AgentConfig | null>(null)
   const [mcpServers, setMcpServers] = useState<MCPConnection[]>([])
   const [mcpTools, setMcpTools] = useState<MCPToolDescriptor[]>([])
   const [showStatusPanel, setShowStatusPanel] = useState(false)
 
+  const refreshSessions = async () => {
+    try {
+      const list = await sessionsApi.listSessions()
+      setSessions(list.map(toUiSession))
+      if (!list.length) {
+        // ensure at least one session exists
+        const created = await sessionsApi.createSession('New Chat')
+        const all = await sessionsApi.listSessions()
+        setSessions(all.map(toUiSession))
+        setActiveSession(created.id)
+      } else if (!activeSession || !list.some(s => s.id === activeSession)) {
+        setActiveSession(list[0].id)
+      }
+    } catch {
+      // fall back to a local default if the backend is unavailable
+      const localId = crypto.randomUUID()
+      setSessions([{ id: localId, title: 'New Chat', createdAt: new Date() }])
+      setActiveSession(localId)
+    }
+  }
+
+  const refreshGroups = async () => {
+    try {
+      const res = await sessionGroupsApi()
+      setGroups(res.items || [])
+    } catch {
+      setGroups([])
+    }
+  }
+
   useEffect(() => {
     getAgentConfig().then(setConfig).catch(() => {})
-    // Fetch MCP status
     getMCPStatus().then(data => {
       setMcpServers(data.servers.map(s => ({
         serverId: s.id,
@@ -35,31 +81,84 @@ export function App() {
         error: s.error,
       })))
     }).catch(() => {})
-    // Discover MCP tools
     discoverMCPTools().then(setMcpTools).catch(() => {})
+    refreshSessions()
+    refreshGroups()
   }, [])
 
-  const createSession = () => {
-    const id = crypto.randomUUID()
-    setSessions(prev => [
-      ...prev,
-      {
-        id,
-        title: `Chat ${prev.length + 1}`,
-        createdAt: new Date(),
-      },
-    ])
-    setActiveSession(id)
+  const createSession = async (groupId?: string) => {
+    try {
+      const created = await sessionsApi.createSession('New Chat', groupId || '')
+      setSessions(prev => [toUiSession(created), ...prev])
+      setActiveSession(created.id)
+      refreshGroups()
+    } catch {
+      const id = crypto.randomUUID()
+      setSessions(prev => [...prev, { id, title: `Chat ${prev.length + 1}`, createdAt: new Date(), groupId }])
+      setActiveSession(id)
+    }
   }
 
-  const deleteSession = (id: string) => {
+  const deleteSession = async (id: string) => {
     setSessions(prev => {
       const remaining = prev.filter(s => s.id !== id)
       if (activeSession === id) {
-        setActiveSession(remaining[0]?.id || 'default')
+        setActiveSession(remaining[0]?.id || '')
       }
       return remaining
     })
+    try { await sessionsApi.deleteSession(id) } catch { /* ignore */ }
+    refreshGroups()
+  }
+
+  const renameSession = async (id: string, title: string) => {
+    try {
+      const updated = await sessionsApi.updateSession(id, { title })
+      setSessions(prev => prev.map(s => s.id === id ? toUiSession(updated) : s))
+    } catch { /* ignore */ }
+  }
+
+  const toggleFavorite = async (id: string, favorite: boolean) => {
+    try {
+      const updated = await sessionsApi.updateSession(id, { favorite })
+      setSessions(prev => prev.map(s => s.id === id ? toUiSession(updated) : s))
+    } catch { /* ignore */ }
+  }
+
+  const moveGroup = async (id: string, groupId: string) => {
+    try {
+      const updated = await sessionsApi.updateSession(id, { group_id: groupId })
+      setSessions(prev => prev.map(s => s.id === id ? toUiSession(updated) : s))
+      refreshGroups()
+    } catch { /* ignore */ }
+  }
+
+  const searchSessions = async (q: string) => {
+    try {
+      const list = await sessionsApi.listSessions({ q })
+      setSessions(list.map(toUiSession))
+    } catch { /* ignore */ }
+  }
+
+  const shareSession = async (id: string) => {
+    try {
+      const res = await sessionsApi.createShare(id)
+      const url = `${window.location.origin}${res.url}`
+      await navigator.clipboard?.writeText(url)
+      alert(`分享链接已复制到剪贴板：\n${url}`)
+    } catch { /* ignore */ }
+  }
+
+  const exportSession = async (id: string) => {
+    try {
+      const md = await sessionsApi.exportSession(id)
+      const blob = new Blob([md], { type: 'text/markdown' })
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = `session-${id.slice(0, 8)}.md`
+      a.click()
+      URL.revokeObjectURL(a.href)
+    } catch { /* ignore */ }
   }
 
   const features = config?.ui?.features || ['session_management', 'tool_visualization']
@@ -78,6 +177,17 @@ export function App() {
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           sessionTitle={sessions.find(s => s.id === activeSession)?.title || config?.ui?.title || 'Agent'}
         >
+          {/* Chat / Admin view toggle */}
+          <div className="view-switcher" role="tablist" aria-label="视图切换">
+            <button
+              className={`view-switcher-btn ${view === 'chat' ? 'active' : ''}`}
+              onClick={() => setView('chat')}
+            >对话</button>
+            <button
+              className={`view-switcher-btn ${view === 'admin' ? 'active' : ''}`}
+              onClick={() => setView('admin')}
+            >管理台</button>
+          </div>
           {/* MCP connection status indicator */}
           <div className="header-status-indicators">
             {/* A2A status */}
@@ -103,13 +213,23 @@ export function App() {
           </div>
         </Header>
 
+        {view === 'admin' ? (
+          <div className="app-admin-body"><AdminConsole /></div>
+        ) : (
         <div className="app-body">
           <Sidebar
             sessions={sessions}
+            groups={groups}
             activeSession={activeSession}
             onSelect={setActiveSession}
             onCreate={createSession}
             onDelete={deleteSession}
+            onRename={renameSession}
+            onToggleFavorite={toggleFavorite}
+            onMoveGroup={moveGroup}
+            onShare={shareSession}
+            onExport={exportSession}
+            onSearch={searchSessions}
             isOpen={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
           />
@@ -191,6 +311,7 @@ export function App() {
             />
           </main>
         </div>
+        )}
       </div>
     </ErrorBoundary>
   )

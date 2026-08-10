@@ -6,11 +6,25 @@
 
 ### 待办（Planned）
 - 前端 Q 矩阵缺口组件补齐（TaskCard / WorkspacePanel / SkillSidebar / NotificationBell / CommandPalette / CanvasView / MemoryPanel 等）
-- 后端 8 项新增 / 21 项加深规格的落地实现
-- deep-spec 16-enterprise-org / 17-ai-lessons 各子域 ⬜ 项实现
+- deep-spec 16-19/21 企业级 / 生态 / 布局 / 文档体系 ⬜ 子域实现
 - 框架适配器真实 SDK 集成测试（langgraph / openai-agents / claude-sdk / adk / autogen）
 - generate.py 各框架模板完善（目前 bare / langgraph 完整）
-- M8 Frontend Streaming UI 对接 AgentRuntime.stream
+
+## [0.5.0] - 2026-08-11
+
+### Added
+- **会话工作空间（G1-G5）**：分组 / 搜索 / 收藏 / 分享 / 导出 MD / 附件上传（会话持久化 `data/sessions.json`）
+- **管理后端 admin.py 34 → 81 路由**：M1 模型 key 池/回退链、M2 提示词版本/回滚/A-B、M4 工具试跑/热加载、M5 知识库文档、M6 A2A 注册表、M9 告警历史、M10 Trace/日志/漂移、M11 IAM、M12 Agent 生成/导入/模板市场/发布、G11 定时任务、M13 备份迁移
+- **真实底层能力（deep-spec 20）**：text_processing（jieba 分词/TF-IDF+TextRank 关键词/摘要）、retrieval（BM25+向量 RRF 混合检索+引用溯源）、output_validator（结构化输出校验）、`/api/nlp/*`
+- **成本计费（23）**：usage.py + `/api/admin/usage`（接入对话管线）
+- **AI 安全（27）+ 数据治理（22）**：ai_security.py（注入双引擎/PII 脱敏/内容过滤）+ `/api/security/*`
+- **性能工程（25）**：circuit_breaker.py 熔断器
+- **管理页消除 mock**：PromptEditor / ToolRegistry / ModelConfig / AgentGraph / OrchestrationWorkflow / SettingsPanel 接入真实后端
+- **UI/UX 视觉升级**：重写设计令牌 + 微动效 + 毛玻璃/渐变/卡片层次；App 新增对话/管理台视图切换
+
+### Fixed
+- `langgraph.graph.Command` 导入错误（改 `langgraph.types.Command`）
+- `logging.py` 缺失 `Optional`；结构化日志新增 `StructuredLogger`
 
 ## [0.4.0] - 2026-08-11
 

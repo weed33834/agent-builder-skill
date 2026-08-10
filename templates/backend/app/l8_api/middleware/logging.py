@@ -6,6 +6,7 @@ Logs each request: method, path, status, latency, client, request_id.
 
 import time
 import uuid
+from typing import Optional
 
 from fastapi import Request
 from fastapi.responses import JSONResponse

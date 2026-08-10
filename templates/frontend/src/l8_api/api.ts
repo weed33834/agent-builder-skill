@@ -390,6 +390,12 @@ export function adminListTools(): Promise<AdminListResult> {
 export function adminRegisterTool(data: Record<string, unknown>): Promise<Record<string, unknown>> {
   return adminRequest('/api/admin/tools', { method: 'POST', body: data })
 }
+export function adminUpdateTool(id: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminRequest(`/api/admin/tools/${id}`, { method: 'PUT', body: data })
+}
+export function adminDeleteTool(id: string): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/tools/${id}`, { method: 'DELETE' })
+}
 /** MCP 连接测试：探测远端工具列表 */
 export function adminTestMCP(data: {
   transport: 'stdio' | 'http' | 'sse'
@@ -406,6 +412,9 @@ export function adminListAgents(): Promise<AdminListResult> {
 }
 export function adminSaveAgent(data: Record<string, unknown>): Promise<Record<string, unknown>> {
   return adminRequest('/api/admin/agents', { method: 'POST', body: data })
+}
+export function adminDeleteAgent(id: string): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/agents/${id}`, { method: 'DELETE' })
 }
 /** 流程图保存（节点+边拓扑） */
 export function adminSaveAgentGraph(data: {
@@ -484,4 +493,249 @@ export function adminGetSettings(): Promise<Record<string, unknown>> {
 }
 export function adminUpdateSettings(data: Record<string, unknown>): Promise<{ ok: boolean }> {
   return adminRequest('/api/admin/settings', { method: 'PUT', body: data })
+}
+
+/* ---- NLP & Algorithm (deep-spec 20-B/C/D) ---- */
+export function nlpKeywords(data: {
+  documents?: string[]
+  text?: string
+  top_n?: number
+  method?: 'tfidf' | 'textrank' | 'hybrid'
+}): Promise<{ keywords: { keyword: string; score: number; tf?: number; idf?: number }[]; method: string; count: number }> {
+  return adminRequest('/api/nlp/keywords', { method: 'POST', body: data })
+}
+export function nlpAnalyze(text: string): Promise<{
+  normalized: string; keywords_tfidf: unknown[]; keywords_textrank: unknown[]; summary: string[]; length: number
+}> {
+  return adminRequest('/api/nlp/analyze', { method: 'POST', body: { text } })
+}
+export function nlpSummary(data: { text: string; sentences?: number }): Promise<{ sentences: string[]; summary: string }> {
+  return adminRequest('/api/nlp/summary', { method: 'POST', body: data })
+}
+export function nlpValidate(data: unknown, schema: Record<string, unknown>): Promise<{
+  ok: boolean; errors?: { field: string; reason: string; message: string }[]; correct_prompt?: string; data?: unknown
+}> {
+  return adminRequest('/api/nlp/validate', { method: 'POST', body: { data, schema } })
+}
+export function nlpRetrieve(data: { query: string; kb_id?: string; chunks?: unknown[]; top_k?: number }): Promise<{
+  hits: { chunk_id: string; doc_id: string; doc_name: string; score: number; snippet: string; citation: string }[]
+}> {
+  return adminRequest('/api/nlp/retrieve', { method: 'POST', body: data })
+}
+
+/* ========================================
+   Session workspace (full-spec G1-G5)
+   分组 / 搜索 / 收藏 / 分享 / 附件上传
+   ======================================== */
+export interface SessionMeta {
+  id: string
+  title: string
+  created_at: string
+  updated_at: string
+  message_count: number
+  group_id?: string
+  favorite?: boolean
+}
+export function listSessions(params: { q?: string; group_id?: string; favorite?: boolean } = {}): Promise<SessionMeta[]> {
+  const qs = new URLSearchParams()
+  if (params.q) qs.set('q', params.q)
+  if (params.group_id) qs.set('group_id', params.group_id)
+  if (params.favorite) qs.set('favorite', 'true')
+  const q = qs.toString()
+  return fetch(`${API_BASE}/sessions${q ? `?${q}` : ''}`).then(r => r.json())
+}
+export function createSession(title: string, groupId = ''): Promise<SessionMeta> {
+  return fetch(`${API_BASE}/sessions`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, group_id: groupId }),
+  }).then(r => r.json())
+}
+export function updateSession(id: string, data: { title?: string; group_id?: string; favorite?: boolean }): Promise<SessionMeta> {
+  return fetch(`${API_BASE}/sessions/${id}`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
+  }).then(r => r.json())
+}
+export function deleteSession(id: string): Promise<{ deleted: boolean }> {
+  return fetch(`${API_BASE}/sessions/${id}`, { method: 'DELETE' }).then(r => r.json())
+}
+export function listSessionGroups(): Promise<{ items: { id: string; name: string; session_count: number }[] }> {
+  return fetch(`${API_BASE}/sessions/groups`).then(r => r.json())
+}
+export function createShare(id: string): Promise<{ ok: boolean; share_token: string; url: string }> {
+  return fetch(`${API_BASE}/sessions/${id}/share`, { method: 'POST' }).then(r => r.json())
+}
+export function revokeShare(id: string): Promise<{ ok: boolean }> {
+  return fetch(`${API_BASE}/sessions/${id}/share`, { method: 'DELETE' }).then(r => r.json())
+}
+export function exportSession(id: string): Promise<string> {
+  return fetch(`${API_BASE}/sessions/${id}/export`).then(r => r.text())
+}
+export interface Attachment { id: string; name: string; path: string; size: number; kind: string }
+export function listAttachments(id: string): Promise<{ items: Attachment[] }> {
+  return fetch(`${API_BASE}/sessions/${id}/files`).then(r => r.json())
+}
+export function uploadAttachment(id: string, file: File): Promise<{ ok: boolean; attachment: Attachment }> {
+  const form = new FormData()
+  form.append('file', file)
+  return fetch(`${API_BASE}/sessions/${id}/files`, { method: 'POST', body: form }).then(r => r.json())
+}
+export function removeAttachment(id: string, attId: string): Promise<{ ok: boolean }> {
+  return fetch(`${API_BASE}/sessions/${id}/files/${attId}`, { method: 'DELETE' }).then(r => r.json())
+}
+
+/* ========================================
+   New admin endpoints (full-spec gaps M1-M13 / G11)
+   ======================================== */
+/** 提示词版本历史 / 回滚 / A/B (M2) */
+export function adminListPromptVersions(id: string): Promise<{ prompt_id: string; versions: Record<string, unknown>[] }> {
+  return adminRequest(`/api/admin/prompts/${id}/versions`)
+}
+export function adminRollbackPrompt(id: string, version: number): Promise<{ ok: boolean; current_version: number; content: string }> {
+  return adminRequest(`/api/admin/prompts/${id}/rollback`, { method: 'POST', body: { version } })
+}
+export function adminSetPromptAB(id: string, data: { enabled: boolean; variants: Record<string, unknown>; traffic: number }): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/prompts/${id}/ab`, { method: 'POST', body: data })
+}
+/** 模型 key 池 / 回退链 (M1) */
+export function adminManageModelKeys(id: string, action: 'add' | 'remove', key?: string, keyId?: string): Promise<{ ok: boolean; key_pool: unknown[] }> {
+  return adminRequest(`/api/admin/models/${id}/keys`, { method: 'POST', body: { action, key, key_id: keyId } })
+}
+export function adminSetModelFallback(id: string, fallback: unknown[]): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/models/${id}/fallback`, { method: 'POST', body: { fallback } })
+}
+/** 知识库文档管理 (M5) */
+export function adminListKBs(): Promise<AdminListResult<{ id: string; name: string; doc_count: number; chunk_count: number; embedding: string }>> {
+  return adminRequest('/api/admin/memory/kbs')
+}
+export function adminCreateKB(data: { id?: string; name: string; chunk_size?: number; overlap?: number; embedding?: string }): Promise<{ ok: boolean; id: string }> {
+  return adminRequest('/api/admin/memory/kbs', { method: 'POST', body: data })
+}
+export function adminDeleteKB(id: string): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/memory/kbs/${id}`, { method: 'DELETE' })
+}
+export function adminListKBDocs(kbId: string): Promise<AdminListResult<{ id: string; name: string; chunk_count: number }>> {
+  return adminRequest(`/api/admin/memory/kbs/${kbId}/documents`)
+}
+export function adminAddKBDoc(kbId: string, data: { name?: string; content: string }): Promise<{ ok: boolean; doc_id: string; chunks: number }> {
+  return adminRequest(`/api/admin/memory/kbs/${kbId}/documents`, { method: 'POST', body: data })
+}
+export function adminDeleteKBDoc(kbId: string, docId: string): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/memory/kbs/${kbId}/documents/${docId}`, { method: 'DELETE' })
+}
+/** 工具试跑 / 热加载 (M4) */
+export function adminRunTool(id: string, params: Record<string, unknown>): Promise<{ ok: boolean; result?: unknown; error?: string; latency_ms: number }> {
+  return adminRequest(`/api/admin/tools/${id}/run`, { method: 'POST', body: { params } })
+}
+export function adminReloadTools(dir?: string): Promise<{ ok: boolean; registered: number }> {
+  return adminRequest('/api/admin/tools/reload', { method: 'POST', body: { dir } })
+}
+/** IAM 用户/API Key/权限矩阵/审计 (M11) */
+export function adminListUsers(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/security/users')
+}
+export function adminCreateUser(data: { username: string; role?: string; email?: string }): Promise<{ ok: boolean }> {
+  return adminRequest('/api/admin/security/users', { method: 'POST', body: data })
+}
+export function adminUpdateUser(id: string, data: { role?: string; status?: string }): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/security/users/${id}`, { method: 'PUT', body: data })
+}
+export function adminDeleteUser(id: string): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/security/users/${id}`, { method: 'DELETE' })
+}
+export function adminListAPIKeys(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/security/api_keys')
+}
+export function adminCreateAPIKey(data: { name?: string; scope?: string }): Promise<{ ok: boolean; id: string; key: string }> {
+  return adminRequest('/api/admin/security/api_keys', { method: 'POST', body: data })
+}
+export function adminRevokeAPIKey(id: string): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/security/api_keys/${id}`, { method: 'DELETE' })
+}
+export function adminGetAuditLog(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/security/audit')
+}
+/** Agent AI 生成 / 导入 / 模板市场 / 发布 (M12) */
+export function adminGenerateAgent(data: { description: string; kind?: string }): Promise<{ draft: Record<string, unknown>; yaml: string }> {
+  return adminRequest('/api/admin/agents/generate', { method: 'POST', body: data })
+}
+export function adminImportAgent(data: { format: string; content: string; source?: string }): Promise<{ imported: number; items: unknown[] }> {
+  return adminRequest('/api/admin/agents/import', { method: 'POST', body: data })
+}
+export function adminListAgentTemplates(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/agents/templates')
+}
+export function adminPublishAgent(id: string, data: { version?: number; traffic?: number }): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/agents/${id}/publish`, { method: 'POST', body: data })
+}
+/** A2A 注册表 / 任务监控 (M6) */
+export function adminListA2A(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/a2a')
+}
+export function adminRegisterA2A(data: { name?: string; url: string }): Promise<{ ok: boolean }> {
+  return adminRequest('/api/admin/a2a', { method: 'POST', body: data })
+}
+export function adminDeleteA2A(id: string): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/a2a/${id}`, { method: 'DELETE' })
+}
+export function adminListA2ATasks(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/a2a/tasks')
+}
+/** 告警历史 / Trace / 日志 / 漂移 (M9/M10) */
+export function adminGetAlertHistory(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/alerts/history')
+}
+export function adminListTraces(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/traces')
+}
+export function adminGetLogs(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/logs')
+}
+export function adminGetDrift(): Promise<{ series: unknown[]; alerts: unknown[] }> {
+  return adminRequest('/api/admin/drift')
+}
+/** 定时任务 (G11) */
+export function adminListTasks(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/tasks')
+}
+export function adminCreateTask(data: { name: string; cron: string; action?: Record<string, unknown>; enabled?: boolean }): Promise<{ ok: boolean }> {
+  return adminRequest('/api/admin/tasks', { method: 'POST', body: data })
+}
+export function adminDeleteTask(id: string): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/tasks/${id}`, { method: 'DELETE' })
+}
+/** 备份 / 迁移 (M13) */
+export function adminExportBackup(): Promise<Record<string, unknown>> {
+  return adminRequest('/api/admin/backup')
+}
+export function adminRestoreBackup(bundle: Record<string, unknown>): Promise<{ ok: boolean; restored: number }> {
+  return adminRequest('/api/admin/backup/restore', { method: 'POST', body: { bundle } })
+}
+
+/* ---- 成本计费 (deep-spec 23) ---- */
+export function adminGetUsage(days = 7): Promise<{
+  days: { date: string; input_tokens: number; output_tokens: number; cost_usd: number; requests: number }[]
+  by_model: { model: string; requests: number; cost_usd: number; tokens: number }[]
+  total_cost_usd: number; total_requests: number
+  budget: { monthly_usd: number; enabled: boolean }
+  monthly_spent_usd: number; budget_left_usd: number
+}> {
+  return adminRequest(`/api/admin/usage?days=${days}`)
+}
+export function adminSetBudget(data: { monthly_usd: number; enabled: boolean }): Promise<{ monthly_usd: number; enabled: boolean }> {
+  return adminRequest('/api/admin/usage/budget', { method: 'POST', body: data })
+}
+/* ---- 安全扫描 (deep-spec 27) ---- */
+export function securityScan(text: string): Promise<{
+  injection: { flagged: boolean; severity: string; confidence: number; action: string; hits: { pattern: string; keyword?: string; weight: number }[] }
+  pii: { count: number; found: Record<string, number> }
+  content: { flagged: boolean; hits: string[] }
+  blocked: boolean; redacted: string
+}> {
+  return adminRequest('/api/security/scan', { method: 'POST', body: { text } })
+}
+export function securityRedact(text: string): Promise<{ redacted: string; count: number; found: Record<string, number> }> {
+  return adminRequest('/api/security/redact', { method: 'POST', body: { text } })
+}
+export function getCircuitBreakers(): Promise<{ items: { key: string; state: string; failures: number; failure_threshold: number }[] }> {
+  return adminRequest('/api/security/breakers')
 }
