@@ -26,6 +26,14 @@
 - `langgraph.graph.Command` 导入错误（改 `langgraph.types.Command`）
 - `logging.py` 缺失 `Optional`；结构化日志新增 `StructuredLogger`
 
+## [0.5.0] - 2026-08-11
+
+### Added
+- **深度规格 32-36（批次四）**：32-rag-search（RAG 检索增强：查询改写/分块/多路召回/RRF 融合/重排/引用溯源/评测，Naive→Advanced→Modular/LongRAG/Self-RAG/GraphRAG 选型表）、33-multi-end-sync（多端与端云协同：状态同步而非广播/雪花 ID 游标/离线队列/断点续传/跨端会话迁移）、34-real-time-collab（实时协作：在线状态/操作日志/冲突检测四策略/区域锁定/快照回滚/Agent 协作 op 流）、35-offline-resilience（弱网与离线韧性：重试退避/熔断/LLM 降级路由/缓存兜底/离线队列/断点续传/对账补偿/弱网实验室）、36-push-engagement（推送与触达：渠道矩阵/模板渲染/免打扰/频率治理/深链回跳/回执归因/触达漏斗）
+- 验收测试扩展至 **430 条**（32-36 各 14 条）
+- 功能清单扩展至 **1465+ 项**（M30-M34）
+- README / docs/README / full-spec / feature-checklist / acceptance-test 全量同步（37 份 / 35 板块 / 430 条）
+
 ## [0.4.0] - 2026-08-11
 
 ### Added

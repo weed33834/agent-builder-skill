@@ -1,6 +1,6 @@
 # Universal Agent Builder 万能 Agent 构建器
 
-> **一个 10 层架构、规格驱动的全能 Agent 开发框架** —— 内置 6 大 Agent 框架适配器、MCP/A2A 开放协议、11 类 Agent 模板与一键生成器，配套 **32 份深度规格、1290+ 功能项、360 条验收测试**，从 LLM 到前端 UI 全链路开箱即用。
+> **一个 10 层架构、规格驱动的全能 Agent 开发框架** —— 内置 6 大 Agent 框架适配器、MCP/A2A 开放协议、11 类 Agent 模板与一键生成器，配套 **37 份深度规格、1465+ 功能项、430 条验收测试**，从 LLM 到前端 UI 全链路开箱即用。
 
 [![CI](https://img.shields.io/github/actions/workflow/status/weed33834/agent-builder-skill/ci.yml?branch=main&label=CI&logo=github)](https://github.com/weed33834/agent-builder-skill/actions)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
@@ -23,7 +23,7 @@
 - 📡 **开放协议**：MCP（微观工具执行）+ A2A（宏观 Agent 协作）双协议，Agent Card / Task / Message / Artifact 四大对象，符合 GB/Z 185-2026《智能体互联互通》
 - ⚙️ **配置驱动生成**：11 类 `agent.yaml` 模板，`generate.py` 一键生成完整前后端工程
 - 🖥️ **完整管理台**：提示词 / 沙箱 / 上下文 / 工具 / 记忆 / 模型 / 工作流 / 技能插件 / 评估 / 监控 / IAM / 生命周期……40+ 管理 API 端点 + 12 个 React 管理组件
-- 📚 **32 份深度规格**：从提示词工程、上下文工程到企业级治理、AI 安全攻防、容灾连续性，覆盖个人开发者到企业平台全场景
+- 📚 **37 份深度规格**：从提示词工程、上下文工程到企业级治理、AI 安全攻防、容灾连续性、RAG 检索、多端同步、实时协作、弱网韧性、推送触达，覆盖个人开发者到企业平台全场景
 
 ---
 
@@ -85,13 +85,13 @@
 | 资产 | 数量 | 说明 |
 |------|------|------|
 | 顶层规格 full-spec | P0-P10 全量 | 页面级全量规格 |
-| 深度规格 deep-spec | **32 份**（00 模板 + 01-31） | 每份 7 章：定位/资产模型/配置清单/管理界面/运行时链路/安全权限/验证方法 |
-| 功能清单 feature-checklist | **1290+ 项**（M0-M29 模块） | 每项标注深度规格挂载 + 验收引用 |
-| 验收测试 acceptance-test | **360 条** | 步骤 + 预期结果，可逐条执行 |
+| 深度规格 deep-spec | **37 份**（00 模板 + 01-36） | 每份 7 章：定位/资产模型/配置清单/管理界面/运行时链路/安全权限/验证方法 |
+| 功能清单 feature-checklist | **1465+ 项**（M0-M34 模块） | 每项标注深度规格挂载 + 验收引用 |
+| 验收测试 acceptance-test | **430 条** | 步骤 + 预期结果，可逐条执行 |
 | 对比基准 comparison-2026 | 4 应用矩阵 | 豆包/GPT 网页端/Codex/Claude Code/WorkBuddy 能力对照 |
 | 教训沉淀 ai-lessons | 14 域 ≈144 项 | 现象 + 根因 + 避免方法 + 检测方法 |
 
-📖 **完整文档索引见 [docs/README.md](docs/README.md)** —— 32 份深度规格 + 6 份顶层文档总览。
+📖 **完整文档索引见 [docs/README.md](docs/README.md)** —— 37 份深度规格 + 6 份顶层文档总览。
 
 ## Quick Start / 快速开始
 
@@ -176,15 +176,15 @@ agent-builder-skill/
 │   ├── ISSUE_TEMPLATE/             # Bug/Feature 模板
 │   └── PULL_REQUEST_TEMPLATE.md    # PR 模板
 ├── docs/                           # 📖 文档中心（详见 docs/README.md）
-│   ├── README.md                   # 文档索引（32 份深度规格总览）
+│   ├── README.md                   # 文档索引（37 份深度规格总览）
 │   ├── full-spec.md                # P0-P10 页面级全量规格
-│   ├── feature-checklist.md        # M0-M29 功能清单（1290+ 项）
-│   ├── acceptance-test.md          # 360 条验收测试
+│   ├── feature-checklist.md        # M0-M34 功能清单（1465+ 项）
+│   ├── acceptance-test.md          # 430 条验收测试
 │   ├── comparison-2026.md          # 四应用能力对比矩阵
 │   ├── framework-selection.md      # 六框架选型指南
 │   ├── admin-console-design.md     # 管理台设计
 │   ├── analysis-report.md          # 代码分析报告
-│   └── deep-spec/                  # 32 份深度规格（00 模板 + 01-31）
+│   └── deep-spec/                  # 37 份深度规格（00 模板 + 01-36）
 ├── scripts/
 │   ├── generate.py                 # Agent 代码生成器
 │   ├── evaluate.py                 # 评估脚本
@@ -246,11 +246,11 @@ agent-builder-skill/
 
 | 文档 | 说明 |
 |------|------|
-| [docs/README.md](docs/README.md) | 📖 文档中心（32 份深度规格总览索引） |
+| [docs/README.md](docs/README.md) | 📖 文档中心（37 份深度规格总览索引） |
 | [SKILL.md](SKILL.md) | 构建 Agent 的五步方法论 |
 | [docs/full-spec.md](docs/full-spec.md) | P0-P10 页面级全量规格 |
-| [docs/feature-checklist.md](docs/feature-checklist.md) | M0-M29 功能清单（1290+ 项） |
-| [docs/acceptance-test.md](docs/acceptance-test.md) | 360 条验收测试 |
+| [docs/feature-checklist.md](docs/feature-checklist.md) | M0-M34 功能清单（1465+ 项） |
+| [docs/acceptance-test.md](docs/acceptance-test.md) | 430 条验收测试 |
 | [docs/framework-selection.md](docs/framework-selection.md) | 六框架选型指南 |
 | [docs/deep-spec/00-template.md](docs/deep-spec/00-template.md) | 深度规格模板与索引 |
 
@@ -304,7 +304,7 @@ Or with Docker: `cp .env.example .env && docker-compose up -d` → frontend at h
 
 ### Documentation
 
-See [docs/README.md](docs/README.md) for the full documentation index — 32 deep specs (00 template + 01-31), full spec (P0-P10), feature checklist (M0-M29, 1290+ items) and acceptance tests (360 cases).
+See [docs/README.md](docs/README.md) for the full documentation index — 37 deep specs (00 template + 01-36), full spec (P0-P10), feature checklist (M0-M34, 1465+ items) and acceptance tests (430 cases).
 
 ### License
 

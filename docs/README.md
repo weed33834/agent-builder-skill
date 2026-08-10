@@ -5,9 +5,9 @@
 | 资产 | 数量 | 状态 |
 |------|------|------|
 | 顶层规格 full-spec | P0-P10 全量 | ✅ |
-| 深度规格 deep-spec | **32 份**（00 模板 + 01-31） | ✅ 全部完成 |
-| 功能清单 feature-checklist | **1290+ 项**（M0-M29） | ✅ |
-| 验收测试 acceptance-test | **360 条** | ✅ |
+| 深度规格 deep-spec | **37 份**（00 模板 + 01-36） | ✅ 全部完成 |
+| 功能清单 feature-checklist | **1465+ 项**（M0-M34） | ✅ |
+| 验收测试 acceptance-test | **430 条** | ✅ |
 | 框架选型 framework-selection | 6 框架对比 | ✅ |
 | 管理台设计 admin-console-design | 完整设计 | ✅ |
 | 能力对比 comparison-2026 | 4 应用矩阵 | ✅ |
@@ -19,8 +19,8 @@
 | 文档 | 说明 |
 |------|------|
 | [full-spec.md](full-spec.md) | **P0-P10 页面级全量规格**：所有页面的功能、组件、交互、接口定义 |
-| [feature-checklist.md](feature-checklist.md) | **M0-M29 功能清单（1290+ 项）**：十四大模块 → 三十大模块演进，每项标注深度规格挂载 + 验收引用 |
-| [acceptance-test.md](acceptance-test.md) | **360 条验收测试**：步骤 + 预期结果，可逐条执行；全绿 = 功能完整性验收通过 |
+| [feature-checklist.md](feature-checklist.md) | **M0-M34 功能清单（1465+ 项）**：十四大模块 → 三十五模块演进，每项标注深度规格挂载 + 验收引用 |
+| [acceptance-test.md](acceptance-test.md) | **430 条验收测试**：步骤 + 预期结果，可逐条执行；全绿 = 功能完整性验收通过 |
 | [framework-selection.md](framework-selection.md) | **六框架选型指南**：bare / LangGraph / OpenAI Agents / Claude SDK / ADK / AutoGen 决策矩阵 |
 | [admin-console-design.md](admin-console-design.md) | **管理台设计**：资源化 + 4-Tab（配置-测试-运行-审计）+ 三输入通道 |
 | [comparison-2026.md](comparison-2026.md) | **能力对比矩阵**：豆包/GPT 网页端/Codex/Claude Code/WorkBuddy 对照基准 |
@@ -28,7 +28,7 @@
 
 ---
 
-## 深度规格 / Deep Specs（32 份）
+## 深度规格 / Deep Specs（37 份）
 
 每份统一 **7 章模板**：① 定位与架构 ② 资产数据模型（全字段） ③ 配置项全清单 ④ 管理界面（增删改调+辅助功能） ⑤ 运行时嵌入链路（真实代码路径） ⑥ 安全与权限 ⑦ 前后端对齐矩阵 + 状态 + 验证方法。
 
@@ -89,13 +89,23 @@
 | 30 | [30-data-pipeline.md](deep-spec/30-data-pipeline.md) | 数据管道：ETL-ELT/CDC/Kafka 批流一体/可视化 DAG/质量中心 |
 | 31 | [31-disaster-recovery.md](deep-spec/31-disaster-recovery.md) | 容灾与业务连续性：RTO-RPO/3-2-1 备份/多活/DR 计划/切换演练/故障注入 |
 
+### 触达与协同（32-36）
+
+| # | 规格 | 一句话定位 |
+|---|------|-----------|
+| 32 | [32-rag-search.md](deep-spec/32-rag-search.md) | RAG 检索增强：查询改写/分块策略/索引三形态/多路召回+RRF 融合/cross-encoder 重排/引用溯源/检索评测/检索调试台/形态选型（Naive→Advanced→Modular/LongRAG/Self-RAG/GraphRAG） |
+| 33 | [33-multi-end-sync.md](deep-spec/33-multi-end-sync.md) | 多端与端云协同：四层架构/状态同步而非广播/雪花 ID 游标/离线队列/断点续传/冲突三策略/跨端会话迁移/端·设备管理 |
+| 34 | [34-real-time-collab.md](deep-spec/34-real-time-collab.md) | 实时协作：Presence/操作日志/Lamport 排序/冲突检测四策略/区域锁定/快照回滚/审查流/Agent 协作 op 流 |
+| 35 | [35-offline-resilience.md](deep-spec/35-offline-resilience.md) | 弱网与离线韧性：重试退避/熔断/LLM 降级路由/缓存兜底/离线队列/断点续传/对账补偿/弱网模拟实验室 |
+| 36 | [36-push-engagement.md](deep-spec/36-push-engagement.md) | 推送与触达：渠道矩阵/优先级分级/模板中心/免打扰/频率治理/深链回跳/回执归因/触达漏斗 |
+
 ---
 
 ## 阅读路线 / Reading Path
 
 - **新人入门**：README → SKILL.md → docs/full-spec.md → deep-spec/01 → 04 → 05 → 06
 - **做管理台**：admin-console-design.md → deep-spec 各模块「④ 管理界面」章 → 前端 admin/ 组件
-- **做验收**：acceptance-test.md（360 条）→ 按模块抽测 → 修复缺口后重跑
+- **做验收**：acceptance-test.md（430 条）→ 按模块抽测 → 修复缺口后重跑
 - **做企业落地**：16 → 22 → 23 → 24 → 25 → 27 → 29 → 30 → 31
 - **避坑**：17-ai-lessons.md（14 域 144 项红线清单）
 

@@ -18,7 +18,7 @@ assignees: ''
 
 **Spec mapping / 规格映射（重要）**
 - 建议挂载到哪个深度规格模块？（如 16-enterprise-org / 28-multimodal）
-- 是否建议新增模块？（说明理由，参考 [docs/README.md](../../docs/README.md) 现有 32 份规格）
+- 是否建议新增模块？（说明理由，参考 [docs/README.md](../../docs/README.md) 现有 37 份规格）
 - 前端组件 / 后端接口 / 运行时链路 三者的落点分别是什么？
 
 **Additional context / 补充信息**

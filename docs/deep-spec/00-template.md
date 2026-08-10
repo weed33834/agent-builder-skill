@@ -86,3 +86,8 @@
 | 29-interoperability.md | Agent 互操作与开放协议（A2A/MCP/Agent Card/信任策略/协议实验室） | ✅ 深度版 |
 | 30-data-pipeline.md | 数据管道与集成（ETL-ELT/批流一体/CDC/可视化编排/质量中心） | ✅ 深度版 |
 | 31-disaster-recovery.md | 容灾与业务连续性（RTO-RPO/3-2-1 备份/多活切换/演练/故障注入） | ✅ 深度版 |
+| 32-rag-search.md | RAG 检索增强（查询改写/分块/多路召回/RRF 融合/重排/引用溯源/评测，Naive→Advanced→Modular/LongRAG/Self-RAG/GraphRAG 选型） | ✅ 深度版 |
+| 33-multi-end-sync.md | 多端与端云协同（Web/桌面/小程序/App/IM、状态同步而非广播、雪花 ID 游标、离线队列、断点续传、跨端会话迁移） | ✅ 深度版 |
+| 34-real-time-collab.md | 实时协作（在线状态/操作日志/冲突检测与解决/区域锁定/快照回滚/审查流/Agent 协作 op 流） | ✅ 深度版 |
+| 35-offline-resilience.md | 弱网与离线韧性（重试退避/熔断/LLM 降级路由/缓存兜底/离线队列/断点续传/对账补偿/弱网实验室） | ✅ 深度版 |
+| 36-push-engagement.md | 推送与触达（渠道矩阵/模板渲染/免打扰/频率治理/深链回跳/回执归因/触达漏斗） | ✅ 深度版 |
