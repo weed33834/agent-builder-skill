@@ -26,6 +26,40 @@ import yaml
 from pathlib import Path
 from typing import Any, Optional
 
+
+FRAMEWORKS = [
+    "langgraph",
+    "openai-agents",
+    "claude-sdk",
+    "adk",
+    "autogen",
+    "bare",
+]
+
+
+def _interactive_framework_select() -> str:
+    """Interactive framework selection (M0.21) — never defaults silently.
+    Prints the selection map from docs/framework-selection.md and asks the user.
+    """
+    print("")
+    print("=== 框架选型（不默认绑定，请选择 Agent 运行时框架） ===")
+    print("  1) langgraph      - LangGraph 1.0（生产级复杂编排/状态机/checkpoint 恢复）")
+    print("  2) openai-agents  - OpenAI Agents SDK（轻量交接制/Guardrails）")
+    print("  3) claude-sdk     - Claude Agent SDK（工具循环/子 Agent/生命周期钩子）")
+    print("  4) adk            - Google ADK（Gemini 生态/A2A 原生）")
+    print("  5) autogen        - AutoGen/AG2（多角色讨论/群体智能）")
+    print("  6) bare           - 自研核心（零依赖 while-loop，完全自主可控）")
+    print("  0) 查看完整全景矩阵（docs/framework-selection.md）后重新选择")
+    while True:
+        choice = input("请输入编号 [1-6]: ").strip()
+        if choice == "0":
+            print("请打开 docs/framework-selection.md 查看六类框架全景与决策树，然后重新运行本命令。")
+            sys.exit(0)
+        if choice.isdigit() and 1 <= int(choice) <= 6:
+            return FRAMEWORKS[int(choice) - 1]
+        print("无效输入，请输入 1-6")
+
+
 # ============================================================
 # Template paths
 # ============================================================
@@ -172,11 +206,152 @@ def get_role_prompt(role_name: str) -> str | None:
     )
 
 
+def generate_l4_bare(config: dict, output_dir: str):
+    """Generate a zero-dependency while-loop runtime (framework='bare').
+
+    Reference implementation of the framework-agnostic AgentRuntime contract
+    (docs/framework-selection.md 2.1): run / stream / bind_tools / checkpoint.
+    No LangChain/LangGraph dependency — only the LLM adapter (L1) and
+    ToolRegistry (L5), which are framework-agnostic.
+    """
+    graph_type = config.get("agent_framework", {}).get("graph_type", "single")
+    max_iterations = config.get("agent_framework", {}).get("max_iterations", 10)
+    write_file(
+        f"{output_dir}/app/l4_agent/graph.py",
+        f'''"""L4 - Bare while-loop runtime (framework='bare', framework-agnostic)
+
+Zero-dependency ReAct loop implementing the AgentRuntime contract:
+  run(messages, config) -> AgentResult
+  stream(messages, config) -> AsyncIterator[AgentEvent]
+  bind_tools(tools) / checkpoint(thread_id)
+
+Graph type: {graph_type}
+Max iterations: {max_iterations}
+"""
+
+from __future__ import annotations
+
+import asyncio
+import json
+import time
+import uuid
+from dataclasses import dataclass, field
+from typing import Any, AsyncIterator, Callable, Optional
+
+
+@dataclass
+class AgentEvent:
+    """Unified event stream (M3.18): agent_message / tool_call / tool_result / done"""
+    type: str
+    content: Any = None
+    timestamp: float = field(default_factory=time.time)
+
+
+@dataclass
+class AgentResult:
+    text: str
+    tool_calls: list = field(default_factory=list)
+    usage: dict = field(default_factory=dict)
+    latency_ms: float = 0.0
+    trace_id: str = field(default_factory=lambda: uuid.uuid4().hex)
+
+
+class BareAgentRuntime:
+    """Minimal framework-agnostic runtime: while-loop ReAct with tools."""
+
+    def __init__(self, llm, tools: Optional[dict] = None, max_iterations: int = {max_iterations}):
+        self.llm = llm                    # L1 LLMAdapter (framework-agnostic)
+        self.tools = tools or {{}}        # name -> callable (ToolRegistry, L5)
+        self.max_iterations = max_iterations
+        self._memory: dict[str, list] = {{}}   # thread_id -> messages
+        self._tool_schemas = [
+            {{"name": n, "description": getattr(t, "__doc__", "") or "", "parameters": {{}}}}
+            for n, t in self.tools.items()
+        ]
+
+    # ---- AgentRuntime contract ------------------------------------
+    def bind_tools(self, tools: dict) -> None:
+        self.tools.update(tools)
+
+    def checkpoint(self, thread_id: str) -> "BareAgentRuntime":
+        """Return a runtime bound to a thread's conversation history."""
+        self._memory.setdefault(thread_id, [])
+        return self
+
+    async def run(self, messages: list, config: Optional[dict] = None) -> AgentResult:
+        start = time.perf_counter()
+        thread_id = (config or {{}}).get("thread_id", "default")
+        history = self._memory.setdefault(thread_id, [])
+        history.extend(messages)
+        tool_calls_log: list = []
+
+        for _ in range(self.max_iterations):
+            resp = await self.llm.invoke(
+                history, tools=self._tool_schemas or None
+            )
+            if getattr(resp, "tool_calls", None):
+                for tc in resp.tool_calls:
+                    tool_calls_log.append(tc)
+                    fn = self.tools.get(tc.get("name"))
+                    if fn is None:
+                        result = f"Error: unknown tool {{tc.get('name')}}"
+                    else:
+                        try:
+                            result = await fn(**tc.get("arguments", {{}}))
+                        except Exception as e:  # noqa: BLE001
+                            result = f"Tool error: {{e}}"
+                    history.append({{"role": "tool", "content": str(result), "tool_call_id": tc.get("id")}})
+                continue
+            text = getattr(resp, "content", "") or ""
+            history.append({{"role": "assistant", "content": text}})
+            return AgentResult(
+                text=text,
+                tool_calls=tool_calls_log,
+                usage=getattr(resp, "usage", {{}}) or {{}},
+                latency_ms=(time.perf_counter() - start) * 1000,
+            )
+
+        return AgentResult(
+            text="Reached max_iterations without a final answer.",
+            tool_calls=tool_calls_log,
+            latency_ms=(time.perf_counter() - start) * 1000,
+        )
+
+    async def stream(self, messages: list, config: Optional[dict] = None) -> AsyncIterator[AgentEvent]:
+        yield AgentEvent("agent_message", {{"role": "system", "note": "bare runtime streaming (M3.18)"}})
+        result = await self.run(messages, config)
+        yield AgentEvent("agent_message", result.text)
+        yield AgentEvent("done", {{"usage": result.usage, "latency_ms": result.latency_ms}})
+
+
+def build_single_agent_graph() -> "BareAgentRuntime":
+    """Compatibility factory: same name as the LangGraph variant."""
+    from app.l1_llm.factory import create_llm
+    from app.l5_tools.registry import get_registry
+
+    llm = create_llm()
+    registry = get_registry()
+    return BareAgentRuntime(llm=llm, tools={{t.name: t.func for t in registry.list_tools()}})
+'''.strip()
+    )
+
+
 def generate_l4_agent(config: dict, output_dir: str):
-    """Generate L4 Agent framework layer code"""
-    framework = config.get("agent_framework", {})
-    graph_type = framework.get("graph_type", "single")
-    max_iterations = framework.get("max_iterations", 10)
+    """Generate L4 Agent framework layer code
+
+    Framework-agnostic (M0.21): reads config['framework'] (set in main() from
+    --framework flag / agent.yaml field / interactive prompt).
+      - 'bare'        -> self-contained while-loop runtime, zero framework deps
+      - 'langgraph'   -> LangGraph 1.0 StateGraph (default reference impl)
+      - others        -> adapter TODO comment (docs/framework-selection.md)
+    """
+    framework = config.get("framework") or config.get("agent_framework", {}).get("name", "langgraph")
+    graph_type = config.get("agent_framework", {}).get("graph_type", "single")
+    max_iterations = config.get("agent_framework", {}).get("max_iterations", 10)
+
+    if framework == "bare":
+        generate_l4_bare(config, output_dir)
+        return
 
     orchestrator = config.get("orchestration", {})
     orchestration_mode = orchestrator.get("mode", "single")
@@ -1847,15 +2022,42 @@ def copy_static_templates(output_dir: str):
 # ============================================================
 
 def main():
-    if len(sys.argv) < 3:
-        print("Usage: python scripts/generate.py <config.yaml> <output_dir>")
+    # Optional --framework flag: choose the agent runtime framework (M0.21)
+    # Default: None -> interactive selection prompt (framework-agnostic, not defaulting to LangChain)
+    framework = None
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    flags = [a for a in sys.argv[1:] if a.startswith("--")]
+    for f in flags:
+        if f == "--framework":
+            print("Error: --framework requires a value, e.g. --framework langgraph")
+            sys.exit(1)
+        if f.startswith("--framework="):
+            framework = f.split("=", 1)[1]
+        elif f == "--framework-list":
+            print("Available frameworks (M0.21):")
+            print("  langgraph       - LangGraph 1.0 (StateGraph/Command/checkpoint)")
+            print("  openai-agents   - OpenAI Agents SDK (Agent+Handoffs+Guardrails)")
+            print("  claude-sdk      - Claude Agent SDK (Agent Loop+Subagent+hooks)")
+            print("  adk             - Google ADK (Agent+RemoteA2AAgent)")
+            print("  autogen         - AutoGen/AG2 (GroupChat multi-agent)")
+            print("  bare            - 自研核心（自己的 while-loop 工具循环，无框架依赖）")
+            print("")
+            print("详见 docs/framework-selection.md 框架全景矩阵与决策树")
+            sys.exit(0)
+
+    if len(args) < 2:
+        print("Usage: python scripts/generate.py <config.yaml> <output_dir> [--framework=<name>]")
         print("")
         print("Example:")
-        print("  python scripts/generate.py agent.yaml ./generated_agent")
+        print("  python scripts/generate.py agent.yaml ./generated_agent --framework=langgraph")
+        print("  python scripts/generate.py agent.yaml ./generated_agent --framework=bare")
+        print("  python scripts/generate.py agent.yaml ./generated_agent --framework-list")
+        print("")
+        print("未指定 --framework 时进入交互式选择（不默认 LangChain，见 docs/framework-selection.md）")
         sys.exit(1)
 
-    config_path = sys.argv[1]
-    output_dir = sys.argv[2]
+    config_path = args[0]
+    output_dir = args[1]
 
     if not os.path.exists(config_path):
         print(f"Error: Config file does not exist: {config_path}")
@@ -1863,6 +2065,14 @@ def main():
 
     print(f"Loading config: {config_path}")
     config = load_config(config_path)
+
+    # Framework selection: yaml field > --framework flag > interactive prompt
+    if framework is None:
+        framework = config.get("framework") or config.get("agent_framework", {}).get("name")
+    if framework is None:
+        framework = _interactive_framework_select()
+    config["framework"] = framework
+    print(f"Agent framework: {framework}")
 
     agent_name = config.get("agent", {}).get("name", "Agent")
     agent_type = config.get("agent", {}).get("type", "chat")

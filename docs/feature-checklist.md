@@ -4,6 +4,9 @@
 > 覆盖所有大厂生态（Anthropic / OpenAI / Google / Microsoft）+ 开源主流框架 + 前沿论文。
 > **用法**：每行功能 = 一个对比项。对比时逐项打勾：✅ 已有 / 🔶 部分 / ⬜ 缺失，缺失的按"怎么做"列补。
 > 配套：本仓库按此清单作为**通用底座**，用户智能体的具体业务细节在底座之上自行叠加。
+> 两份配套设计文档：
+> - **框架选型**：docs/framework-selection.md（多框架全景矩阵 + 中立架构 + 选型决策树，平台不默认绑定框架）
+> - **管理控制台**：docs/admin-console-design.md（每个功能资源的管理界面深度设计：布局/控制/AI 生成/外部导入）
 
 ---
 
@@ -11,21 +14,21 @@
 
 | 模块 | 板块 | 功能项数 | 对标来源 |
 |------|------|---------|---------|
-| M0 | Agent 类型模板（通用 + 垂直） | 22 | 各厂 Agent 商店 |
+| M0 | Agent 类型模板（通用 + 垂直 + 框架选型） | 24 | 各厂 Agent 商店 + 框架生态 |
 | M1 | LLM 接入层 | 18 | OpenAI/Anthropic/Google/国产 |
 | M2 | 提示工程 | 13 | Anthropic 八条原则 |
-| M3 | Agent 核心运行时 | 18 | Claude Agent SDK / LangGraph |
+| M3 | Agent 核心运行时 | 20 | Claude Agent SDK / LangGraph / 框架中立 |
 | M4 | 工具系统 | 21 | MCP / Claude Code / OpenAI Tools |
 | M5 | 记忆与知识 | 16 | MemGPT / 记忆综述论文 |
 | M6 | 编排与多 Agent | 24 | A2A / AutoGen / Swarm / LangGraph |
 | M7 | API 服务层 | 16 | OpenAI Assistants / 生产规范 |
-| M8 | 前端 UI | 15 | ChatGPT / Claude / 生产规范 |
+| M8 | 前端 UI | 23 | ChatGPT / Claude / 管理控制台设计 |
 | M9 | 基础设施与 DevOps | 15 | 12-Factor / 生产规范 |
 | M10 | 评估体系 | 14 | Anthropic 评测驱动 / 论文 |
 | M11 | 安全与合规 | 14 | OWASP LLM / Prompt Guard |
 | M12 | 高级能力 | 24 | 各厂前沿功能 |
 | M13 | 可观测性 | 12 | OTel / LangSmith / AgentOps |
-| **合计** | | **≈242** | |
+| **合计** | | **≈260** | |
 
 > 各模块按"生成物完整性"排序：M0 决定生成什么类型，M1-M6 决定智能体能力，M7-M9 决定能不能上线，M10-M13 决定质量和安全。
 
@@ -58,6 +61,8 @@
 | M0.18 | 医疗咨询型（仅信息） | 症状查询/科普（非诊断） | 免责声明 + 内容过滤 + 转医生 |
 | M0.19 | 法律文书型 | 合同审阅/法条检索 | 法条库 RAG + 人工复核节点（强制 HITL） |
 | M0.20 | 电商运营型 | 商品描述/客服/选品 | 电商 API 工具 + 模板库 |
+| M0.21 | 框架选型字段 | agent.yaml 显式声明框架 | `framework: langgraph \| openai-agents \| claude-sdk \| adk \| autogen \| bare`，默认空=必须选择，见 docs/framework-selection.md 2.3 |
+| M0.22 | 框架全景矩阵 | 选型时不默认绑定 | 六类框架全景+决策树（通用编排/多 Agent/厂商 SDK/协议/低代码/自研），见 docs/framework-selection.md 一章 |
 | M0.21 | HR/招聘型 | JD 生成/简历筛选 | 简历解析 + 评分 rubric |
 | M0.22 | 项目管理型 | 任务拆解/进度跟踪/会议纪要 | 规划器 + 日历/任务工具 |
 
@@ -136,6 +141,8 @@
 | M3.16 | 生命周期钩子 | 事件触发回调 | `on_start/on_tool/on_message/on_error` hooks（Claude SDK 原生） |
 | M3.17 | 权限控制 | 工具白名单 | allowed_tools 配置 + 运行时校验 |
 | M3.18 | 流式事件输出 | 步骤级实时推送 | 事件流：`agent_message/tool_call/tool_result/done` 类型化事件 |
+| M3.19 | 框架中立运行时抽象 | 业务逻辑与框架解耦 | `AgentRuntime` 抽象接口（run/stream/bind_tools/checkpoint/hooks），适配器模式接入任意框架，见 docs/framework-selection.md 二章 |
+| M3.20 | 多框架适配器 | ≥2 个可用适配器 | LangGraphAdapter / OpenAI AgentsAdapter / ClaudeSDKAdapter / ADKAdapter / AutoGenAdapter / BareAdapter，generator `--framework` 可选 |
 
 ---
 
@@ -216,7 +223,7 @@
 | M6.14 | 共享状态/白板 | 全局上下文共享 | 共享 state dict，任何 agent 可读写（LangGraph state） |
 | M6.15 | A2A 客户端 | 调用远程 agent | a2a_client：Agent Card 发现+Task 提交+轮询（⚠️ 缺失） |
 | M6.16 | A2A 服务器 | 暴露自身给外部 agent | a2a_server：Agent Card 发布+Task 处理（⚠️ 缺失） |
-| M6.17 | 跨框架互操作 | 与别家 agent 通信 | 实现 A2A JSON-RPC 端点 + 认证（Google 标准） |
+| M6.17 | 跨框架互操作 | 与别家 agent 通信 | 实现 A2A JSON-RPC 端点 + 认证（Google 标准）+ MCP 工具接入，双协议互通（见 framework-selection.md 一.4） |
 | M6.18 | 多 agent 消息协议 | 结构化消息 | 统一 Message 类型：sender/recipient/content/artifact |
 | M6.19 | 辩论/博弈模式 | 多观点对抗 | 正反方 agent 辩论→裁判 agent 裁决 |
 | M6.20 | 反思循环 | 任务后复盘改进 | Post-task review：什么失败→存入程序性记忆 |
@@ -273,6 +280,14 @@
 | M8.13 | 国际化 | 多语言 UI | i18next |
 | M8.14 | 可访问性 | a11y | ARIA/键盘导航 |
 | M8.15 | 会话分享/导出 | 分享链接/导出 MD/PDF | 后端生成分享 token |
+| M8.16 | 管理控制台骨架 | 资源列表+详情工作区 | 左侧导航+资源列表+4-Tab 详情（配置/测试/运行/审计），见 docs/admin-console-design.md 〇章 |
+| M8.17 | 提示词管理界面 | 可视化编辑+变量+版本+测试 | Prompt 编辑器（语法高亮/变量扫描/token 计数）+ 区块预算条 + 版本 diff/回滚（见设计文档 一章） |
+| M8.18 | AI 自动生成 | 每个资源内嵌 AI 助手 | 从描述生成/优化/改写/多语言/防注入审查，结果另存为草稿版本（见设计文档 1.2） |
+| M8.19 | 外部导入导出 | 文件/Git/URL/市场/平台转换 | 统一 Importer：YAML/JSON/CSV 拖拽、Git 同步、URL 拉取、模板市场、其他平台格式转换（见设计文档 1.3） |
+| M8.20 | 统一测试台 | 任何资源保存前可试跑 | SchemaForm 渲染配置 + TestRunner 沙盒试跑（输入→输出→指标），测试不通过不允许启用（见设计文档 〇章组件表） |
+| M8.21 | 工具/模型/Agent 管理界面 | 资源配置、启停、测试 | Tool Manager（Schema 可视化/MCP 向导/热加载）、Model Manager（多 key 轮换/fallback 链）、Agent Manager（Graph 可视化/发布灰度）（见设计文档 二~四章） |
+| M8.22 | 记忆/编排/评估管理界面 | 知识库、拓扑、跑分 | Knowledge Manager（分块预览/检索测试）、Orchestration Manager（任务 DAG 监控）、Eval Manager（回归对比/质量门禁）（见设计文档 五~七章） |
+| M8.23 | 监控/权限/系统设置 | 运营面 | 指标看板/告警规则/IAM 权限矩阵/环境变量可视化（见设计文档 八~十章） |
 
 ---
 
