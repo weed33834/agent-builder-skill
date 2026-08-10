@@ -22,7 +22,7 @@ langgraph-checkpoint-sqlite>=2.0.0
 httpx>=0.28.0
 
 # L2: Token management
-tiktoken>=0.8.0
+tiktoken>=0.13.0
 jieba>=0.42.0          # 20-C: 中文分词与关键词提取
 jsonschema>=4.0.0      # 20-B: 结构化输出 JSON Schema 严格校验
 
