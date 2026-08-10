@@ -38,7 +38,7 @@ jsonschema>=4.0.0      # 20-B: 结构化输出 JSON Schema 严格校验
 # a2a-sdk>=0.2.0            # optional official A2A SDK
 
 # L8: API extras
-python-multipart>=0.0.9
+python-multipart>=0.0.32
 pyyaml>=6.0.0           # M12: yaml agent import / M13: backup export
 
 # M12: Voice (TTS/STT, M12.1-M12.6)
