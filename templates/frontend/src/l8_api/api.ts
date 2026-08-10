@@ -292,3 +292,183 @@ export async function speakText(text: string): Promise<Blob> {
   if (!response.ok) throw new Error(`tts failed: ${response.status}`)
   return response.blob()
 }
+
+/* ========================================
+   Admin Console API（管理控制台）
+   Endpoints: /api/admin/* (GET / POST / PUT)
+   对应后端 templates/backend/app/l8_api/routes/ 下的 admin 路由
+   ======================================== */
+
+interface AdminRequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  body?: unknown
+}
+
+/** 通用管理接口请求封装：统一 JSON 序列化与错误处理 */
+async function adminRequest<T>(path: string, options?: AdminRequestOptions): Promise<T> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    method: options?.method ?? 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    body: options?.body !== undefined ? JSON.stringify(options.body) : undefined,
+  })
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    throw new Error(`Admin API ${options?.method ?? 'GET'} ${path} failed: ${response.status} ${text}`)
+  }
+  return response.json() as Promise<T>
+}
+
+/** 通用资源响应：{ items, total } */
+export interface AdminListResult<T = Record<string, unknown>> {
+  items: T[]
+  total: number
+}
+
+/** 连通性测试结果（模型 / MCP 通用） */
+export interface AdminTestResult {
+  ok: boolean
+  latency_ms: number
+  message?: string
+  detail?: Record<string, unknown>
+}
+
+/* ---- 提示词管理 /api/admin/prompts ---- */
+export function adminListPrompts(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/prompts')
+}
+export function adminCreatePrompt(data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminRequest('/api/admin/prompts', { method: 'POST', body: data })
+}
+export function adminUpdatePrompt(id: string, data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminRequest(`/api/admin/prompts/${id}`, { method: 'PUT', body: data })
+}
+export function adminDeletePrompt(id: string): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/prompts/${id}`, { method: 'DELETE' })
+}
+/** AI 生成：generate / optimize / rewrite / translate / review / fewshot / explain */
+export function adminGeneratePrompt(data: {
+  action: string
+  source?: string
+  params?: Record<string, unknown>
+}): Promise<{ draft: string; summary: string; version: number }> {
+  return adminRequest('/api/admin/prompts/generate', { method: 'POST', body: data })
+}
+/** 外部导入：file / url / market / git / platform */
+export function adminImportPrompt(data: {
+  channel: string
+  payload?: Record<string, unknown>
+}): Promise<{ imported: number; items: Record<string, unknown>[] }> {
+  return adminRequest('/api/admin/prompts/import', { method: 'POST', body: data })
+}
+
+/* ---- 模型管理 /api/admin/models ---- */
+export function adminListModels(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/models')
+}
+export function adminAddModel(data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminRequest('/api/admin/models', { method: 'POST', body: data })
+}
+/** 连通性测试（实时 ping，返回延迟与错误） */
+export function adminTestModel(data: {
+  provider: string
+  model?: string
+  base_url?: string
+  api_key?: string
+}): Promise<AdminTestResult> {
+  return adminRequest('/api/admin/models/test', { method: 'POST', body: data })
+}
+
+/* ---- 工具管理 /api/admin/tools ---- */
+export function adminListTools(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/tools')
+}
+export function adminRegisterTool(data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminRequest('/api/admin/tools', { method: 'POST', body: data })
+}
+/** MCP 连接测试：探测远端工具列表 */
+export function adminTestMCP(data: {
+  transport: 'stdio' | 'http' | 'sse'
+  command?: string
+  url?: string
+  config?: Record<string, unknown>
+}): Promise<AdminTestResult> {
+  return adminRequest('/api/admin/tools/mcp/connect', { method: 'POST', body: data })
+}
+
+/* ---- Agent 管理 /api/admin/agents ---- */
+export function adminListAgents(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/agents')
+}
+export function adminSaveAgent(data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminRequest('/api/admin/agents', { method: 'POST', body: data })
+}
+/** 流程图保存（节点+边拓扑） */
+export function adminSaveAgentGraph(data: {
+  agent_id: string
+  nodes: unknown[]
+  edges: unknown[]
+}): Promise<{ ok: boolean; version: number }> {
+  return adminRequest('/api/admin/agents/graph', { method: 'POST', body: data })
+}
+
+/* ---- 记忆管理 /api/admin/memory ---- */
+export function adminGetMemory(): Promise<Record<string, unknown>> {
+  return adminRequest('/api/admin/memory')
+}
+export function adminSaveMemory(data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminRequest('/api/admin/memory', { method: 'POST', body: data })
+}
+/** 检索测试：query → Top-K 召回结果 */
+export function adminQueryMemory(data: {
+  kb_id: string
+  query: string
+  top_k?: number
+}): Promise<{ hits: { chunk_id: string; score: number; snippet: string; source: string }[] }> {
+  return adminRequest('/api/admin/memory/query', { method: 'POST', body: data })
+}
+
+/* ---- 编排管理 /api/admin/workflows ---- */
+export function adminListWorkflows(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/workflows')
+}
+export function adminSaveWorkflow(data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminRequest('/api/admin/workflows', { method: 'POST', body: data })
+}
+
+/* ---- 评估管理 /api/admin/evaluations ---- */
+export function adminListEvaluations(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/evaluations')
+}
+export function adminSaveEvaluation(data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminRequest('/api/admin/evaluations', { method: 'POST', body: data })
+}
+/** 执行评估：数据集 + Agent 版本 → 跑分报告 */
+export function adminRunEvaluation(data: {
+  dataset_id: string
+  agent_version: string
+  pass_threshold?: number
+}): Promise<{ task_id: string; status: string; report?: Record<string, unknown> }> {
+  return adminRequest('/api/admin/evaluations/run', { method: 'POST', body: data })
+}
+
+/* ---- 监控告警 /api/admin/metrics + /api/admin/alerts ---- */
+export function adminGetMetrics(): Promise<{
+  series: Record<string, { ts: string[]; values: number[] }>
+  summary: Record<string, number>
+}> {
+  return adminRequest('/api/admin/metrics')
+}
+export function adminListAlerts(): Promise<AdminListResult> {
+  return adminRequest('/api/admin/alerts')
+}
+export function adminSaveAlert(data: Record<string, unknown>): Promise<Record<string, unknown>> {
+  return adminRequest('/api/admin/alerts', { method: 'POST', body: data })
+}
+
+/* ---- 系统设置 /api/admin/settings ---- */
+export function adminGetSettings(): Promise<Record<string, unknown>> {
+  return adminRequest('/api/admin/settings')
+}
+export function adminUpdateSettings(data: Record<string, unknown>): Promise<{ ok: boolean }> {
+  return adminRequest('/api/admin/settings', { method: 'PUT', body: data })
+}

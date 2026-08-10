@@ -585,7 +585,23 @@ async def calculate(expression: str) -> str:
         desc = ct.get("description", "Custom tool")
         params = ct.get("parameters", {})
         param_docs = chr(10).join("        %s: %s" % (k, v.get('description', '')) for k, v in params.items())
-        param_str = ", ".join(f"{k}: str" for k in params.keys())
+        # Parameter declarations with defaults + inline validation (non-empty)
+        param_parts = []
+        param_validations = []
+        for k, v in params.items():
+            req = v.get('required', True) if isinstance(v, dict) else True
+            decl = "%s: str" % k if req else "%s: str = \"\"" % k
+            param_parts.append(decl)
+            param_validations.append(
+                "    if not %s:\n        return \"错误: 参数 %s 不能为空\"" % (k, k)
+            )
+        param_str = ", ".join(param_parts)
+        validation_str = chr(10).join(param_validations)
+        # Build the input dict literal outside the f-string (no backslashes allowed inside f-string expr)
+        input_items = []
+        for k in params.keys():
+            input_items.append('        "%s": str(%s),' % (k, k))
+        input_literal = chr(10).join(input_items)
 
         custom_tool_defs.append(f'''
 @tool
@@ -594,8 +610,17 @@ async def {name}({param_str}) -> str:
 
     {param_docs}
     """
-    # TODO: Implement custom tool logic
-    return f"工具 {name} 已执行"
+    # ---- 参数校验（自动生成） ----
+{validation_str}
+
+    # ---- 业务逻辑（TODO: 在此实现真实逻辑） ----
+    import json
+    result = {{
+{input_literal}
+        "tool": "{name}",
+        "message": "已接收参数",
+    }}
+    return json.dumps(result, ensure_ascii=False)
 ''')
 
     # Base tools list

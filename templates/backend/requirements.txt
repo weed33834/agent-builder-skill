@@ -38,6 +38,17 @@ tiktoken>=0.8.0
 # L8: API extras
 python-multipart>=0.0.9
 
+# M12: Voice (TTS/STT, M12.1-M12.6)
+edge-tts>=6.1.0            # free TTS (no API key)
+# faster-whisper>=1.0.0     # optional local STT (offline, STT_ENGINE=faster-whisper)
+# soundfile>=0.12.0         # audio decode for local STT
+
+# L4: Optional framework adapters (framework-agnostic, M0.21-M0.22)
+# openai-agents>=0.1.0      # framework='openai-agents' (OpenAI Agents SDK)
+# claude-agent-sdk>=1.0.0   # framework='claude-sdk' (Anthropic Agent SDK)
+# google-adk>=0.1.0         # framework='adk' (Google ADK)
+# pyautogen>=0.2.0          # framework='autogen' (AutoGen/AG2)
+
 # L10: Observability (M13)
 # opentelemetry-api>=1.26.0
 # opentelemetry-sdk>=1.26.0

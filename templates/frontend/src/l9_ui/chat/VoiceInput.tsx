@@ -69,18 +69,6 @@ export function VoiceInput({ onTranscript, disabled }: VoiceInputProps) {
     }
   }
 
-  const playTTS = async (text: string) => {
-    try {
-      const res = await fetch(`/api/voice/speak?text=${encodeURIComponent(text)}`)
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const audio = new Audio(url)
-      audio.play()
-    } catch {
-      /* TTS unavailable — silent fallback */
-    }
-  }
-
   return (
     <div className="voice-input">
       {!recording ? (

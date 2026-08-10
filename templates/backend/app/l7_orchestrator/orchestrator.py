@@ -129,7 +129,7 @@ class AgentOrchestrator(OrchestratorBase, A2AOrchestratorBase):
                     raise Exception(f"Remote Agent returned status: {result.status.value}")
             except Exception as e:
                 # Remote execution failed, fall back to local
-                pass
+                logger.warning("Remote agent %s failed (%s); falling back to local execution", task.agent, e)
 
         # Local execution
         return await self._execute_local(task)

@@ -70,12 +70,107 @@ class MockSTTEngine(STTEngine):
         return ""
 
 
+class OpenAIWhisperSTTEngine(STTEngine):
+    """STT via OpenAI Whisper API (production-ready, no local deps).
+
+    Requires OPENAI_API_KEY. Falls back to a mock echo when unavailable.
+    """
+
+    def __init__(self, api_key: Optional[str] = None, model: str = "whisper-1", base_url: Optional[str] = None):
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY", "")
+        self.model = model
+        self.base_url = base_url or os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+
+    async def transcribe(self, audio_bytes: bytes, *, format: str = "wav") -> str:
+        if not self.api_key:
+            logger.warning("WhisperSTT: no OPENAI_API_KEY; returning mock echo")
+            return ""
+        try:
+            import httpx
+
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                files = {"file": (f"audio.{format}", audio_bytes, f"audio/{format}")}
+                data = {"model": self.model}
+                resp = await client.post(
+                    f"{self.base_url.rstrip('/')}/audio/transcriptions",
+                    headers={"Authorization": f"Bearer {self.api_key}"},
+                    files=files,
+                    data=data,
+                )
+                resp.raise_for_status()
+                return (resp.json().get("text") or "").strip()
+        except ImportError:
+            logger.warning("httpx not installed; STT unavailable")
+            return ""
+        except Exception as e:  # noqa: BLE001
+            logger.error("WhisperSTT transcription failed: %s", e)
+            return ""
+
+
+class FunASRSTTEngine(STTEngine):
+    """Local STT via FunASR / faster-whisper (offline, privacy-friendly).
+
+    Uses faster-whisper if available (CTranslate2, much faster than openai-whisper);
+    falls back to a mock echo otherwise.
+    """
+
+    def __init__(self, model_size: str = "base", device: str = "auto"):
+        self.model_size = model_size
+        self.device = device
+        self._model = None
+
+    def _ensure_model(self):
+        if self._model is None:
+            from faster_whisper import WhisperModel  # type: ignore
+
+            self._model = WhisperModel(self.model_size, device=self.device)
+        return self._model
+
+    async def transcribe(self, audio_bytes: bytes, *, format: str = "wav") -> str:
+        try:
+            import io
+
+            import numpy as np
+            import soundfile as sf
+
+            audio, sr = sf.read(io.BytesIO(audio_bytes), dtype="float32")
+            if audio.ndim > 1:
+                audio = audio.mean(axis=1)  # mono
+            model = self._ensure_model()
+
+            def _run():
+                segments, _info = model.transcribe(audio, language="zh")
+                return "".join(s.text for s in segments).strip()
+
+            return await asyncio.to_thread(_run)
+        except ImportError:
+            logger.warning("faster-whisper not installed; falling back to mock STT")
+            return ""
+        except Exception as e:  # noqa: BLE001
+            logger.error("FunASRSTT transcription failed: %s", e)
+            return ""
+
+
 class VoiceService:
-    """Facade bundling TTS + STT with provider switching"""
+    """Facade bundling TTS + STT with provider switching.
+
+    STT provider selection (env VISION/STT_ENGINE):
+      - "mock"    (default): echo placeholder
+      - "whisper"          : OpenAI Whisper API (requires OPENAI_API_KEY)
+      - "faster-whisper"   : local faster-whisper (offline)
+    """
 
     def __init__(self, tts: Optional[TTSEngine] = None, stt: Optional[STTEngine] = None):
         self.tts = tts or EdgeTTSEngine()
-        self.stt = stt or MockSTTEngine()
+        engine = os.getenv("STT_ENGINE", "mock").lower()
+        if stt is not None:
+            self.stt = stt
+        elif engine == "whisper":
+            self.stt = OpenAIWhisperSTTEngine()
+        elif engine in ("faster-whisper", "funasr", "local"):
+            self.stt = FunASRSTTEngine()
+        else:
+            self.stt = MockSTTEngine()
 
     async def speak(self, text: str, **kwargs) -> bytes:
         return await self.tts.synthesize(text, **kwargs)

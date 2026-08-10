@@ -21,7 +21,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    getAgentConfig().then((c) => setConfig(c as Record<string, unknown>)).catch(() => {})
+    getAgentConfig().then((c) => setConfig(c as unknown as Record<string, unknown>)).catch(() => {})
   }, [])
 
   const set = (key: string, value: unknown) => {
