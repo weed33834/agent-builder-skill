@@ -82,6 +82,10 @@ class VectorStore:
         for doc_id in ids:
             self._documents.pop(doc_id, None)
 
+    async def clear(self):
+        """Wipe all documents in this collection"""
+        self._documents.clear()
+
     def count(self) -> int:
         """Get document count"""
         return len(self._documents)

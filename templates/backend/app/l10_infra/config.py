@@ -56,9 +56,36 @@ class Settings(BaseSettings):
     RATE_LIMIT: int = 60  # Requests per minute
     RATE_LIMIT_WINDOW: int = 60  # Window size (seconds)
 
+    # L8: Rate limiting middleware (M7.9)
+    RATE_LIMIT_ENABLED: bool = False
+    RATE_LIMIT_RPS: float = 5.0
+    RATE_LIMIT_BURST: int = 10
+
+    # L8: Public URL for A2A Agent Card (M6.15)
+    APP_PUBLIC_URL: str = "http://localhost:8000"
+    # L7: A2A bearer tokens {agent_name: token} (M6.17)
+    A2A_BEARER_TOKENS: dict = {}
+
+    # L4: Checkpoint / persistence (M3.12)
+    CHECKPOINT_TYPE: str = "memory"  # memory | sqlite | postgres
+    CHECKPOINT_DB_PATH: str = "./agent_checkpoints.db"
+    CHECKPOINT_DB_DSN: str = ""
+
+    # L6: RAG / knowledge base (M5.9)
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    VECTOR_COLLECTION: str = "knowledge_base"
+    RAG_CHUNK_SIZE: int = 800
+    RAG_CHUNK_OVERLAP: int = 100
+    SUMMARY_THRESHOLD: int = 40  # messages before rolling summary (M3.14)
+
     # L10: Infrastructure
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "json"
+
+    # L10: Observability (M13)
+    METRICS_ENABLED: bool = True
+    TRACING_ENABLED: bool = False
+    OTLP_ENDPOINT: str = ""
 
     # Optional external services
     REDIS_URL: str = ""
