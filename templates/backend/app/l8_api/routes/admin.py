@@ -507,6 +507,18 @@ async def update_model(model_id: str, payload: dict):
     raise HTTPException(status_code=404, detail="model not found")
 
 
+@router.delete("/admin/models/{model_id}")
+async def delete_model(model_id: str):
+    data = _load("models")
+    before = len(data["items"])
+    data["items"] = [m for m in data["items"] if m["id"] != model_id]
+    if len(data["items"]) == before:
+        raise HTTPException(status_code=404, detail="model not found")
+    _save("models", data)
+    _audit("model.delete", model_id)
+    return {"ok": True}
+
+
 @router.post("/admin/models/test")
 async def test_model(payload: dict):
     """连通性测试 (M1.23): 实时 ping 模型端点。
@@ -563,6 +575,18 @@ async def save_workflow(payload: dict):
         "created_at": int(time.time()),
     }
     return _upsert("workflows", item)
+
+
+@router.delete("/admin/workflows/{workflow_id}")
+async def delete_workflow(workflow_id: str):
+    data = _load("workflows")
+    before = len(data["items"])
+    data["items"] = [w for w in data["items"] if w["id"] != workflow_id]
+    if len(data["items"]) == before:
+        raise HTTPException(status_code=404, detail="workflow not found")
+    _save("workflows", data)
+    _audit("workflow.delete", workflow_id)
+    return {"ok": True}
 
 
 # ---------------------------------------------------------------------------
@@ -654,6 +678,18 @@ async def save_alert(payload: dict):
         "created_at": int(time.time()),
     }
     return _upsert("alerts", item)
+
+
+@router.delete("/admin/alerts/{alert_id}")
+async def delete_alert(alert_id: str):
+    data = _load("alerts")
+    before = len(data["items"])
+    data["items"] = [a for a in data["items"] if a["id"] != alert_id]
+    if len(data["items"]) == before:
+        raise HTTPException(status_code=404, detail="alert not found")
+    _save("alerts", data)
+    _audit("alert.delete", alert_id)
+    return {"ok": True}
 
 
 # ---------------------------------------------------------------------------

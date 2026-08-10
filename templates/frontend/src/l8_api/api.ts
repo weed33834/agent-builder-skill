@@ -378,6 +378,11 @@ export function adminTestModel(data: {
   return adminRequest('/api/admin/models/test', { method: 'POST', body: data })
 }
 
+/** 删除模型（前后端对齐：后端有 DELETE，前端必须提供入口） */
+export function adminDeleteModel(id: string): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/models/${id}`, { method: 'DELETE' })
+}
+
 /* ---- 工具管理 /api/admin/tools ---- */
 export function adminListTools(): Promise<AdminListResult> {
   return adminRequest('/api/admin/tools')
@@ -434,6 +439,10 @@ export function adminListWorkflows(): Promise<AdminListResult> {
 export function adminSaveWorkflow(data: Record<string, unknown>): Promise<Record<string, unknown>> {
   return adminRequest('/api/admin/workflows', { method: 'POST', body: data })
 }
+/** 删除工作流（前后端对齐） */
+export function adminDeleteWorkflow(id: string): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/workflows/${id}`, { method: 'DELETE' })
+}
 
 /* ---- 评估管理 /api/admin/evaluations ---- */
 export function adminListEvaluations(): Promise<AdminListResult> {
@@ -463,6 +472,10 @@ export function adminListAlerts(): Promise<AdminListResult> {
 }
 export function adminSaveAlert(data: Record<string, unknown>): Promise<Record<string, unknown>> {
   return adminRequest('/api/admin/alerts', { method: 'POST', body: data })
+}
+/** 删除告警规则（前后端对齐） */
+export function adminDeleteAlert(id: string): Promise<{ ok: boolean }> {
+  return adminRequest(`/api/admin/alerts/${id}`, { method: 'DELETE' })
 }
 
 /* ---- 系统设置 /api/admin/settings ---- */

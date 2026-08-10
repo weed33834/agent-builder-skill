@@ -8,7 +8,7 @@
  */
 
 import { useState } from 'react'
-import { adminGetMetrics, adminListAlerts, adminSaveAlert } from '../../l8_api/api'
+import { adminGetMetrics, adminListAlerts, adminSaveAlert, adminDeleteAlert } from '../../l8_api/api'
 
 interface AlertRule {
   id: string
@@ -73,6 +73,16 @@ export function MonitoringPanel() {
     }
   }
 
+  const deleteAlert = async (id: string) => {
+    try {
+      await adminDeleteAlert(id)
+      setNotice('告警规则已删除')
+      void refresh()
+    } catch (e) {
+      setNotice(`删除失败: ${String(e)}`)
+    }
+  }
+
   return (
     <div className="admin-panel" data-testid="admin-monitoring">
       <div className="stat-cards">
@@ -125,7 +135,7 @@ export function MonitoringPanel() {
 
       <table className="admin-table">
         <thead>
-          <tr><th>名称</th><th>条件</th><th>阈值</th><th>渠道</th><th>状态</th></tr>
+          <tr><th>名称</th><th>条件</th><th>阈值</th><th>渠道</th><th>状态</th><th>操作</th></tr>
         </thead>
         <tbody>
           {alerts.map((a) => (
@@ -135,6 +145,9 @@ export function MonitoringPanel() {
               <td>{a.threshold}</td>
               <td>{(a.channels ?? []).join(', ')}</td>
               <td>{a.enabled ? '启用' : '停用'}</td>
+              <td>
+                <button className="admin-btn sm ghost" onClick={() => deleteAlert(a.id)}>删除</button>
+              </td>
             </tr>
           ))}
         </tbody>
