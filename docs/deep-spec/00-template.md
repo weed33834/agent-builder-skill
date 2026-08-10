@@ -81,3 +81,8 @@
 | 24-test-quality.md | 测试与质量保障（测试金字塔/用例库/运行器/回归趋势/混沌/质量门禁） | ✅ 深度版 |
 | 25-performance-engineering.md | 性能工程（TTFT/TPOT/吞吐/压测/缓存/资源池/队列） | ✅ 深度版 |
 | 26-user-growth.md | 用户研究与增长（指标大盘/埋点/留存/漏斗/A-B 实验/反馈中心） | ✅ 深度版 |
+| 27-ai-security.md | AI 安全攻防与红队（威胁模型/注入检测/越狱防护/防御纵深/红队演练/护栏） | ✅ 深度版 |
+| 28-multimodal.md | 多模态能力（图/音/视频理解与生成/跨模态检索/多模态 RAG/生成工作台） | ✅ 深度版 |
+| 29-interoperability.md | Agent 互操作与开放协议（A2A/MCP/Agent Card/信任策略/协议实验室） | ✅ 深度版 |
+| 30-data-pipeline.md | 数据管道与集成（ETL-ELT/批流一体/CDC/可视化编排/质量中心） | ✅ 深度版 |
+| 31-disaster-recovery.md | 容灾与业务连续性（RTO-RPO/3-2-1 备份/多活切换/演练/故障注入） | ✅ 深度版 |
