@@ -17,6 +17,11 @@ from ...l7_orchestrator.base import AgentCard
 from ...l10_infra.config import settings
 
 router = APIRouter()
+# REST introspection endpoints under /api (frontend api.ts contract):
+#   GET  /api/a2a/tasks/{id}          pollA2ATask
+#   POST /api/a2a/tasks               pollA2ATasks (batch, {task_ids})
+#   POST /api/a2a/tasks/{id}/cancel   cancelA2ATask
+api_router = APIRouter()
 
 # Global A2A server instance (initialized in main.py startup)
 a2a_server: Optional[A2AServer] = None
@@ -92,3 +97,46 @@ async def list_a2a_tasks():
     if a2a_server is None:
         return {"tasks": []}
     return {"tasks": a2a_server.list_tasks()}
+
+
+@api_router.post("/a2a/tasks")
+async def poll_a2a_tasks(payload: dict):
+    """Batch-poll A2A tasks by ids (frontend pollA2ATasks)
+
+    Body: {"task_ids": [...]}
+    """
+    if a2a_server is None:
+        return {"tasks": []}
+    ids = payload.get("task_ids", [])
+    tasks = []
+    for tid in ids:
+        t = a2a_server.get_task(str(tid))
+        if t:
+            tasks.append(t)
+    return {"tasks": tasks}
+
+
+@api_router.get("/a2a/tasks/{task_id}")
+async def get_a2a_task(task_id: str):
+    """Get one A2A task by id (frontend pollA2ATask)"""
+    if a2a_server is None:
+        from ...l10_infra.errors import A2AServerError
+        raise A2AServerError("A2A server not initialized")
+    t = a2a_server.get_task(task_id)
+    if t is None:
+        from ...l10_infra.errors import A2AServerError
+        raise A2AServerError(f"Task {task_id} not found")
+    return t
+
+
+@api_router.post("/a2a/tasks/{task_id}/cancel")
+async def cancel_a2a_task(task_id: str):
+    """Cancel one A2A task (frontend cancelA2ATask)"""
+    if a2a_server is None:
+        from ...l10_infra.errors import A2AServerError
+        raise A2AServerError("A2A server not initialized")
+    t = a2a_server.cancel_task(task_id)
+    if t is None:
+        from ...l10_infra.errors import A2AServerError
+        raise A2AServerError(f"Task {task_id} not found")
+    return t

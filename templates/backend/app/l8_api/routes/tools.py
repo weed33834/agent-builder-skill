@@ -58,6 +58,22 @@ async def list_mcp_servers():
     return {"servers": mcp_client.connected_servers()}
 
 
+@router.get("/mcp/tools")
+async def discover_mcp_tools():
+    """Discover all tools exposed by connected MCP servers (frontend discoverMCPTools)"""
+    try:
+        tools = await mcp_client.list_all_tools()
+    except Exception as exc:  # noqa: BLE001 - degraded discovery
+        return {"tools": [], "error": str(exc)}
+    return {"tools": tools}
+
+
+@router.get("/mcp/status")
+async def mcp_status():
+    """Connection status of all MCP servers (frontend getMCPStatus)"""
+    return {"servers": await mcp_client.status()}
+
+
 @router.post("/tools/mcp/connect")
 async def connect_mcp(req: MCPConnectRequest):
     """Connect an MCP server and optionally import its tools (M4.16/M4.17)"""

@@ -192,6 +192,28 @@ class MCPClient:
     def connected_servers(self) -> list[str]:
         return list(self._connections.keys())
 
+    async def status(self) -> list[dict]:
+        """Connection status for all MCP servers (frontend /mcp/status).
+
+        Each entry: {id, name, status, transport, tools, error?}
+        """
+        result: list[dict] = []
+        for name, conn in self._connections.items():
+            entry: dict = {
+                "id": name,
+                "name": name,
+                "status": "connected",
+                "transport": "http" if conn.url else "stdio",
+                "tools": 0,
+            }
+            try:
+                entry["tools"] = len(await conn.list_tools())
+            except Exception as exc:  # noqa: BLE001 - surface degraded state
+                entry["status"] = "error"
+                entry["error"] = str(exc)
+            result.append(entry)
+        return result
+
     # ── tool operations ────────────────────────────────────────
 
     async def list_all_tools(self) -> list[dict]:

@@ -4,9 +4,9 @@ import asyncio
 
 import pytest
 
-from l7_orchestrator.router import IntentRouter
-from l7_orchestrator.supervisor import Supervisor
-from l7_orchestrator.workflow import WorkflowExecutor, OrchestrationError
+from app.l7_orchestrator.router import IntentRouter
+from app.l7_orchestrator.supervisor import Supervisor
+from app.l7_orchestrator.workflow import WorkflowExecutor, OrchestrationError
 
 
 def run(coro):

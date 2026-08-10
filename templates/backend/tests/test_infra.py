@@ -5,11 +5,11 @@ import time
 
 import pytest
 
-from l10_infra.alerting import AlertManager, AlertRule, logging_notifier
-from l10_infra.compliance import ComplianceChecker
-from l10_infra.scheduler import Scheduler, parse_cron, cron_matches
-from l10_infra.skill_loader import SkillRegistry, parse_skill_md
-from l10_infra.voice import VoiceService
+from app.l10_infra.alerting import AlertManager, AlertRule, logging_notifier
+from app.l10_infra.compliance import ComplianceChecker
+from app.l10_infra.scheduler import Scheduler, parse_cron, cron_matches
+from app.l10_infra.skill_loader import SkillRegistry, parse_skill_md
+from app.l10_infra.voice import VoiceService
 
 
 def test_parse_cron():

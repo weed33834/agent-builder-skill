@@ -317,11 +317,82 @@ class BareAgentRuntime:
             latency_ms=(time.perf_counter() - start) * 1000,
         )
 
-    async def stream(self, messages: list, config: Optional[dict] = None) -> AsyncIterator[AgentEvent]:
-        yield AgentEvent("agent_message", {{"role": "system", "note": "bare runtime streaming (M3.18)"}})
+    async def ainvoke(self, inputs: dict, config: Optional[dict] = None) -> dict:
+        """LangGraph-style ainvoke compatibility (used by L7 orchestrator / A2A)."""
+        messages = []
+        for m in inputs.get("messages", []):
+            if isinstance(m, tuple):
+                messages.append({{"role": m[0], "content": m[1]}})
+            elif isinstance(m, dict):
+                messages.append(m)
+            else:
+                messages.append({{"role": "user", "content": str(m)}})
         result = await self.run(messages, config)
-        yield AgentEvent("agent_message", result.text)
-        yield AgentEvent("done", {{"usage": result.usage, "latency_ms": result.latency_ms}})
+        thread_id = (config or {{}}).get("thread_id", "default")
+        history = self._memory.setdefault(thread_id, [])
+        return {{"messages": history, "agent_result": result}}
+
+    async def stream(self, messages: list, config: Optional[dict] = None) -> AsyncIterator[AgentEvent]:
+        """Emit fine-grained events: agent_message / tool_call / tool_result / done (M3.18)."""
+        start = time.perf_counter()
+        thread_id = (config or {{}}).get("thread_id", "default")
+        history = self._memory.setdefault(thread_id, [])
+        history.extend(messages)
+        tool_calls_log: list = []
+
+        for _ in range(self.max_iterations):
+            resp = await self.llm.invoke(history, tools=self._tool_schemas or None)
+            if getattr(resp, "tool_calls", None):
+                for tc in resp.tool_calls:
+                    tool_calls_log.append(tc)
+                    yield AgentEvent("tool_call", {{"name": tc.get("name"), "input": tc.get("arguments", {{}})}})
+                    fn = self.tools.get(tc.get("name"))
+                    if fn is None:
+                        result = f"Error: unknown tool {{tc.get('name')}}"
+                    else:
+                        try:
+                            result = await fn(**tc.get("arguments", {{}}))
+                        except Exception as e:  # noqa: BLE001
+                            result = f"Tool error: {{e}}"
+                    history.append({{"role": "tool", "content": str(result), "tool_call_id": tc.get("id")}})
+                    yield AgentEvent("tool_result", {{"name": tc.get("name"), "output": str(result)[:500]}})
+                continue
+            text = getattr(resp, "content", "") or ""
+            history.append({{"role": "assistant", "content": text}})
+            yield AgentEvent("agent_message", text)
+            yield AgentEvent(
+                "done",
+                {{
+                    "usage": getattr(resp, "usage", {{}}) or {{}},
+                    "latency_ms": (time.perf_counter() - start) * 1000,
+                    "tool_calls": tool_calls_log,
+                }},
+            )
+            return
+
+        yield AgentEvent(
+            "done",
+            {{"usage": {{}}, "latency_ms": (time.perf_counter() - start) * 1000, "tool_calls": tool_calls_log}},
+        )
+
+
+# ── Module-level compatibility layer (same names as the LangGraph variant) ──
+# Used by L8 routes (chat.py / a2a.py), L7 orchestrator and app/main.py.
+
+_runtime: Optional["BareAgentRuntime"] = None
+
+
+def get_graph() -> "BareAgentRuntime":
+    """Return the app-wide runtime singleton (LangGraph get_graph() compatible)."""
+    global _runtime
+    if _runtime is None:
+        _runtime = build_single_agent_graph()
+    return _runtime
+
+
+def get_graph_config(thread_id: str) -> dict:
+    """Build a run config for a thread (LangGraph get_graph_config() compatible)."""
+    return {{"thread_id": thread_id}}
 
 
 def build_single_agent_graph() -> "BareAgentRuntime":
@@ -331,7 +402,7 @@ def build_single_agent_graph() -> "BareAgentRuntime":
 
     llm = create_llm()
     registry = get_registry()
-    return BareAgentRuntime(llm=llm, tools={{t.name: t.func for t in registry.list_tools()}})
+    return BareAgentRuntime(llm=llm, tools=registry.get_callables())
 '''.strip()
     )
 
@@ -367,22 +438,31 @@ Max iterations: {max_iterations}
 """
 
 from typing import Optional
-from langgraph.graph import StateGraph, START, END, Command
+from langgraph.graph import StateGraph, START, END
+from langgraph.types import Command
 from langgraph.checkpoint.memory import MemorySaver
 
 from .state import AgentState
-from .nodes import agent_node, tool_node, router_node
+from .nodes import agent_node, tool_node
+
+
+def _route_from_agent(state: AgentState) -> str:
+    """Route from the Agent node: tool call -> tools, otherwise END"""
+    last_message = state["messages"][-1] if state.get("messages") else None
+    if last_message and hasattr(last_message, "tool_calls") and last_message.tool_calls:
+        return "tools"
+    return END
 
 
 def build_single_agent_graph() -> StateGraph:
-    """Build a single Agent graph"""
+    """Build a single Agent graph (LangGraph v1.0 pattern)"""
     workflow = StateGraph(AgentState)
     workflow.add_node("agent", agent_node)
     workflow.add_node("tools", tool_node)
     workflow.add_edge(START, "agent")
     workflow.add_conditional_edges(
         "agent",
-        router_node,
+        _route_from_agent,
         {{
             "tools": "tools",
             END: END,
@@ -416,6 +496,16 @@ def get_graph() -> StateGraph:
         graph = build_single_agent_graph()
         _graph = compile_graph(graph)
     return _graph
+
+
+def get_graph_config(thread_id: Optional[str] = None) -> dict:
+    """Get the graph configuration"""
+    return {{
+        "configurable": {{
+            "thread_id": thread_id or 'default',
+            "max_tool_calls": 10,
+        }},
+    }}
 '''.strip()
         )
     else:
@@ -435,38 +525,50 @@ Sub-agents: {', '.join(agent_names)}
 """
 
 from typing import Optional
-from langgraph.graph import StateGraph, START, END, Command
+from langgraph.graph import StateGraph, START, END
+from langgraph.types import Command
 from langgraph.checkpoint.memory import MemorySaver
 
 from .state import AgentState
-from .nodes import agent_node, tool_node, router_node
+from .nodes import agent_node, tool_node, supervisor_node
 
 
-def build_multi_agent_graph() -> StateGraph:
-    """Build a multi-Agent orchestration graph"""
+def _route_to_specialist(state: AgentState) -> str:
+    """Route to a specialist Agent based on user intent keywords"""
+    last_message = state["messages"][-1].content.lower() if state.get("messages") else ""
+
+    keywords_1 = ["搜索", "查找", "查询", "search", "find", "lookup"]
+    keywords_2 = ["分析", "总结", "对比", "analyze", "summarize", "compare"]
+
+    for kw in keywords_1:
+        if kw in last_message:
+            return "specialist_1"
+    for kw in keywords_2:
+        if kw in last_message:
+            return "specialist_2"
+
+    return "specialist_1"
+
+
+def build_supervisor_graph() -> StateGraph:
+    """Build a Supervisor orchestration graph (langgraph-supervisor pattern)"""
     workflow = StateGraph(AgentState)
 
-    # Supervisor agent
-    workflow.add_node("supervisor", agent_node)
-
-    # Sub-agents
+    workflow.add_node("supervisor", supervisor_node)
 {sub_agent_nodes}
-    # Aggregator agent
     workflow.add_node("aggregator", agent_node)
 
     workflow.add_edge(START, "supervisor")
 
-    # Conditional routing
     workflow.add_conditional_edges(
         "supervisor",
-        router_node,
+        _route_to_specialist,
         {{
             {sub_agent_route_map},
             END: END,
         }},
     )
 
-    # Sub-agents → Aggregator
     for name in [{sub_agent_list}]:
         workflow.add_edge(name, "aggregator")
 
@@ -495,9 +597,19 @@ def get_graph() -> StateGraph:
     """Get the global graph instance"""
     global _graph
     if _graph is None:
-        graph = build_multi_agent_graph()
+        graph = build_supervisor_graph()
         _graph = compile_graph(graph)
     return _graph
+
+
+def get_graph_config(thread_id: Optional[str] = None) -> dict:
+    """Get the graph configuration"""
+    return {{
+        "configurable": {{
+            "thread_id": thread_id or 'default',
+            "max_tool_calls": 10,
+        }},
+    }}
 '''.strip()
         )
 
@@ -1947,8 +2059,247 @@ export default defineConfig({
     )
 
 
-def copy_static_templates(output_dir: str):
-    """Copy static template files that don't need modification"""
+def _write_bare_chat(output_dir: str):
+    """Write framework-specific chat.py for the bare runtime (AgentEvent contract).
+
+    The default templates/backend/.../chat.py speaks LangGraph astream_events
+    (on_chat_model_stream / on_tool_start / ...). The bare runtime emits
+    AgentEvent(type=agent_message|tool_call|tool_result|done), so the SSE
+    mapping differs. (M0.21 framework-agnostic)
+    """
+    content = '''"""L8 - Chat API Endpoint (bare framework variant)
+
+SSE streaming chat over the bare AgentRuntime event contract:
+  agent_message -> token / done
+  tool_call     -> tool_start
+  tool_result   -> tool_end
+"""
+
+import json
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
+
+from ..schemas import ChatRequest
+from ...l4_agent.graph import get_graph, get_graph_config
+from ...l6_memory.session_manager import get_session_manager
+from ...l10_infra.config import settings
+
+router = APIRouter()
+
+
+@router.post("/chat")
+async def chat(request: ChatRequest):
+    """Streaming chat (bare runtime: AgentEvent stream over SSE)"""
+    try:
+        graph = get_graph()
+        session_mgr = get_session_manager()
+
+        thread_id = request.thread_id
+        if not thread_id:
+            thread_id = session_mgr.create_session()
+
+        config = get_graph_config(thread_id)
+        await session_mgr.add_message(thread_id, "user", request.message)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+    async def event_stream():
+        tool_call_count = 0
+        full_response = ""
+
+        async for ev in graph.stream(
+            [{"role": "user", "content": request.message}], config
+        ):
+            kind = ev.type
+            try:
+                if kind == "agent_message":
+                    text = ev.content if isinstance(ev.content, str) else ""
+                    if text:
+                        full_response += text
+                        yield f"data: {json.dumps({'type': 'token', 'content': text})}\\n\\n"
+                elif kind == "tool_call":
+                    tool_call_count += 1
+                    data = ev.content or {}
+                    yield f"data: {json.dumps({'type': 'tool_start', 'tool': data.get('name'), 'input': str(data.get('input'))[:200]})}\\n\\n"
+                elif kind == "tool_result":
+                    data = ev.content or {}
+                    yield f"data: {json.dumps({'type': 'tool_end', 'tool': data.get('name'), 'output': str(data.get('output'))[:500]})}\\n\\n"
+                elif kind == "done":
+                    yield f"data: {json.dumps({'type': 'done', 'thread_id': thread_id, 'tool_calls': tool_call_count})}\\n\\n"
+            except Exception:
+                pass
+
+        if full_response:
+            await session_mgr.add_message(thread_id, "assistant", full_response)
+
+        try:
+            from ...l10_infra.usage import record_usage
+            est_in = max(10, len((request.message or "")) // 2)
+            est_out = max(10, len(full_response) // 2)
+            record_usage(thread_id, settings.LLM_PROVIDER, settings.LLM_MODEL, est_in, est_out)
+        except Exception:
+            pass
+
+        yield f"data: {json.dumps({'type': 'done', 'thread_id': thread_id, 'tool_calls': tool_call_count})}\\n\\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
+'''
+    dst = f"{output_dir}/app/l8_api/routes/chat.py"
+    ensure_dir(os.path.dirname(dst))
+    write_file(dst, content)
+
+
+def _write_bare_tests(output_dir: str):
+    """Write framework-specific tests for the bare runtime into the generated project.
+
+    The bare runtime (BareAgentRuntime / get_graph / get_graph_config) only
+    exists in generated projects, so its tests ship with the artifact.
+    """
+    content = '''"""Tests for the bare framework-agnostic runtime compatibility layer.
+
+Covers (M0.21 framework-agnostic):
+  - BareAgentRuntime.run / stream / ainvoke event contract
+  - get_graph() / get_graph_config() LangGraph-compatible entry points
+  - ToolRegistry.get_callables() name -> async callable map
+"""
+
+import pytest
+
+
+@pytest.mark.asyncio
+async def test_bare_runtime_stream_event_contract():
+    """stream() must emit agent_message -> done with correct payloads."""
+    from app.l4_agent.graph import BareAgentRuntime, AgentEvent
+
+    class _FakeResp:
+        def __init__(self, content, tool_calls=None, usage=None):
+            self.content = content
+            self.tool_calls = tool_calls
+            self.usage = usage or {}
+
+    class FakeLLM:
+        async def invoke(self, messages, tools=None):
+            return _FakeResp(content="hello from bare")
+
+    runtime = BareAgentRuntime(llm=FakeLLM(), tools={})
+    events = []
+    async for ev in runtime.stream(
+        [{"role": "user", "content": "hi"}], {"thread_id": "t-bare-1"}
+    ):
+        assert isinstance(ev, AgentEvent)
+        events.append(ev)
+
+    types = [e.type for e in events]
+    assert types[-1] == "done"
+    assert "agent_message" in types
+    assert events[-1].content["latency_ms"] >= 0
+
+
+@pytest.mark.asyncio
+async def test_bare_runtime_tool_call_roundtrip():
+    """tool_call / tool_result events must be emitted when the LLM asks for tools."""
+    from app.l4_agent.graph import BareAgentRuntime
+
+    class _FakeResp:
+        def __init__(self, content, tool_calls=None, usage=None):
+            self.content = content
+            self.tool_calls = tool_calls
+            self.usage = usage or {}
+
+    class FakeLLM:
+        def __init__(self):
+            self.calls = 0
+
+        async def invoke(self, messages, tools=None):
+            self.calls += 1
+            if self.calls == 1:
+                return _FakeResp(
+                    content="",
+                    tool_calls=[{
+                        "name": "echo_tool",
+                        "arguments": {"text": "ping"},
+                        "id": "call_1",
+                    }],
+                )
+            return _FakeResp(content="tool result used: ping")
+
+    async def echo_tool(text: str) -> str:
+        return f"echoed:{text}"
+
+    runtime = BareAgentRuntime(llm=FakeLLM(), tools={"echo_tool": echo_tool})
+    types, payloads = [], []
+    async for ev in runtime.stream([{"role": "user", "content": "call tool"}], {}):
+        types.append(ev.type)
+        payloads.append(ev.content)
+
+    assert "tool_call" in types
+    assert "tool_result" in types
+    idx_call = types.index("tool_call")
+    idx_result = types.index("tool_result")
+    assert payloads[idx_call]["name"] == "echo_tool"
+    assert payloads[idx_result]["output"] == "echoed:ping"
+
+
+@pytest.mark.asyncio
+async def test_bare_ainvoke_langgraph_contract():
+    """ainvoke() must return {'messages': [...]} like LangGraph for L7/L8 routes."""
+    from app.l4_agent.graph import BareAgentRuntime
+
+    class _FakeResp:
+        def __init__(self, content, tool_calls=None, usage=None):
+            self.content = content
+            self.tool_calls = tool_calls
+            self.usage = usage or {}
+
+    class FakeLLM:
+        async def invoke(self, messages, tools=None):
+            return _FakeResp(content="answer")
+
+    runtime = BareAgentRuntime(llm=FakeLLM(), tools={})
+    result = await runtime.ainvoke(
+        {"messages": [("user", "question")]}, {"thread_id": "t-ainvoke"}
+    )
+    assert "messages" in result
+    assert result["messages"][-1]["content"] == "answer"
+
+
+def test_bare_get_graph_config():
+    """get_graph_config() must return a LangGraph-style config dict."""
+    from app.l4_agent.graph import get_graph_config
+
+    cfg = get_graph_config("thread-xyz")
+    assert cfg == {"thread_id": "thread-xyz"}
+
+
+def test_tool_registry_get_callables():
+    """ToolRegistry.get_callables() must expose async callables by name."""
+    from app.l5_tools.registry import ToolRegistry
+
+    class FakeTool:
+        name = "fake_tool"
+        description = "fake"
+
+        async def ainvoke(self, kwargs):
+            return f"called:{kwargs}"
+
+    ToolRegistry.clear()
+    ToolRegistry.register(FakeTool(), category="test")
+    callables = ToolRegistry.get_callables()
+    assert "fake_tool" in callables
+    ToolRegistry.clear()
+'''
+    dst = f"{output_dir}/tests/test_bare_runtime.py"
+    ensure_dir(os.path.dirname(dst))
+    write_file(dst, content)
+
+
+def copy_static_templates(output_dir: str, framework: Optional[str] = None):
+    """Copy static template files that don't need modification
+
+    Args:
+        output_dir: generated project root
+        framework: agent framework ('bare' needs framework-specific chat.py)
+    """
     # Copy L1 base files
     for f in ["base.py", "openai_adapter.py", "anthropic_adapter.py", "deepseek_adapter.py", "ollama_adapter.py"]:
         src = TEMPLATES_DIR / "backend" / "app" / "l1_llm" / f
@@ -2024,6 +2375,13 @@ def copy_static_templates(output_dir: str):
             dst = f"{output_dir}/app/l8_api/routes/{f}"
             ensure_dir(os.path.dirname(dst))
             copy_template(str(src), dst)
+
+    # Bare framework: chat.py must use the while-loop stream() event contract
+    # (AgentEvent: agent_message/tool_call/tool_result/done) instead of the
+    # LangGraph astream_events contract. (M0.21 framework-agnostic)
+    if framework == "bare":
+        _write_bare_chat(output_dir)
+        _write_bare_tests(output_dir)
 
     src_dir = TEMPLATES_DIR / "backend" / "app" / "l8_api" / "middleware"
     for f in os.listdir(str(src_dir)):
@@ -2139,7 +2497,7 @@ def main():
 
     print("")
     print("=== Copying static template files ===")
-    copy_static_templates(output_dir)
+    copy_static_templates(output_dir, framework)
 
     print("")
     print(f"=== Generation complete! ===")

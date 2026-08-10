@@ -9,6 +9,17 @@ from typing import Any, Optional
 from langchain_core.tools import BaseTool
 
 
+_registry_instance: Optional["ToolRegistry"] = None
+
+
+def get_registry() -> "ToolRegistry":
+    """Get the global ToolRegistry singleton (L5 public factory)."""
+    global _registry_instance
+    if _registry_instance is None:
+        _registry_instance = ToolRegistry()
+    return _registry_instance
+
+
 class ToolRegistry:
     """Global tool registry
 
@@ -97,6 +108,19 @@ class ToolRegistry:
             }
             for tool in cls._tools.values()
         ]
+
+    @classmethod
+    def get_callables(cls) -> dict[str, Any]:
+        """Get a name -> async callable map (framework-agnostic runtimes, e.g. 'bare').
+
+        Each callable accepts keyword arguments and returns the tool result.
+        """
+        def _make_callable(tool: BaseTool):
+            async def _call(**kwargs) -> Any:
+                return await tool.ainvoke(kwargs)
+            return _call
+
+        return {tool.name: _make_callable(tool) for tool in cls._tools.values()}
 
     @classmethod
     async def execute(cls, name: str, args: dict) -> Any:

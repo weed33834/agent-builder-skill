@@ -146,6 +146,21 @@ class A2AServer:
         task.status = TaskStatus.CANCELED
         return self._task_to_dict(task)
 
+    # ── public REST helpers (used by l8_api/routes/a2a.py) ─────
+
+    def get_task(self, task_id: str) -> Optional[dict]:
+        """Return one task as dict (REST GET /a2a/tasks/{id})"""
+        task = self._tasks.get(task_id)
+        return self._task_to_dict(task) if task else None
+
+    def cancel_task(self, task_id: str) -> Optional[dict]:
+        """Cancel one task (REST POST /a2a/tasks/{id}/cancel)"""
+        task = self._tasks.get(task_id)
+        if task is None:
+            return None
+        task.status = TaskStatus.CANCELED
+        return self._task_to_dict(task)
+
     # ── serialization ──────────────────────────────────────────
 
     def _task_to_dict(self, task: A2ATask) -> dict:

@@ -4,8 +4,8 @@ import asyncio
 
 import pytest
 
-from l6_memory.knowledge_base import KnowledgeBase, KnowledgeBaseManager
-from l6_memory.summary import ConversationSummarizer, should_summarize
+from app.l6_memory.knowledge_base import KnowledgeBase, KnowledgeBaseManager
+from app.l6_memory.summary import ConversationSummarizer, should_summarize
 
 
 def run(coro):

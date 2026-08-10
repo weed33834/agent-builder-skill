@@ -13,6 +13,7 @@ from .l8_api.routes.config import router as config_router
 from .l8_api.routes.sessions import router as sessions_router
 from .l8_api.routes.tools import router as tools_router
 from .l8_api.routes.a2a import router as a2a_router
+from .l8_api.routes.a2a import api_router as a2a_api_router
 from .l8_api.routes.voice import router as voice_router
 from .l8_api.routes.nlp import router as nlp_router
 from .l8_api.routes.security import router as security_router
@@ -112,6 +113,7 @@ def create_app() -> FastAPI:
     app.include_router(sessions_router, prefix="/api", tags=["sessions"])
     app.include_router(tools_router, prefix="/api", tags=["tools"])
     app.include_router(a2a_router, prefix="", tags=["a2a"])
+    app.include_router(a2a_api_router, prefix="/api", tags=["a2a"])
     app.include_router(voice_router, prefix="/api", tags=["voice"])
     app.include_router(nlp_router, prefix="/api", tags=["nlp"])
     app.include_router(security_router, prefix="/api", tags=["security"])
