@@ -63,5 +63,5 @@ jobs:
         run: pip install pyyaml
       - name: Smoke-run generator
         run: |
-          python scripts/generate.py --output /tmp/ci_agent --name ci_smoke --type chat
+          python scripts/generate.py templates/agent-types/chat.yaml /tmp/ci_agent --framework=bare
           test -f /tmp/ci_agent/app/main.py && echo "generator OK"
