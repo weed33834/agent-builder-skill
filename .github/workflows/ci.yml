@@ -59,9 +59,34 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: "3.11"
-      - name: Install generator deps
-        run: pip install pyyaml
-      - name: Smoke-run generator
+      - name: Install deps
         run: |
-          python scripts/generate.py templates/agent-types/chat.yaml /tmp/ci_agent --framework=bare
-          test -f /tmp/ci_agent/app/main.py && echo "generator OK"
+          python -m pip install --upgrade pip
+          pip install -r templates/backend/requirements.txt pytest pytest-asyncio pyyaml
+      - name: Generate + import + test every agent type (bare)
+        run: |
+          set -e
+          for cfg in templates/agent-types/*.yaml; do
+            name=$(basename "$cfg" .yaml)
+            python scripts/generate.py "$cfg" "/tmp/gen_${name}" --framework=bare
+            (cd "/tmp/gen_${name}" && python -c "import app.main; print('${name}: bare import OK')")
+            (cd "/tmp/gen_${name}" && python -m pytest -q)
+          done
+      - name: Generate + startup every agent type (langgraph)
+        run: |
+          set -e
+          for cfg in templates/agent-types/*.yaml; do
+            name=$(basename "$cfg" .yaml)
+            python scripts/generate.py "$cfg" "/tmp/lg_${name}" --framework=langgraph
+            (cd "/tmp/lg_${name}" && python -c "
+import asyncio
+from app.main import app
+from app.l4_agent.graph import get_graph
+async def _r():
+    get_graph()
+    async with app.router.lifespan_context(app):
+        pass
+asyncio.run(_r())
+print('${name}: langgraph startup OK')
+")
+          done

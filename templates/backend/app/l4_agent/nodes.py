@@ -3,15 +3,11 @@
 Defines the node functions in the LangGraph graph.
 Each node is an independent processing step that receives state and returns updates.
 
-LangGraph v1.0 pattern:
-  - Uses Command(goto=, update=) instead of directly returning dict
-  - Supports interrupt() for human-in-the-loop
-  - Comprehensive error handling and type annotations
+Routing is performed by the graph's (conditional) edges, so these nodes return
+plain state-update dicts and are reusable by BOTH the single-agent graph and
+the multi-agent supervisor graph.
 """
 
-from typing import Literal
-from langgraph.types import Command
-from langgraph.types import interrupt
 from langchain_core.messages import AIMessage, ToolMessage
 
 from .state import AgentState
@@ -33,23 +29,10 @@ def _get_llm():
     )
 
 
-async def agent_node(state: AgentState) -> Command[Literal["tools", "__end__"]]:
-    """Agent core node
-
-    Receives the current state, assembles the Prompt via the L3 prompt builder,
-    invokes the L2 interface to interact with the LLM, and decides the next step.
-
-    v1.0 pattern: Returns a Command object, specifying both goto and update.
-    """
-    # Get current configuration
-    llm = _get_llm()
-    tools = ToolRegistry.get_all()
-
-    # Assemble messages using the L3 prompt builder
+def _assemble_messages(state: AgentState):
+    """Build the L3 prompt-builder message list from the graph state"""
     builder = PromptBuilder()
     messages = builder.build()
-
-    # Add history messages
     for msg in state.get("messages", []):
         if msg.type == "human":
             role = "user"
@@ -57,68 +40,55 @@ async def agent_node(state: AgentState) -> Command[Literal["tools", "__end__"]]:
             role = "tool"
         else:
             role = "assistant"
-        messages.append({
-            "role": role,
-            "content": msg.content,
-        })
-
-    try:
-        # Invoke the LLM via the L2 interface
-        response = await llm.chat(messages, tools=tools if tools else None)
-
-        # Check whether there are tool calls
-        if hasattr(response, "tool_calls") and response.tool_calls:
-            return Command(
-                goto="tools",
-                update={
-                    "messages": [response],
-                    "current_tool": response.tool_calls[0]["name"],
-                    "iteration_count": (state.get("iteration_count", 0) + 1),
-                },
-            )
-        else:
-            return Command(
-                goto="__end__",
-                update={
-                    "messages": [response],
-                    "current_tool": None,
-                    "is_final": True,
-                    "iteration_count": (state.get("iteration_count", 0) + 1),
-                },
-            )
-
-    except Exception as e:
-        error_msg = f"Agent invocation failed: {str(e)}"
-        return Command(
-            goto="__end__",
-            update={
-                "messages": [AIMessage(content=error_msg)],
-                "error": error_msg,
-                "is_final": True,
-            },
-        )
+        messages.append({"role": role, "content": msg.content})
+    return messages
 
 
-async def agent_node_with_human(state: AgentState) -> Command[Literal["tools", "human", "__end__"]]:
-    """Agent core node (with human-in-the-loop support)
+async def agent_node(state: AgentState) -> dict:
+    """Agent core node
 
-    Inserts an interrupt() before decision making to wait for human input confirmation.
-    Suitable for scenarios requiring approval or review.
+    Invokes the LLM via the L2 interface and returns an update dict. The
+    graph's conditional edge routes to `tools` when tool calls are present,
+    and to the terminal/aggregate node otherwise.
     """
     llm = _get_llm()
     tools = ToolRegistry.get_all()
-    builder = PromptBuilder()
-    messages = builder.build()
+    messages = _assemble_messages(state)
 
-    for msg in state.get("messages", []):
-        role = "user" if msg.type == "human" else "tool" if msg.type == "tool" else "assistant"
-        messages.append({"role": role, "content": msg.content})
+    try:
+        response = await llm.chat(messages, tools=tools if tools else None)
+        has_tools = hasattr(response, "tool_calls") and bool(response.tool_calls)
+        return {
+            "messages": [response],
+            "current_tool": (response.tool_calls[0]["name"] if has_tools else None),
+            "is_final": not has_tools,
+            "iteration_count": state.get("iteration_count", 0) + 1,
+        }
+    except Exception as e:
+        error_msg = f"Agent invocation failed: {str(e)}"
+        return {
+            "messages": [AIMessage(content=error_msg)],
+            "error": error_msg,
+            "is_final": True,
+        }
+
+
+async def agent_node_with_human(state: AgentState) -> dict:
+    """Agent core node (with human-in-the-loop support)
+
+    Inserts an interrupt() before executing a tool call to wait for human
+    confirmation. Suitable for approval/review scenarios.
+    """
+    from langgraph.types import interrupt
+
+    llm = _get_llm()
+    tools = ToolRegistry.get_all()
+    messages = _assemble_messages(state)
 
     try:
         response = await llm.chat(messages, tools=tools if tools else None)
 
         if hasattr(response, "tool_calls") and response.tool_calls:
-            # Pause and wait for human confirmation of the tool call
             tool_name = response.tool_calls[0]["name"]
             tool_args = response.tool_calls[0].get("args", {})
 
@@ -130,54 +100,39 @@ async def agent_node_with_human(state: AgentState) -> Command[Literal["tools", "
             })
 
             if confirmation is False:
-                return Command(
-                    goto="__end__",
-                    update={
-                        "messages": [AIMessage(content=f"用户取消了工具 {tool_name} 的调用")],
-                        "is_final": True,
-                    },
-                )
-
-            return Command(
-                goto="tools",
-                update={
-                    "messages": [response],
-                    "current_tool": tool_name,
-                    "iteration_count": (state.get("iteration_count", 0) + 1),
-                },
-            )
-        else:
-            return Command(
-                goto="__end__",
-                update={
-                    "messages": [response],
+                return {
+                    "messages": [AIMessage(content=f"用户取消了工具 {tool_name} 的调用")],
                     "is_final": True,
-                    "iteration_count": (state.get("iteration_count", 0) + 1),
-                },
-            )
-
-    except Exception as e:
-        error_msg = f"Agent invocation failed: {str(e)}"
-        return Command(
-            goto="__end__",
-            update={
-                "messages": [AIMessage(content=error_msg)],
-                "error": error_msg,
+                }
+            return {
+                "messages": [response],
+                "current_tool": tool_name,
+                "iteration_count": state.get("iteration_count", 0) + 1,
+            }
+        else:
+            return {
+                "messages": [response],
                 "is_final": True,
-            },
-        )
+                "iteration_count": state.get("iteration_count", 0) + 1,
+            }
+    except Exception as e:
+        return {
+            "messages": [AIMessage(content=f"Agent invocation failed: {str(e)}")],
+            "error": str(e),
+            "is_final": True,
+        }
 
 
-async def tool_node(state: AgentState) -> Command[Literal["agent", "__end__"]]:
+async def tool_node(state: AgentState) -> dict:
     """Tool execution node
 
-    Executes the tool calls requested by the Agent via the L5 tool registry.
-    Returns a Command object, automatically returning to the Agent node to continue execution.
+    Executes the tool calls requested by the Agent via the L5 tool registry
+    and returns the ToolMessages. The graph's edge decides where to continue.
     """
     last_message = state["messages"][-1]
 
     if not hasattr(last_message, "tool_calls") or not last_message.tool_calls:
-        return Command(goto="agent", update={})
+        return {}
 
     tool_results = []
 
@@ -187,7 +142,6 @@ async def tool_node(state: AgentState) -> Command[Literal["agent", "__end__"]]:
         tool_id = tool_call.get("id", "")
 
         try:
-            # Execute via the L5 tool registry
             result = await ToolRegistry.execute(tool_name, tool_args)
             tool_results.append(
                 ToolMessage(content=str(result), tool_call_id=tool_id)
@@ -197,32 +151,28 @@ async def tool_node(state: AgentState) -> Command[Literal["agent", "__end__"]]:
                 ToolMessage(content=f"Tool execution failed: {str(e)}", tool_call_id=tool_id)
             )
 
-    return Command(
-        goto="agent",
-        update={
-            "messages": tool_results,
-            "tool_results": {
-                tc.get("id", str(i)): tr.content
-                for i, (tc, tr) in enumerate(zip(last_message.tool_calls, tool_results))
-            },
+    return {
+        "messages": tool_results,
+        "tool_results": {
+            tc.get("id", str(i)): tr.content
+            for i, (tc, tr) in enumerate(zip(last_message.tool_calls, tool_results))
         },
-    )
+    }
 
 
-async def supervisor_node(state: AgentState) -> Command[Literal["specialist_1", "specialist_2", "__end__"]]:
+async def supervisor_node(state: AgentState) -> dict:
     """Supervisor dispatch node
 
-    Responsible for analyzing tasks and dispatching them to the appropriate Specialist Agent during multi-Agent orchestration.
+    Analyzes the request intent and returns an annotation; the graph's
+    conditional edge `_route_to_specialist` dispatches to the correct
+    sub-agent (whose names come from the agent configuration).
     """
     llm = _get_llm()
     messages = state.get("messages", [])
 
-    # Supervisor analyzes the task type
     analysis_prompt = {
         "role": "system",
-        "content": "你是一个任务分发 Supervisor。分析用户请求，决定应该由哪个 Specialist 处理。"
-                   "回复 'specialist_1' 表示搜索/查找类任务，'specialist_2' 表示分析/总结类任务。"
-                   "如果任务已完成，回复 'END'。",
+        "content": "你是任务分发 Supervisor。分析用户请求的意图类型，用于后续路由到对应的 Specialist。",
     }
 
     try:
@@ -230,30 +180,7 @@ async def supervisor_node(state: AgentState) -> Command[Literal["specialist_1", 
         for msg in messages:
             if msg.type == "human":
                 supervisor_messages.append({"role": "user", "content": msg.content})
-
         response = await llm.chat(supervisor_messages)
-        decision = response.content.strip().upper()
-
-        if decision == "END":
-            return Command(goto="__end__", update={"is_final": True})
-        elif decision == "SPECIALIST_2":
-            return Command(
-                goto="specialist_2",
-                update={"agent_type": "specialist_2"},
-            )
-        else:
-            return Command(
-                goto="specialist_1",
-                update={"agent_type": "specialist_1"},
-            )
-
+        return {"supervisor_analysis": response.content}
     except Exception as e:
-        error_msg = f"Supervisor dispatch failed: {str(e)}"
-        return Command(
-            goto="__end__",
-            update={
-                "messages": [AIMessage(content=error_msg)],
-                "error": error_msg,
-                "is_final": True,
-            },
-        )
+        return {"supervisor_analysis": "", "error": str(e)}

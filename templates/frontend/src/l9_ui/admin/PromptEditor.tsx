@@ -11,6 +11,7 @@
 
 import { useMemo, useState } from 'react'
 import {
+  chat, adminGetAuditLog,
   adminGeneratePrompt, adminImportPrompt,
   adminListPrompts, adminCreatePrompt, adminUpdatePrompt, adminDeletePrompt,
   adminListPromptVersions, adminRollbackPrompt, adminSetPromptAB,
@@ -141,7 +142,6 @@ export function PromptEditor() {
 
   const loadAudit = async () => {
     try {
-      const { adminGetAuditLog } = await import('../../l8_api/api')
       const res = await adminGetAuditLog()
       setAuditLogs((res.items as unknown as { ts: number; action: string; subject: string; detail?: string }[]) || [])
     } catch {
@@ -284,7 +284,6 @@ export function PromptEditor() {
     // 真实试跑：复用对话接口，对每个模型发起一次调用（此处以当前默认模型试跑示意）
     void (async () => {
       try {
-        const { chat } = await import('../../l8_api/api')
         const started = performance.now()
         const res = await chat(`[系统提示]\n${selected.content}\n\n[用户输入]\n${testInput}`, undefined)
         const latency = Math.round(performance.now() - started)

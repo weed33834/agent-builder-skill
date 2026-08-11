@@ -8,7 +8,17 @@
 - 前端 Q 矩阵缺口组件补齐（TaskCard / WorkspacePanel / SkillSidebar / NotificationBell / CommandPalette / CanvasView / MemoryPanel 等）
 - deep-spec 16-19/21 企业级 / 生态 / 布局 / 文档体系 ⬜ 子域实现
 - 框架适配器真实 SDK 集成测试（langgraph / openai-agents / claude-sdk / adk / autogen）
-- generate.py 各框架模板完善（目前 bare / langgraph 完整）
+
+### Added
+- **通用（universal-agent）基础工具集**：`generate.py` 补齐 `code_execute`/`run_code`（沙箱子进程执行）、`file_read`/`file_write`、`read_csv`/`analyze_data`/`generate_chart`（CSV 读取 / 描述统计 / ASCII 柱状图）——全部 stdlib 实现，无需额外依赖。此前这些工具只出现在 `enabled` 列表却无生成实现，导致产物 `NameError` 无法启动。
+
+### Fixed
+- **P0 生成器工具注册**：`BASE_TOOLS` 仅引用实际生成实现的工具；自定义工具（`CUSTOM_TOOLS`）在 `app/main.py` 中一并注册，不再死代码（此前自定义工具生成了却从不注册）。
+- **P0 supervisor 图生成**：修复 `Node 'aggregator' already present`（子代理列表去重）、`Found edge ending at unknown node specialist_*`（路由改为真实子代理名）、`unknown node tools` / `agent`（supervisor 图补 `tools` 节点并用条件边路由）。
+- **共享 nodes 重构**：`agent_node`/`agent_node_with_human`/`tool_node`/`supervisor_node` 改为返回普通 dict，路由统一交由图的（条件）边完成，使同一套 nodes 同时适用于单 Agent 与多 Agent supervisor 图。
+- **空 agents 兜底**：`mode: supervisor` 但未声明子代理的配置自动回退为单 Agent 图（避免空路由表语法错误，如 planner.yaml）。
+- **CI 强化**：`validate-generator` 由"仅 chat.yaml 单测 + 文件存在检查"升级为"遍历全部 agent-types 生成 + `import app.main` + 产物 pytest + langgraph startup"，杜绝回归。
+- **卫生项**：消除 `generate.py` `\s` 无效转义警告；前端 `PromptEditor` 动态 import 改静态 import（消除构建 INEFFECTIVE_DYNAMIC_IMPORT 警告）。
 
 ## [0.5.0] - 2026-08-11
 

@@ -23,6 +23,11 @@ from .l8_api.middleware.logging import RequestLoggingMiddleware
 from .l8_api.middleware.rate_limit import RateLimitMiddleware
 from .l5_tools.registry import ToolRegistry
 from .l5_tools.base_tools import BASE_TOOLS
+try:
+    from .l5_tools.custom_tools import CUSTOM_TOOLS
+except ImportError:
+    # custom_tools.py is generated per-config; the static template has none
+    CUSTOM_TOOLS = []
 from .l10_infra.config import settings
 from .l10_infra.logging import setup_logging, get_logger
 from .l10_infra.monitoring import metrics
@@ -43,6 +48,9 @@ async def lifespan(app: FastAPI):
     for tool in BASE_TOOLS:
         ToolRegistry.register(tool, category="general")
         logger.info(f"  Registered tool: {tool.name}")
+    for tool in CUSTOM_TOOLS:
+        ToolRegistry.register(tool, category="custom")
+        logger.info(f"  Registered custom tool: {tool.name}")
 
     # L4: Initialize Agent graph
     from .l4_agent.graph import get_graph
