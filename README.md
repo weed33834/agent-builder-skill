@@ -2,6 +2,7 @@
 
 > **一个 10 层架构、规格驱动的全能 Agent 开发框架** —— 内置 6 大 Agent 框架适配器、MCP/A2A 开放协议、11 类 Agent 模板与一键生成器，配套 **37 份深度规格、1465+ 功能项、430 条验收测试**，从 LLM 到前端 UI 全链路开箱即用。
 
+[![Release](https://img.shields.io/badge/release-v0.1.0-blue.svg)](https://github.com/weed33834/agent-builder-skill/releases/latest)
 [![CI](https://img.shields.io/github/actions/workflow/status/weed33834/agent-builder-skill/ci.yml?branch=main&label=CI&logo=github)](https://github.com/weed33834/agent-builder-skill/actions)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Deep Specs](https://img.shields.io/badge/deep--specs-32-green.svg)](docs/deep-spec/00-template.md)
@@ -94,6 +95,21 @@
 📖 **完整文档索引见 [docs/README.md](docs/README.md)** —— 37 份深度规格 + 6 份顶层文档总览。
 
 ## Quick Start / 快速开始
+
+### 方式零：下载 Release 安装包（最快）
+
+```bash
+# 1. 下载最新 Release zip（含全部模板/规格/脚本）：
+#    https://github.com/weed33834/agent-builder-skill/releases/latest
+wget https://github.com/weed33834/agent-builder-skill/releases/download/v0.1.0/agent-builder-skill-v0.1.0.zip
+unzip agent-builder-skill-v0.1.0.zip -d agent-builder-skill
+cd agent-builder-skill
+
+# 2. 直接生成 Agent（无需 clone 仓库）：
+python scripts/generate.py templates/agent-types/research.yaml ./my_agent
+
+# 3. 启动（同方式一，见下）
+```
 
 ### 方式一：模板一键生成
 
