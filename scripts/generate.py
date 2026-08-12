@@ -260,8 +260,11 @@ class AgentResult:
 class BareAgentRuntime:
     """Minimal framework-agnostic runtime: while-loop ReAct with tools."""
 
-    def __init__(self, llm, tools: Optional[dict] = None, max_iterations: int = {max_iterations}):
-        self.llm = llm                    # L1 LLMAdapter (framework-agnostic)
+    def __init__(self, llm_factory, tools: Optional[dict] = None, max_iterations: int = {max_iterations}):
+        # LLM is created lazily so app startup never requires an API key
+        # (LLMAdapter construction may validate credentials, e.g. OpenAI).
+        self._llm_factory = llm_factory
+        self._llm = None
         self.tools = tools or {{}}        # name -> callable (ToolRegistry, L5)
         self.max_iterations = max_iterations
         self._memory: dict[str, list] = {{}}   # thread_id -> messages
@@ -269,6 +272,12 @@ class BareAgentRuntime:
             {{"name": n, "description": getattr(t, "__doc__", "") or "", "parameters": {{}}}}
             for n, t in self.tools.items()
         ]
+
+    def _get_llm(self):
+        """Lazily build the LLM adapter on first use."""
+        if self._llm is None:
+            self._llm = self._llm_factory()
+        return self._llm
 
     # ---- AgentRuntime contract ------------------------------------
     def bind_tools(self, tools: dict) -> None:
@@ -287,7 +296,7 @@ class BareAgentRuntime:
         tool_calls_log: list = []
 
         for _ in range(self.max_iterations):
-            resp = await self.llm.invoke(
+            resp = await self._get_llm().invoke(
                 history, tools=self._tool_schemas or None
             )
             if getattr(resp, "tool_calls", None):
@@ -342,7 +351,7 @@ class BareAgentRuntime:
         tool_calls_log: list = []
 
         for _ in range(self.max_iterations):
-            resp = await self.llm.invoke(history, tools=self._tool_schemas or None)
+            resp = await self._get_llm().invoke(history, tools=self._tool_schemas or None)
             if getattr(resp, "tool_calls", None):
                 for tc in resp.tool_calls:
                     tool_calls_log.append(tc)
@@ -400,10 +409,20 @@ def build_single_agent_graph() -> "BareAgentRuntime":
     """Compatibility factory: same name as the LangGraph variant."""
     from app.l1_llm.factory import create_llm
     from app.l5_tools.registry import get_registry
+    from app.l10_infra.config import settings
 
-    llm = create_llm()
+    def _llm_factory():
+        return create_llm(
+            provider=settings.LLM_PROVIDER,
+            model=settings.LLM_MODEL,
+            api_key=settings.LLM_API_KEY or None,
+            api_base=settings.LLM_API_BASE or None,
+            temperature=settings.LLM_TEMPERATURE,
+            max_tokens=settings.LLM_MAX_TOKENS,
+        )
+
     registry = get_registry()
-    return BareAgentRuntime(llm=llm, tools=registry.get_callables())
+    return BareAgentRuntime(llm_factory=_llm_factory, tools=registry.get_callables())
 '''.strip()
     )
 
@@ -1047,6 +1066,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from .l8_api.routes.chat import router as chat_router
 from .l8_api.routes.health import router as health_router
 from .l8_api.routes.config import router as config_router
+from .l8_api.routes.sessions import router as sessions_router
+from .l8_api.routes.tools import router as tools_router
+from .l8_api.routes.a2a import router as a2a_router
+from .l8_api.routes.a2a import api_router as a2a_api_router
+from .l8_api.routes.voice import router as voice_router
+from .l8_api.routes.nlp import router as nlp_router
+from .l8_api.routes.security import router as security_router
+from .l8_api.routes.admin import router as admin_router
+from .l8_api.routes.tasks import router as tasks_router
+from .l8_api.routes.workspaces import router as workspaces_router
+from .l8_api.routes.skills import router as skills_router
+from .l8_api.routes.notifications import router as notifications_router
+from .l8_api.routes.canvas import router as canvas_router
 from .l5_tools.registry import ToolRegistry
 from .l5_tools.base_tools import BASE_TOOLS
 from .l5_tools.custom_tools import CUSTOM_TOOLS
@@ -1074,6 +1106,19 @@ def create_app() -> FastAPI:
     app.include_router(health_router, prefix="/api", tags=["health"])
     app.include_router(chat_router, prefix="/api", tags=["chat"])
     app.include_router(config_router, prefix="/api", tags=["config"])
+    app.include_router(sessions_router, prefix="/api", tags=["sessions"])
+    app.include_router(tools_router, prefix="/api", tags=["tools"])
+    app.include_router(a2a_router, prefix="", tags=["a2a"])
+    app.include_router(a2a_api_router, prefix="/api", tags=["a2a"])
+    app.include_router(voice_router, prefix="/api", tags=["voice"])
+    app.include_router(nlp_router, prefix="/api", tags=["nlp"])
+    app.include_router(security_router, prefix="/api", tags=["security"])
+    app.include_router(admin_router, prefix="/api", tags=["admin"])
+    app.include_router(tasks_router, prefix="/api", tags=["tasks"])
+    app.include_router(workspaces_router, prefix="/api", tags=["workspaces"])
+    app.include_router(skills_router, prefix="/api", tags=["skills"])
+    app.include_router(notifications_router, prefix="/api", tags=["notifications"])
+    app.include_router(canvas_router, prefix="/api", tags=["canvas"])
 
     @app.on_event("startup")
     async def startup():
@@ -2431,7 +2476,7 @@ async def test_bare_runtime_stream_event_contract():
         async def invoke(self, messages, tools=None):
             return _FakeResp(content="hello from bare")
 
-    runtime = BareAgentRuntime(llm=FakeLLM(), tools={})
+    runtime = BareAgentRuntime(llm_factory=lambda: FakeLLM(), tools={})
     events = []
     async for ev in runtime.stream(
         [{"role": "user", "content": "hi"}], {"thread_id": "t-bare-1"}
@@ -2476,7 +2521,7 @@ async def test_bare_runtime_tool_call_roundtrip():
     async def echo_tool(text: str) -> str:
         return f"echoed:{text}"
 
-    runtime = BareAgentRuntime(llm=FakeLLM(), tools={"echo_tool": echo_tool})
+    runtime = BareAgentRuntime(llm_factory=lambda: FakeLLM(), tools={"echo_tool": echo_tool})
     types, payloads = [], []
     async for ev in runtime.stream([{"role": "user", "content": "call tool"}], {}):
         types.append(ev.type)
@@ -2505,7 +2550,7 @@ async def test_bare_ainvoke_langgraph_contract():
         async def invoke(self, messages, tools=None):
             return _FakeResp(content="answer")
 
-    runtime = BareAgentRuntime(llm=FakeLLM(), tools={})
+    runtime = BareAgentRuntime(llm_factory=lambda: FakeLLM(), tools={})
     result = await runtime.ainvoke(
         {"messages": [("user", "question")]}, {"thread_id": "t-ainvoke"}
     )
@@ -2544,87 +2589,77 @@ def test_tool_registry_get_callables():
 
 
 def copy_static_templates(output_dir: str, framework: Optional[str] = None):
-    """Copy static template files that don't need modification
+    """Copy static template files that don't need modification.
+
+    Copies the ENTIRE templates/backend/app tree so every support file (errors,
+    monitoring, middlewares, routes, adapters, ...) is present in the generated
+    project, EXCEPT the files that generate_*() emits (they were already
+    written into output_dir and take precedence). This keeps the generated
+    project fully importable regardless of which routers are mounted.
 
     Args:
         output_dir: generated project root
         framework: agent framework ('bare' needs framework-specific chat.py)
     """
-    # Copy L1 base files
-    for f in ["base.py", "openai_adapter.py", "anthropic_adapter.py", "deepseek_adapter.py", "ollama_adapter.py"]:
-        src = TEMPLATES_DIR / "backend" / "app" / "l1_llm" / f
-        if src.exists():
-            dst = f"{output_dir}/app/l1_llm/{f}"
-            ensure_dir(os.path.dirname(dst))
-            copy_template(str(src), dst)
+    # Files produced by generate_*() — never overwrite with the static copy.
+    GENERATED = {
+        "main.py",
+        "l3_prompt/system_prompts.py",
+        "l10_infra/config.py",
+        "l4_agent/graph.py",
+        "l5_tools/base_tools.py",
+        "l5_tools/custom_tools.py",
+    }
 
-    # Copy L2 interface layer
-    src_dir = TEMPLATES_DIR / "backend" / "app" / "l2_interface"
-    for f in os.listdir(str(src_dir)):
-        src = src_dir / f
+    app_src = TEMPLATES_DIR / "backend" / "app"
+    app_dst = Path(output_dir) / "app"
+    for root, dirs, files in os.walk(str(app_src)):
+        rel_root = os.path.relpath(root, str(app_src))
+        for name in files:
+            rel = os.path.normpath(os.path.join(rel_root, name))
+            if rel in GENERATED:
+                continue
+            src = os.path.join(root, name)
+            dst = os.path.join(str(app_dst), rel)
+            ensure_dir(os.path.dirname(dst))
+            copy_template(src, dst)
+
+    # Backend-level support files
+    for name in ["requirements.txt", "Dockerfile"]:
+        src = TEMPLATES_DIR / "backend" / name
+        if src.exists():
+            ensure_dir(output_dir)
+            copy_template(str(src), os.path.join(output_dir, name))
+
+    # Scripts
+    scripts_src = TEMPLATES_DIR / "backend" / "scripts"
+    for f in os.listdir(str(scripts_src)):
+        src = scripts_src / f
         if src.is_file():
-            dst = f"{output_dir}/app/l2_interface/{f}"
+            dst = f"{output_dir}/scripts/{f}"
             ensure_dir(os.path.dirname(dst))
             copy_template(str(src), dst)
 
-    # Copy other L3 files
-    for f in ["prompt_builder.py", "output_parsers.py", "__init__.py"]:
-        src = TEMPLATES_DIR / "backend" / "app" / "l3_prompt" / f
-        if src.exists():
-            dst = f"{output_dir}/app/l3_prompt/{f}"
+    # ------------------------------------------------------------------
+    # Frontend: copy the FULL canonical template frontend (admin console +
+    # workspace + chat + all API/types) over the minimal chat-only frontend
+    # emitted by generate_frontend(). This makes the generated project's UI
+    # feature-complete and keeps it in sync with the template.
+    # ------------------------------------------------------------------
+    fe_src = TEMPLATES_DIR / "frontend"
+    fe_dst = Path(output_dir) / "frontend"
+    for root, dirs, files in os.walk(str(fe_src)):
+        # Prune build artifacts / deps so they are never copied into output.
+        dirs[:] = [d for d in dirs if d not in ("node_modules", "dist", ".vite")]
+        rel_root = os.path.relpath(root, str(fe_src))
+        for name in files:
+            if name in ("node_modules", "dist"):
+                continue
+            rel = os.path.normpath(os.path.join(rel_root, name))
+            src = os.path.join(root, name)
+            dst = os.path.join(str(fe_dst), rel)
             ensure_dir(os.path.dirname(dst))
-            copy_template(str(src), dst)
-
-    # Copy other L4 files
-    for f in ["state.py", "nodes.py", "router.py", "__init__.py"]:
-        src = TEMPLATES_DIR / "backend" / "app" / "l4_agent" / f
-        if src.exists():
-            dst = f"{output_dir}/app/l4_agent/{f}"
-            ensure_dir(os.path.dirname(dst))
-            copy_template(str(src), dst)
-
-    # Copy other L5 files
-    for f in ["registry.py", "executor.py", "__init__.py"]:
-        src = TEMPLATES_DIR / "backend" / "app" / "l5_tools" / f
-        if src.exists():
-            dst = f"{output_dir}/app/l5_tools/{f}"
-            ensure_dir(os.path.dirname(dst))
-            copy_template(str(src), dst)
-
-    # Copy L6 memory layer
-    src_dir = TEMPLATES_DIR / "backend" / "app" / "l6_memory"
-    for f in os.listdir(str(src_dir)):
-        src = src_dir / f
-        if src.is_file():
-            dst = f"{output_dir}/app/l6_memory/{f}"
-            ensure_dir(os.path.dirname(dst))
-            copy_template(str(src), dst)
-
-    # Copy L7 orchestration layer
-    src_dir = TEMPLATES_DIR / "backend" / "app" / "l7_orchestrator"
-    for f in os.listdir(str(src_dir)):
-        src = src_dir / f
-        if src.is_file():
-            dst = f"{output_dir}/app/l7_orchestrator/{f}"
-            ensure_dir(os.path.dirname(dst))
-            copy_template(str(src), dst)
-
-    # Copy other L8 files
-    for f in ["schemas.py", "__init__.py"]:
-        src = TEMPLATES_DIR / "backend" / "app" / "l8_api" / f
-        if src.exists():
-            dst = f"{output_dir}/app/l8_api/{f}"
-            ensure_dir(os.path.dirname(dst))
-            copy_template(str(src), dst)
-
-    # Copy L8 routes and middleware
-    src_dir = TEMPLATES_DIR / "backend" / "app" / "l8_api" / "routes"
-    for f in os.listdir(str(src_dir)):
-        src = src_dir / f
-        if src.is_file():
-            dst = f"{output_dir}/app/l8_api/routes/{f}"
-            ensure_dir(os.path.dirname(dst))
-            copy_template(str(src), dst)
+            copy_template(src, dst)
 
     # Bare framework: chat.py must use the while-loop stream() event contract
     # (AgentEvent: agent_message/tool_call/tool_result/done) instead of the
@@ -2633,21 +2668,6 @@ def copy_static_templates(output_dir: str, framework: Optional[str] = None):
         _write_bare_chat(output_dir)
         _write_bare_tests(output_dir)
 
-    src_dir = TEMPLATES_DIR / "backend" / "app" / "l8_api" / "middleware"
-    for f in os.listdir(str(src_dir)):
-        src = src_dir / f
-        if src.is_file():
-            dst = f"{output_dir}/app/l8_api/middleware/{f}"
-            ensure_dir(os.path.dirname(dst))
-            copy_template(str(src), dst)
-
-    # Copy other L10 files
-    for f in ["logging.py", "__init__.py"]:
-        src = TEMPLATES_DIR / "backend" / "app" / "l10_infra" / f
-        if src.exists():
-            dst = f"{output_dir}/app/l10_infra/{f}"
-            ensure_dir(os.path.dirname(dst))
-            copy_template(str(src), dst)
 
 
 # ============================================================

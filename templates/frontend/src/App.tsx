@@ -4,6 +4,7 @@ import { Sidebar } from './l9_ui/layout/Sidebar'
 import { ChatWindow } from './l9_ui/chat/ChatWindow'
 import { ErrorBoundary } from './l9_ui/shared/ErrorBoundary'
 import { AdminConsole } from './l9_ui/admin'
+import { WorkspaceConsole } from './l9_ui/workspace/WorkspaceConsole'
 import { getAgentConfig, getMCPStatus, discoverMCPTools } from './l8_api/api'
 import * as sessionsApi from './l8_api/api'
 import type { AgentConfig, MCPConnection, MCPToolDescriptor, Session } from './types'
@@ -16,7 +17,7 @@ export interface SessionGroup {
   session_count: number
 }
 
-type View = 'chat' | 'admin'
+type View = 'chat' | 'admin' | 'workspace'
 
 function toUiSession(s: sessionsApi.SessionMeta): Session {
   return {
@@ -39,6 +40,17 @@ export function App() {
   const [mcpServers, setMcpServers] = useState<MCPConnection[]>([])
   const [mcpTools, setMcpTools] = useState<MCPToolDescriptor[]>([])
   const [showStatusPanel, setShowStatusPanel] = useState(false)
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setView('workspace')
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const refreshSessions = async () => {
     try {
@@ -184,6 +196,10 @@ export function App() {
               onClick={() => setView('chat')}
             >对话</button>
             <button
+              className={`view-switcher-btn ${view === 'workspace' ? 'active' : ''}`}
+              onClick={() => setView('workspace')}
+            >工作台</button>
+            <button
               className={`view-switcher-btn ${view === 'admin' ? 'active' : ''}`}
               onClick={() => setView('admin')}
             >管理台</button>
@@ -215,6 +231,10 @@ export function App() {
 
         {view === 'admin' ? (
           <div className="app-admin-body"><AdminConsole /></div>
+        ) : view === 'workspace' ? (
+          <div className="app-workspace-body" style={{ height: '100%' }}>
+            <WorkspaceConsole onNavigate={(v) => setView(v as View)} />
+          </div>
         ) : (
         <div className="app-body">
           <Sidebar

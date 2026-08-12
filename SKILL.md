@@ -13,6 +13,61 @@ description: "Builds production-ready AI agents from natural-language requiremen
 
 ---
 
+## Quick-Start Build Contract（无对话直出标准）
+
+> **本 Skill 的定位**：它不是普通文档，而是一套**预装载的提示词工作流**。它把"做一个智能体"原本需要多轮对话反复澄清、迭代、验收的全部过程，提前固化在这里。**每次构建智能体时，只读本文件即可按标准直接产出，跳过繁复对话。**
+>
+> 使用方式：收到"做/生成/构建一个 Agent"的诉求后，**自上而下执行下面的契约**，产出物按各步骤写入指定文件。以下 Checklist 是**唯一执行标准**；下方章节为其详细说明与模板。
+
+```
+输入   →  自然语言需求（一句话或一段描述）
+过程   →  5 步契约（见下）逐条完成
+输出   →  一个可运行、可验收的完整 Agent 应用（backend + frontend + 测试）
+```
+
+### 第 0 步：判定与范围
+- 判定是否用本 Skill（见 "When to Use"）。
+- 若用户已给出足够信息，**不要靠追问拖延**，直接按契约产出；仅在信息缺失到无法选型时才用最少 1 个问题澄清。
+- 澄清优先级（如必要）：① Agent 用途 → ② LLM/框架偏好 → ③ 工具/记忆/多代理是否需要。
+
+### 第 1 步：Discovery（产出 `agent_requirements.md`）
+按下方 `Agent Requirements Document` 章节的字段，用 1 次会话梳理出：Basic Information / Technology Selection / Tools / Memory / Orchestration / Interface。**默认值见契约默认值表**（无要求即采用默认，不反复问）。
+
+### 第 2 步：Architecture Design（产出 `architecture.md`）
+按 `Architecture Design Document` 章节，对 L1–L10 逐层给出配置与决策；**优先选用 Template A–E**（聊天/研究/编码/客服/数据分析），少则复用、多则组合。
+
+### 第 3 步：Config Generation（产出 `agent.yaml`）
+按 `agent.yaml` 章节生成**单一事实源**。新增校验：`tools.enabled` 中每个名字必须在**通用基础工具集**内（web_search/web_fetch/current_time/calculate/code_execute/run_code/file_read/file_write/read_csv/analyze_data/generate_chart）或自定义 `tools.custom` 中，否则生成产物会 `NameError` 无法启动。
+
+### 第 4 步：Code Generation
+```
+python scripts/generate.py <agent.yaml> <output_dir> --framework=langgraph|bare
+```
+- 框架默认 `langgraph`；需要零依赖时用 `bare`。
+- 生成产物 = **完整前端（chat + admin + workspace）+ 全量后端路由**（见下方"生成产物完整性清单"）。
+- 生成后必须**回归**：`import app.main`、`pytest`、前后端 build。
+
+### 第 5 步：Deployment & Verification（产出运行说明）
+按 `Deployment & Verification` 章节：填 `.env` → 装依赖 → 起后端 → 起前端 → 冒烟验证 `/api/health`、`/api/chat`、`/api/tasks` 等。
+
+### ✅ 生成产物完整性清单（交付即需满足）
+生成出的 Agent 必须包含以下通用能力，缺一即视为未完成：
+| 域 | 交付物 | 验证点 |
+|---|---|---|
+| 10 层架构 | L1 LLM / L2 接口 / L3 提示词 / L4 Agent / L5 工具(MCP) / L6 记忆(RAG) / L7 编排(A2A) / L8 API / L9 前端 / L10 基建 | 目录存在且可 import |
+| 通用工具集 | web / 时间计算 / 代码执行 / 文件读写 / 数据分析（CSV 读取/统计/ASCII 图） | `BASE_TOOLS` 可注册、可调用 |
+| 自定义工具 | `CUSTOM_TOOLS` 随 `BASE_TOOLS` 一并注册 | `app.main` startup 注册数正确 |
+| 全量 API 路由 | chat/health/config/sessions/tools/a2a/voice/nlp/security/admin + tasks/workspaces/skills/notifications/canvas | 每个 `/api/...` 可达 |
+| 前端视图 | chat + admin(管理台) + workspace(工作台) | `npm run build` 通过 |
+| 工作台组件 | TaskCard / WorkspacePanel / SkillSidebar / NotificationBell / CommandPalette / CanvasView / MemoryPanel | 组件渲染、接入 API |
+| 框架中立 | bare / langgraph 双框架可生成 | `--framework=bare` 与 `=langgraph` 均可启动 |
+| 测试 | 模板 `pytest` + 框架适配器契约 + M8 SSE 流式回归 | `python -m pytest` 通过 |
+| 流式 | `/api/chat` SSE（token/tool/done）被前端 `streamChat` 消费 | 端到端冒烟 |
+
+> 剩余规划能力（企业级/生态/多模态等）见 `docs/deep-spec/*`，均为扩展层，不在"通用基础"交付范围内。
+
+---
+
 ## AI Behavior Guidelines
 
 > When you use this skill, you play a triple role: **AI Product Manager + Architect + Full-Stack Engineer**. You must:

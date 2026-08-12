@@ -739,3 +739,107 @@ export function securityRedact(text: string): Promise<{ redacted: string; count:
 export function getCircuitBreakers(): Promise<{ items: { key: string; state: string; failures: number; failure_threshold: number }[] }> {
   return adminRequest('/api/security/breakers')
 }
+
+/* ========================================
+   Workspace & productivity domain APIs
+   tasks / workspaces / skills / notifications / canvas / memory
+   ======================================== */
+import type {
+  AgentTask, Workspace, SkillItem, SkillKind, AppNotification, CanvasDoc,
+} from '../types'
+
+/* ---- Tasks (TaskCard) /api/tasks ---- */
+export function listTasks(status?: string): Promise<{ items: AgentTask[]; total: number }> {
+  const q = status ? `?status=${status}` : ''
+  return fetch(`${API_BASE}/tasks${q}`).then(r => r.json())
+}
+export function createTask(data: { title: string; description?: string; steps?: unknown[] }): Promise<AgentTask> {
+  return fetch(`${API_BASE}/tasks`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(r => r.json())
+}
+export function startTask(id: string): Promise<AgentTask> {
+  return fetch(`${API_BASE}/tasks/${id}/start`, { method: 'POST' }).then(r => r.json())
+}
+export function completeTask(id: string, result: string): Promise<AgentTask> {
+  return fetch(`${API_BASE}/tasks/${id}/complete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ result }) }).then(r => r.json())
+}
+export function failTask(id: string, error: string): Promise<AgentTask> {
+  return fetch(`${API_BASE}/tasks/${id}/fail`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ error }) }).then(r => r.json())
+}
+export function retryTask(id: string): Promise<AgentTask> {
+  return fetch(`${API_BASE}/tasks/${id}/retry`, { method: 'POST' }).then(r => r.json())
+}
+export function cancelTask(id: string): Promise<AgentTask> {
+  return fetch(`${API_BASE}/tasks/${id}/cancel`, { method: 'POST' }).then(r => r.json())
+}
+export function deleteTask(id: string): Promise<{ deleted: boolean }> {
+  return fetch(`${API_BASE}/tasks/${id}`, { method: 'DELETE' }).then(r => r.json())
+}
+
+/* ---- Workspaces (WorkspacePanel) /api/workspaces ---- */
+export function listWorkspaces(params?: { type?: string; member?: string }): Promise<{ items: Workspace[]; total: number }> {
+  const qs = new URLSearchParams()
+  if (params?.type) qs.set('type', params.type)
+  if (params?.member) qs.set('member', params.member)
+  const q = qs.toString()
+  return fetch(`${API_BASE}/workspaces${q ? `?${q}` : ''}`).then(r => r.json())
+}
+export function createWorkspace(data: { name: string; type?: string; description?: string; owner?: string; quota?: Record<string, number> }): Promise<Workspace> {
+  return fetch(`${API_BASE}/workspaces`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(r => r.json())
+}
+export function updateWorkspace(id: string, data: Record<string, unknown>): Promise<Workspace> {
+  return fetch(`${API_BASE}/workspaces/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(r => r.json())
+}
+export function deleteWorkspace(id: string): Promise<{ deleted: boolean }> {
+  return fetch(`${API_BASE}/workspaces/${id}`, { method: 'DELETE' }).then(r => r.json())
+}
+
+/* ---- Skills (SkillSidebar) /api/skills ---- */
+export function listSkills(kind?: SkillKind): Promise<{ items: SkillItem[]; total: number }> {
+  const q = kind ? `?kind=${kind}` : ''
+  return fetch(`${API_BASE}/skills${q}`).then(r => r.json())
+}
+export function createSkill(data: { kind: SkillKind; name: string; description?: string; tags?: string[]; config?: Record<string, unknown>; enabled?: boolean }): Promise<SkillItem> {
+  return fetch(`${API_BASE}/skills`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(r => r.json())
+}
+export function updateSkill(kind: SkillKind, id: string, data: Record<string, unknown>): Promise<SkillItem> {
+  return fetch(`${API_BASE}/skills/${kind}/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(r => r.json())
+}
+export function deleteSkill(kind: SkillKind, id: string): Promise<{ deleted: boolean }> {
+  return fetch(`${API_BASE}/skills/${kind}/${id}`, { method: 'DELETE' }).then(r => r.json())
+}
+
+/* ---- Notifications (NotificationBell) /api/notifications ---- */
+export function listNotifications(unreadOnly = false): Promise<{ items: AppNotification[]; total: number }> {
+  return fetch(`${API_BASE}/notifications${unreadOnly ? '?unread_only=true' : ''}`).then(r => r.json())
+}
+export function getUnreadCount(): Promise<{ unread: number }> {
+  return fetch(`${API_BASE}/notifications/unread_count`).then(r => r.json())
+}
+export function markNotificationRead(id: string): Promise<{ ok: boolean }> {
+  return fetch(`${API_BASE}/notifications/${id}/read`, { method: 'POST' }).then(r => r.json())
+}
+export function markAllNotificationsRead(): Promise<{ ok: boolean }> {
+  return fetch(`${API_BASE}/notifications/read_all`, { method: 'POST' }).then(r => r.json())
+}
+
+/* ---- Canvas (CanvasView) /api/canvas ---- */
+export function listCanvases(): Promise<{ items: CanvasDoc[]; total: number }> {
+  return fetch(`${API_BASE}/canvas`).then(r => r.json())
+}
+export function createCanvas(data: { name: string; description?: string; nodes?: unknown[]; edges?: unknown[] }): Promise<CanvasDoc> {
+  return fetch(`${API_BASE}/canvas`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(r => r.json())
+}
+export function getCanvas(id: string): Promise<CanvasDoc> {
+  return fetch(`${API_BASE}/canvas/${id}`).then(r => r.json())
+}
+export function updateCanvas(id: string, data: Record<string, unknown>): Promise<CanvasDoc> {
+  return fetch(`${API_BASE}/canvas/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).then(r => r.json())
+}
+export function deleteCanvas(id: string): Promise<{ deleted: boolean }> {
+  return fetch(`${API_BASE}/canvas/${id}`, { method: 'DELETE' }).then(r => r.json())
+}
+
+/* ---- Memory (MemoryPanel) — reuse admin memory endpoints ---- */
+export function listMemoryKBs(): Promise<AdminListResult<{ id: string; name: string; doc_count: number; chunk_count: number; embedding: string }>> {
+  return adminRequest('/api/admin/memory/kbs')
+}

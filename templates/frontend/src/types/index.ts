@@ -206,3 +206,93 @@ export interface FileUploadInfo {
   status: 'uploading' | 'uploaded' | 'error'
   error?: string
 }
+
+/* ========================================
+   Workspace & productivity domain (deep-spec 15 / 16)
+   TaskCard / WorkspacePanel / SkillSidebar / NotificationBell /
+   CommandPalette / CanvasView / MemoryPanel
+   ======================================== */
+
+export interface TaskStep {
+  name: string
+  status: 'running' | 'done' | 'failed'
+  detail?: string
+  ts?: number
+}
+
+export type TaskStatus = 'pending' | 'running' | 'done' | 'failed' | 'cancelled'
+
+export interface AgentTask {
+  id: string
+  title: string
+  description?: string
+  status: TaskStatus
+  progress: number
+  steps: TaskStep[]
+  result?: string
+  error?: string
+  created_at?: number
+  updated_at?: number
+  started_at?: number | null
+  finished_at?: number | null
+}
+
+export interface Workspace {
+  id: string
+  name: string
+  type: 'dept' | 'project' | 'personal'
+  description?: string
+  owner?: string
+  quota?: { agents?: number; kbs?: number; members?: number }
+  members?: { id: string; role: string }[]
+  resources?: { agents?: number; kbs?: number; sessions?: number }
+  created_at?: number
+}
+
+export type SkillKind = 'expert' | 'skill' | 'connector'
+
+export interface SkillItem {
+  id: string
+  kind: SkillKind
+  name: string
+  description?: string
+  tags?: string[]
+  config?: Record<string, unknown>
+  enabled?: boolean
+}
+
+export interface AppNotification {
+  id: string
+  title: string
+  body?: string
+  level: 'info' | 'success' | 'warning' | 'error'
+  module?: string
+  link?: string
+  read?: boolean
+  created_at?: number
+}
+
+export interface CanvasNodeData {
+  id: string
+  type: string
+  label: string
+  x: number
+  y: number
+  data?: Record<string, unknown>
+}
+
+export interface CanvasEdgeData {
+  id: string
+  source: string
+  target: string
+  label?: string
+}
+
+export interface CanvasDoc {
+  id: string
+  name: string
+  description?: string
+  nodes: CanvasNodeData[]
+  edges: CanvasEdgeData[]
+  created_at?: number
+}

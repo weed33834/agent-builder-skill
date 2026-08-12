@@ -5,20 +5,23 @@
 ## [Unreleased]
 
 ### 待办（Planned）
-- 前端 Q 矩阵缺口组件补齐（TaskCard / WorkspacePanel / SkillSidebar / NotificationBell / CommandPalette / CanvasView / MemoryPanel 等）
-- deep-spec 16-19/21 企业级 / 生态 / 布局 / 文档体系 ⬜ 子域实现
-- 框架适配器真实 SDK 集成测试（langgraph / openai-agents / claude-sdk / adk / autogen）
+- deep-spec 16-19/21 企业级 / 生态 / 布局 / 文档体系 ⬜ 子域深度实现
+- 前端 7 组件已落地基础版，后续增强（通知 WS 实时、画布拖拽、命令面板全局唤起等）
 
 ### Added
-- **通用（universal-agent）基础工具集**：`generate.py` 补齐 `code_execute`/`run_code`（沙箱子进程执行）、`file_read`/`file_write`、`read_csv`/`analyze_data`/`generate_chart`（CSV 读取 / 描述统计 / ASCII 柱状图）——全部 stdlib 实现，无需额外依赖。此前这些工具只出现在 `enabled` 列表却无生成实现，导致产物 `NameError` 无法启动。
+- **工作台（workspace）视图与 7 个缺口组件**：`TaskCard`（任务进度/步骤/重试/取消）、`WorkspacePanel`（部门/项目/个人工作区）、`SkillSidebar`（专家/技能/连接器能力库）、`NotificationBell`（通知中心+未读角标）、`CommandPalette`（⌘K 命令面板）、`CanvasView`（Agent 编排画布）、`MemoryPanel`（记忆/知识库检索）。接入 App 新 `workspace` 视图 + Ctrl/Cmd+K 全局唤起。
+- **配套后端路由（L8）**：`/api/tasks`、`/api/workspaces`、`/api/skills`、`/api/notifications`（含 WS）、`/api/canvas`，均为内存态模板存储，可直接换持久化。
+- **生成产物前端完整化**：`copy_static_templates` 现复制完整前端（chat+admin+workspace）与完整 `app` 树，生成项目不再只是精简聊天 UI。
+- **生成产物全量路由挂载**：生成 `main.py` 挂载全部路由（chat/health/config/sessions/tools/a2a/voice/nlp/security/admin + tasks/workspaces/skills/notifications/canvas），与静态模板对齐。
+- **框架适配器契约测试**：`test_adapters.py`（registry、bare ReAct 循环、stream 事件、工具往返、可选 SDK 优雅降级）。
+- **M8 流式回归测试**：`test_streaming.py`（`/api/chat` SSE 契约：text/event-stream + token/done，mock 运行时无 key 可跑）。
 
 ### Fixed
-- **P0 生成器工具注册**：`BASE_TOOLS` 仅引用实际生成实现的工具；自定义工具（`CUSTOM_TOOLS`）在 `app/main.py` 中一并注册，不再死代码（此前自定义工具生成了却从不注册）。
-- **P0 supervisor 图生成**：修复 `Node 'aggregator' already present`（子代理列表去重）、`Found edge ending at unknown node specialist_*`（路由改为真实子代理名）、`unknown node tools` / `agent`（supervisor 图补 `tools` 节点并用条件边路由）。
-- **共享 nodes 重构**：`agent_node`/`agent_node_with_human`/`tool_node`/`supervisor_node` 改为返回普通 dict，路由统一交由图的（条件）边完成，使同一套 nodes 同时适用于单 Agent 与多 Agent supervisor 图。
-- **空 agents 兜底**：`mode: supervisor` 但未声明子代理的配置自动回退为单 Agent 图（避免空路由表语法错误，如 planner.yaml）。
-- **CI 强化**：`validate-generator` 由"仅 chat.yaml 单测 + 文件存在检查"升级为"遍历全部 agent-types 生成 + `import app.main` + 产物 pytest + langgraph startup"，杜绝回归。
-- **卫生项**：消除 `generate.py` `\s` 无效转义警告；前端 `PromptEditor` 动态 import 改静态 import（消除构建 INEFFECTIVE_DYNAMIC_IMPORT 警告）。
+- **P0 生成器工具注册**：`BASE_TOOLS` 仅引用已实现工具；自定义工具（`CUSTOM_TOOLS`）在 `app/main.py` 一并注册，不再死代码。
+- **P0 supervisor 图生成**：修复 `aggregator` 重复节点、`specialist_*` 伪节点、`tools/agent` 未知节点；共享 nodes 改返回 dict、路由交由图边；空 agents 回退单 Agent。
+- **P0 bare 运行时**：`create_llm()` 缺参；LLM 改惰性构建，**启动无需 API Key**；裸产物测试用 `llm_factory`。
+- **CI 强化**：`validate-generator` 遍历全部 agent-types 生成 + import + 产物 pytest + langgraph startup。
+- **卫生项**：消除 `\s` 转义警告；前端无效动态 import 警告。
 
 ## [0.5.0] - 2026-08-11
 
