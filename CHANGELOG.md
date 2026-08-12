@@ -6,22 +6,24 @@
 
 ### 待办（Planned）
 - deep-spec 16-19/21 企业级 / 生态 / 布局 / 文档体系 ⬜ 子域深度实现
-- 前端 7 组件已落地基础版，后续增强（通知 WS 实时、画布拖拽、命令面板全局唤起等）
+- 模型回退接线（chat_with_fallback）；代码执行受限沙箱/高危命令检测；Handoff 节点；长会话上下文自动压缩
 
 ### Added
-- **工作台（workspace）视图与 7 个缺口组件**：`TaskCard`（任务进度/步骤/重试/取消）、`WorkspacePanel`（部门/项目/个人工作区）、`SkillSidebar`（专家/技能/连接器能力库）、`NotificationBell`（通知中心+未读角标）、`CommandPalette`（⌘K 命令面板）、`CanvasView`（Agent 编排画布）、`MemoryPanel`（记忆/知识库检索）。接入 App 新 `workspace` 视图 + Ctrl/Cmd+K 全局唤起。
-- **配套后端路由（L8）**：`/api/tasks`、`/api/workspaces`、`/api/skills`、`/api/notifications`（含 WS）、`/api/canvas`，均为内存态模板存储，可直接换持久化。
-- **生成产物前端完整化**：`copy_static_templates` 现复制完整前端（chat+admin+workspace）与完整 `app` 树，生成项目不再只是精简聊天 UI。
-- **生成产物全量路由挂载**：生成 `main.py` 挂载全部路由（chat/health/config/sessions/tools/a2a/voice/nlp/security/admin + tasks/workspaces/skills/notifications/canvas），与静态模板对齐。
-- **框架适配器契约测试**：`test_adapters.py`（registry、bare ReAct 循环、stream 事件、工具往返、可选 SDK 优雅降级）。
-- **M8 流式回归测试**：`test_streaming.py`（`/api/chat` SSE 契约：text/event-stream + token/done，mock 运行时无 key 可跑）。
+- **市场调研**：`docs/universal-agent-capability-map.md`（MIT 2025 Agent Index + 主流框架）——通用智能体能力全景 + 实现状态 + 深化路线。
+- **安全强制（接入管线）**：`SECURITY_ENABLED` 默认开，`ChatInterface` 统一接入提示词注入防御 + PII 输入/输出双向脱敏，高风险注入直接拦截。
+- **规划 + 反思（thinking layer）**：新增 `planner_node` / `reflect_node`，单 Agent 图支持 `agent_framework.plan` / `agent_framework.reflect` 开关（默认关，配置即开）。
+- **测试**：`test_security_thinking.py`（注入拦截 / PII 双向脱敏 / 规划反思节点存在）→ 模板 pytest 43 passed。
+- **工作台（workspace）视图与 7 缺口组件**：TaskCard / WorkspacePanel / SkillSidebar / NotificationBell / CommandPalette / CanvasView / MemoryPanel。
+- **配套后端路由（L8）**：/api/tasks、/api/workspaces、/api/skills、/api/notifications(WS)、/api/canvas。
+- **生成产物完整化**：copy_static_templates 复制完整前端与完整 app 树；生成 main.py 挂载全量路由。
+- **框架适配器契约测试 + M8 SSE 流式回归测试**。
 
 ### Fixed
-- **P0 生成器工具注册**：`BASE_TOOLS` 仅引用已实现工具；自定义工具（`CUSTOM_TOOLS`）在 `app/main.py` 一并注册，不再死代码。
-- **P0 supervisor 图生成**：修复 `aggregator` 重复节点、`specialist_*` 伪节点、`tools/agent` 未知节点；共享 nodes 改返回 dict、路由交由图边；空 agents 回退单 Agent。
-- **P0 bare 运行时**：`create_llm()` 缺参；LLM 改惰性构建，**启动无需 API Key**；裸产物测试用 `llm_factory`。
-- **CI 强化**：`validate-generator` 遍历全部 agent-types 生成 + import + 产物 pytest + langgraph startup。
-- **卫生项**：消除 `\s` 转义警告；前端无效动态 import 警告。
+- **P0** 生成器工具注册（BASE_TOOLS 仅引用已实现；CUSTOM_TOOLS 一并注册）。
+- **P0** supervisor 图（aggregator 重复、specialist_* 伪节点、tools/agent 未知节点、共享 nodes 重构、空 agents 兜底）。
+- **P0** bare 运行时（create_llm 缺参；LLM 惰性构建、启动免 key）。
+- **CI 强化**（全 agent-types 生成 + import + pytest + startup）。
+- **卫生项**（\s 转义、前端无效动态 import）。
 
 ## [0.5.0] - 2026-08-11
 

@@ -56,6 +56,10 @@ class Settings(BaseSettings):
     RATE_LIMIT: int = 60  # Requests per minute
     RATE_LIMIT_WINDOW: int = 60  # Window size (seconds)
 
+    # L10: AI security enforcement (deep-spec 27) — applied in the chat pipeline
+    SECURITY_ENABLED: bool = True        # inject prompt-injection defense + PII redaction
+    SECURITY_BLOCK_ACTION: str = "block" # action taken on high-severity injection
+
     # L8: Rate limiting middleware (M7.9)
     RATE_LIMIT_ENABLED: bool = False
     RATE_LIMIT_RPS: float = 5.0

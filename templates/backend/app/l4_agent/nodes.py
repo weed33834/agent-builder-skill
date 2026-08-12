@@ -184,3 +184,53 @@ async def supervisor_node(state: AgentState) -> dict:
         return {"supervisor_analysis": response.content}
     except Exception as e:
         return {"supervisor_analysis": "", "error": str(e)}
+
+
+# ── Planning & reflection (deep-spec 01 / universal-agent thinking layer) ──
+# Both nodes are OPTIONAL: enabled via agent_framework.plan / agent_framework.reflect
+# in the generated graph. They add the "think before act / critique after act"
+# loop that most production universal agents ship with.
+
+async def planner_node(state: AgentState) -> dict:
+    """Planning node (optional): produce a concise step-by-step plan.
+
+    Runs before the agent loop and stores the plan on the state so the agent
+    has an explicit roadmap. Returns an update dict (routing via graph edge).
+    """
+    llm = _get_llm()
+    last = next((m.content for m in reversed(state.get("messages", [])) if getattr(m, "type", "") == "human"), "")
+    prompt = {
+        "role": "system",
+        "content": (
+            "你是任务规划器。为以下用户请求制定一份简洁的分步执行计划（3-6 步），"
+            "每步用一句话，说明做什么与为什么。不要执行任何操作，只输出计划文本。"
+        ),
+    }
+    try:
+        resp = await llm.chat([prompt, {"role": "user", "content": last}])
+        return {"plan": resp.content}
+    except Exception as e:
+        return {"plan": "", "error": str(e)}
+
+
+async def reflect_node(state: AgentState) -> dict:
+    """Reflection node (optional): self-critique the final answer.
+
+    Reviews the last assistant message and returns a verdict plus an optional
+    refined answer. The graph routes this node to END; the reflection is stored
+    on state (and surfaced by the streamer as a 'thinking'/'done' signal).
+    """
+    llm = _get_llm()
+    last = next((m.content for m in reversed(state.get("messages", [])) if getattr(m, "type", "") == "ai"), "")
+    prompt = {
+        "role": "system",
+        "content": (
+            "你是评审员。对以下回答做一次冷静的自我反思：指出是否有遗漏、错误或不严谨之处，"
+            "并给出修正后的最终回答。格式：\n[评价]\n...\n[修正]\n修正后的最终回答（若无需修正则原样保留）。"
+        ),
+    }
+    try:
+        resp = await llm.chat([prompt, {"role": "user", "content": last}])
+        return {"reflection": resp.content}
+    except Exception as e:
+        return {"reflection": "", "error": str(e)}

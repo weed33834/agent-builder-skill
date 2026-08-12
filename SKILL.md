@@ -63,6 +63,10 @@ python scripts/generate.py <agent.yaml> <output_dir> --framework=langgraph|bare
 | 框架中立 | bare / langgraph 双框架可生成 | `--framework=bare` 与 `=langgraph` 均可启动 |
 | 测试 | 模板 `pytest` + 框架适配器契约 + M8 SSE 流式回归 | `python -m pytest` 通过 |
 | 流式 | `/api/chat` SSE（token/tool/done）被前端 `streamChat` 消费 | 端到端冒烟 |
+| 安全强制 | 提示词注入防御 + PII 双向脱敏（接入 ChatInterface，`SECURITY_ENABLED`） | 高风险注入被拦截、PII 被脱敏 |
+| 规划/反思 | `agent_framework.plan` / `agent_framework.reflect` 可选节点 | 图含 planner/reflect 节点且可启动 |
+
+> 能力全景与深化路线见 `docs/universal-agent-capability-map.md`（MIT 2025 Agent Index + 主流框架调研）。
 
 > 剩余规划能力（企业级/生态/多模态等）见 `docs/deep-spec/*`，均为扩展层，不在"通用基础"交付范围内。
 
