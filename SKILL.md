@@ -300,6 +300,88 @@ python scripts/generate.py <agent.yaml> <output_dir> --framework=langgraph|bare
 
 ---
 
+## 深度工程规格（Deep Engineering Spec）——跨模块的底层深度
+
+> 前面 M0–M16 是"每个模块怎么做"。这里补齐**贯穿所有模块的深度工程方面**——这些是一个生产级通用 Agent 的底层骨架，缺了就是"demo 而非产品"。同样按 用途/机制/落地/验收 写清。
+
+### D1. 上下文与 Token 管理（Context & Token Budget）
+- **用途**：长对话不爆 token、不丢关键信息，让 Agent 始终在预算内运转。
+- **机制**：① Token 预算计费（`token_manager`，按模型计价）；② 超预算自动**压缩**（`l6_memory/summary` 摘要旧消息）+ **滑动窗口**（丢弃最旧非关键消息）；③ 关键信息抽取（user 目标/约束/结论单独沉淀到 state）；④ 上下文注入顺序（system → 计划 → 记忆 → 历史 → 当前输入）。
+- **落地**：`ChatInterface` 在组消息时先估 token，超阈值触发 `summary.compress()` 并标记压缩点；`/api/chat` 返回 `usage` 与 `compressed` 标记；管理台「上下文」面板可视化 token 占用与压缩日志。
+- **验收**：连续对话 50 轮后 API 仍不超预算；能看到压缩历史；关键约束不被压缩丢失。
+
+### D2. 工具调用工程（Tool-calling Engineering）
+- **用途**：工具调用可靠、可并行、可恢复，而不是"调一次失败就崩"。
+- **机制**：① 并行工具调用（一条消息多个 tool_call 同时执行）；② 参数校验（JSON Schema，`l5_tools/schemas`）；③ 失败分级（可重试 / 终态失败）+ 自动重试；④ 超时（`TOOL_TIMEOUT`）与熔断；⑤ 工具结果入 state 并回填给 LLM；⑥ 工具白名单/敏感工具需审批。
+- **落地**：`tool_node` 并行执行 + `executor.py` 校验/超时/重试；`ToolRegistry` 支持并发注册与调用计数；管理台「工具试跑」返回 latency/error。
+- **验收**：一条含 3 个并行 tool_call 的消息能并行执行并全部回填；参数错能给出可读错误；敏感工具触发审批。
+
+### D3. 记忆工程（Memory Engineering）
+- **用途**：把记忆做成**分层**（工作/情景/语义/程序），能检索、能合并、能遗忘，支撑跨会话连续性。
+- **机制**：① 工作记忆 = 当前会话 buffer；② 情景记忆 = 已结束会话的可检索记录（`session_manager`）；③ 语义记忆 = 向量知识库（`vector_store`/`rag_engine`）；④ 程序记忆 = 学到的工作流/偏好（可写 `data/preferences.json`）；⑤ 检索路由：先语义召回 Top-K 再按相关性过滤；⑥ 遗忘策略：超期/低价值记录降权或清理。
+- **落地**：`l6_memory` 分层类 + 统一 `MemoryRouter.retrieve(query)`；检索命中带 `source`（会话/知识库/偏好）与 `score`；管理台「记忆」按层查看与清理。
+- **验收**：能按层查看记忆；跨会话能想起之前结论；能手动/自动清理过期记忆。
+
+### D4. 规划工程（Planning Engineering）
+- **用途**：复杂任务先拆解成可执行步骤，动态重规划，失败可恢复。
+- **机制**：① 任务分解（`orchestrator/decomposer`：目标→子任务 DAG）；② 优先级排序与依赖；③ 顺序执行或并行（无依赖子任务并发）；④ 动态重规划（某步失败→重新拆解）；⑤ 计划进度状态机（pending/running/done/failed，落 `tasks`）。
+- **落地**：`planner_node`（已内置）+ `decomposer` 拆 DAG；执行进度写 `/api/tasks`；管理台「任务」可视化 DAG 与进度。
+- **验收**：复杂任务能自动拆解出有序步骤；某步失败能重规划；进度实时可查。
+
+### D5. 反思与自愈（Reflection & Self-healing）
+- **用途**：Agent 出错能自评、自修复、自收敛，而不是一次失败就结束。
+- **机制**：① 反思（`reflect_node` 已内置：评价+修正）；② 错误分类（LLM/工具/输入/超时）→ 对应策略；③ 自动修复重试（修复后重跑，限 N 次）；④ 收敛判定（连续 M 次无改进则停，防死循环）。
+- **落地**：agent 循环内接 reflect + 重试上限（`max_iterations`）；错误与修复轨迹写 `error`/`reflection` 到 state 并暴露给监控。
+- **验收**：能识别并自动修复一类可修复错误；有重试上限不会死循环；修复轨迹可查。
+
+### D6. 多智能体协作（Multi-Agent Collaboration）
+- **用途**：多 Agent 分工、交接、结果合并，形成"团队"而非"多个单 Agent 堆叠"。
+- **机制**：① 角色分工（supervisor 路由到 specialist，已实现）；② 交接（handoff：A 把上下文交给 B，返回控制权）；③ 共享状态（`state` 全局可见，各 Agent 增量更新）；④ 冲突处理（结果矛盾→协调 Agent 裁决）；⑤ 结果合并（`aggregator` 汇总各 specialist 输出）。
+- **落地**：`supervisor` 图 + `aggregator`（已实现）；新增 handoff 节点；管理台「编排」可视化多 Agent 协作关系。
+- **验收**：多 Agent 能分工完成一个总任务；能交接上下文；最终输出是合并后的结果。
+
+### D7. 安全与治理纵深（Security & Governance Depth）
+- **用途**：纵深防御 + 可审计 + 可隔离，满足生产合规。
+- **机制**：① 输入侧：注入检测（已接入）+ PII 脱敏（已接入）+ 内容过滤；② 工具侧：白名单/敏感命令审批（`code_execute` 高危检测）；③ 数据侧：落库脱敏、数据保留策略；④ 控制侧：限流、认证（API Key）、RBAC 角色；⑤ 审计：关键操作（建/删/发布/改权限）写审计日志；⑥ 熔断与降级。
+- **落地**：`ai_security` + 中间件（认证/限流/日志）+ `/api/security/audit`；敏感工具调用需 `agent_node_with_human` 审批。
+- **验收**：注入/PII 在管线自动生效；敏感工具可触发审批；关键操作有审计记录；能按角色限权。
+
+### D8. 可靠性与容错（Reliability & Fault-tolerance）
+- **用途**：网络抖动、模型抽风、超时不至于让整个 Agent 挂掉。
+- **机制**：① 重试（指数退避，`retry.py`）；② 熔断（`circuit_breaker`：连续失败→开闸→半开）；③ 超时（LLM/工具/HTTP 全链超时）；④ 降级（主模型失败→回退链/缓存兜底）；⑤ 幂等（任务/工具调用去重）；⑥ 并发控制（限制并发会话/工具数）。
+- **落地**：`retry` + `circuit_breaker` + `TOOL_TIMEOUT` + 回退链；管理台「监控」展示熔断/降级状态。
+- **验收**：断网重试能恢复；连续失败能熔断；超时能优雅失败而非卡死。
+
+### D9. 可观测性纵深（Observability Depth）
+- **用途**：一次请求从头到尾可追踪、可定位、可复盘。
+- **机制**：① 请求 ID 贯穿（`request_id`）；② 端到端 Trace（请求→节点→工具→LLM，含耗时/输入输出摘要）；③ 指标（延迟/错误率/token/成本，Prometheus）；④ 结构化日志（`StructuredLogger`）；⑤ 告警规则与历史；⑥ 漂移检测（输入分布/表现变化）。
+- **落地**：中间件生成 request_id；`/api/admin/traces|logs|metrics|drift`；监控面板可视化。
+- **验收**：能按 request_id 查一次完整链路；能看指标曲线；能配告警并查历史。
+
+### D10. 评估与质量（Evaluation & Quality）
+- **用途**：改一处不回归，用数据说话，而非"感觉变好了"。
+- **机制**：① 数据集管理（用例：输入/期望/标签）；② 批量跑分（`scripts/evaluate.py`）；③ 回归对比（基线 vs 新版本，`pass_rate` 差异）；④ 分维度评分（准确/安全/延迟）；⑤ A/B 与阈值判定；⑥ 红队用例（注入/越狱）。
+- **落地**：`eval/` + `/api/admin/evaluations*`；管理台「评估」出报告并可对比历史。
+- **验收**：能跑数据集出报告；能对比两版本通过率；红队用例能防住注入。
+
+### D11. 部署与运维（Deployment & Ops）
+- **用途**：一键部署、可配置、可备份恢复、可平滑升级。
+- **机制**：① Docker 化（`Dockerfile`/`docker-compose`）；② 配置管理（`.env` + pydantic-settings）；③ 密钥管理（不落代码，从 env/secret 读）；④ 健康检查（`/api/health`）；⑤ 优雅关闭（lifespan）；⑥ 备份/恢复（`/api/admin/backup`）；⑦ 多环境（dev/prod 配置覆盖）。
+- **落地**：`docker-compose up --build` 一键起；`/api/health` 就绪探针；备份导出/恢复。
+- **验收**：能一键起服务；健康检查通过；能导出备份并恢复。
+
+### D12. 性能与扩展（Performance & Extensibility）
+- **用途**：并发高、检索快、能插拔扩展。
+- **机制**：① 缓存（LLM 响应/向量索引/结果去重）；② 异步/并发（asyncio + 限制并发）；③ 向量索引优化（索引类型/分片，`vector_store`）；④ 插件/SDK（`plugin_manager`/`skill_loader` 动态加载）；⑤ 模板市场（`/api/admin/agents/templates`）；⑥ 技能市场（导入导出共享）。
+- **落地**：`mcp_client`/`plugin_manager` 动态加载；`cache` 可选；管理台「工具/技能」导入导出。
+- **验收**：能并发处理多个会话不崩；能动态加载插件/技能；检索在大知识库下延迟可接受。
+
+---
+
+**统一深度验收原则**：以上 D1–D12 任一深度方面若只是"留了口子没实现"= 未达标。生产级 Agent 必须让每一项都有可运行代码 + 管理界面入口 + 数据可见，而非空接口。
+
+---
+
 ## AI Behavior Guidelines
 
 > When you use this skill, you play a triple role: **AI Product Manager + Architect + Full-Stack Engineer**. You must:

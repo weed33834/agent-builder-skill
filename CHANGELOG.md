@@ -9,21 +9,16 @@
 - 模型回退接线（chat_with_fallback）；代码执行受限沙箱/高危命令检测；Handoff 节点；长会话上下文自动压缩
 
 ### Added
-- **市场调研**：`docs/universal-agent-capability-map.md`（MIT 2025 Agent Index + 主流框架）——通用智能体能力全景 + 实现状态 + 深化路线。
-- **安全强制（接入管线）**：`SECURITY_ENABLED` 默认开，`ChatInterface` 统一接入提示词注入防御 + PII 输入/输出双向脱敏，高风险注入直接拦截。
-- **规划 + 反思（thinking layer）**：新增 `planner_node` / `reflect_node`，单 Agent 图支持 `agent_framework.plan` / `agent_framework.reflect` 开关（默认关，配置即开）。
-- **测试**：`test_security_thinking.py`（注入拦截 / PII 双向脱敏 / 规划反思节点存在）→ 模板 pytest 43 passed。
-- **工作台（workspace）视图与 7 缺口组件**：TaskCard / WorkspacePanel / SkillSidebar / NotificationBell / CommandPalette / CanvasView / MemoryPanel。
-- **配套后端路由（L8）**：/api/tasks、/api/workspaces、/api/skills、/api/notifications(WS)、/api/canvas。
-- **生成产物完整化**：copy_static_templates 复制完整前端与完整 app 树；生成 main.py 挂载全量路由。
-- **框架适配器契约测试 + M8 SSE 流式回归测试**。
+- **SKILL 功能深化规格 M0–M16**：每个模块统一模板（用途/位置/调用方式/界面规格/操作清单/AI生成/验收），M0 技能管理作完整范例，杜绝空壳。
+- **SKILL 深度工程规格 D1–D12**：上下文与Token管理 / 工具调用工程 / 记忆工程(分层) / 规划工程 / 反思自愈 / 多智能体协作 / 安全治理纵深 / 可靠性与容错 / 可观测性纵深 / 评估与质量 / 部署与运维 / 性能与扩展——均按 用途/机制/落地/验收 写清。
+- **市场调研**：`docs/universal-agent-capability-map.md`。
+- **安全强制（接入管线）**：`SECURITY_ENABLED` 默认开，ChatInterface 统一注入防御 + PII 双向脱敏。
+- **规划 + 反思**：`planner_node` / `reflect_node`（`agent_framework.plan|reflect`）。
+- **工作台 7 组件 + 5 后端路由 + 生成产物完整化 + 框架适配器/流式测试**。
+- 测试：模板 pytest 43 passed。
 
 ### Fixed
-- **P0** 生成器工具注册（BASE_TOOLS 仅引用已实现；CUSTOM_TOOLS 一并注册）。
-- **P0** supervisor 图（aggregator 重复、specialist_* 伪节点、tools/agent 未知节点、共享 nodes 重构、空 agents 兜底）。
-- **P0** bare 运行时（create_llm 缺参；LLM 惰性构建、启动免 key）。
-- **CI 强化**（全 agent-types 生成 + import + pytest + startup）。
-- **卫生项**（\s 转义、前端无效动态 import）。
+- **P0** 生成器工具注册 / supervisor 图 / bare 运行时（LLM 惰性构建、启动免 key）/ CI 强化 / 卫生项。
 
 ## [0.5.0] - 2026-08-11
 
