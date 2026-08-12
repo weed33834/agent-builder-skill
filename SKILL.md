@@ -5,7 +5,9 @@ description: "Builds production-ready AI agents from natural-language requiremen
 
 # Universal Agent Builder
 
-## Overview
+## Part 0 · 定位与总纲（这个 Skill 是什么、何时用、怎么思考）
+
+### Overview
 
 **Universal Agent Builder** is a **meta-skill** — it does not directly provide a ready-made Agent. Instead, through a series of structured guidance steps, it **automatically generates** a complete, runnable AI Agent application that meets user requirements.
 
@@ -13,7 +15,8 @@ description: "Builds production-ready AI agents from natural-language requiremen
 
 ---
 
-## Quick-Start Build Contract（无对话直出标准）
+
+### Quick-Start Build Contract（无对话直出标准）
 
 > **本 Skill 的定位**：它不是普通文档，而是一套**预装载的提示词工作流**。它把"做一个智能体"原本需要多轮对话反复澄清、迭代、验收的全部过程，提前固化在这里。**每次构建智能体时，只读本文件即可按标准直接产出，跳过繁复对话。**
 >
@@ -50,6 +53,65 @@ python scripts/generate.py <agent.yaml> <output_dir> --framework=langgraph|bare
 ### 第 5 步：Deployment & Verification（产出运行说明）
 按 `Deployment & Verification` 章节：填 `.env` → 装依赖 → 起后端 → 起前端 → 冒烟验证 `/api/health`、`/api/chat`、`/api/tasks` 等。
 
+
+### When to Use / When NOT to Use
+
+**Use this skill when:**
+- User wants to build/create/generate an AI agent or assistant
+- User describes an agent idea and wants it implemented
+- User needs a full-stack agent application (backend + frontend)
+- User asks for an agent with specific tools, LLM, or multi-agent orchestration
+
+**Do NOT use this skill when:**
+- User only wants to chat with an AI (use direct LLM interaction)
+- User wants to modify an existing agent's code (use direct code editing)
+- User asks about agent concepts/theory without wanting to build one
+- User wants a simple API wrapper without agent capabilities
+
+---
+
+
+### AI Behavior Guidelines
+
+> When you use this skill, you play a triple role: **AI Product Manager + Architect + Full-Stack Engineer**. You must:
+> 1. **Direct-produce first (default)**: This Skill pre-loads every universal capability and its defaults. Given a one-line requirement, **produce the agent directly using the "决策默认值表"** — do NOT fall back to interrogating the user. Only ask (min 1 question) when the requirement is genuinely missing enough to block a choice (e.g. 客服 vs 通用助手 → 是否多智能体；对成本敏感 → 模型).
+> 2. **Record decisions**: Write every decision from each step into a file.
+> 3. **Explain choices**: Briefly state the defaults you chose and why (one line each).
+> 4. **Deliver runnable code**: The final product must be a complete, launchable application, verified against the "生成产物完整性清单".
+
+**Keep in mind**:
+- You are not writing documentation; you are **producing a runnable agent**.
+- **Fill every unspecified decision with the default** from "通用智能体基础能力全栈·决策默认值表" — do not leave blanks and do not ask.
+- If the user later wants to change a choice, regenerate the `agent.yaml` field and re-run `generate.py`.
+- **Proceed in one pass** unless the user explicitly wants to review an intermediate step.
+
+---
+
+
+## Part 1 · 决策与标准（未指定即用默认，交付门槛）
+
+### 通用智能体基础能力全栈（内置，直接按此构建）
+
+> **本节把"一个通用智能体该有的全部基础能力"预装载在这里**，并给出每个能力的**实现方式**与**决策默认值**。构建时**无需向用户追问**——用户一句话或一段描述即可，未指定的项一律采用默认值（见"决策默认值表"），直接产出可运行 Agent。
+
+### 0. 决策默认值表（未指定即用此默认，绝不反复问）
+
+| 维度 | 默认值 | 说明 |
+|---|---|---|
+| 框架 | `langgraph` | 生产级；要零依赖用 `bare` |
+| 图类型 | `single` | 需多智能体才改 `supervisor` |
+| LLM 提供商/模型 | `openai` / `gpt-4o` | 可按成本/能力改 deepseek/claude 等 |
+| 温度 / max_tokens | `0.7` / `4096` | — |
+| 工具（enabled） | `web_search, web_fetch, current_time, calculate` | 按用途加 `code_execute/run_code/file_read/file_write/read_csv/analyze_data/generate_chart` |
+| 记忆 | `buffer`（会话内） | 需要知识库加 RAG |
+| 编排 | `single` | 客服/协作类改 `supervisor` |
+| 安全强制 | `SECURITY_ENABLED=true` | 注入防御 + PII 脱敏 |
+| 规划 / 反思 | `off` | 需要思考链开启 `agent_framework.plan/reflect` |
+| 流式 | 开 | `/api/chat` SSE |
+| 前端 | chat + admin + workspace | 完整三视图 |
+| 部署 | uvicorn + 前端 dev | 可选 Docker |
+
+
 ### ✅ 生成产物完整性清单（交付即需满足）
 生成出的 Agent 必须包含以下通用能力，缺一即视为未完成：
 | 域 | 交付物 | 验证点 |
@@ -72,26 +134,13 @@ python scripts/generate.py <agent.yaml> <output_dir> --framework=langgraph|bare
 
 ---
 
-## 通用智能体基础能力全栈（内置，直接按此构建）
 
-> **本节把"一个通用智能体该有的全部基础能力"预装载在这里**，并给出每个能力的**实现方式**与**决策默认值**。构建时**无需向用户追问**——用户一句话或一段描述即可，未指定的项一律采用默认值（见"决策默认值表"），直接产出可运行 Agent。
+**统一验收原则**：任何模块若只做出"能看不能操作"的空壳 = 未完成。每个模块必须满足上述【验收】，且交互（增删改查/导入导出/AI 生成/命令调用）都要落到真实 API，禁止 mock 假数据。
 
-### 0. 决策默认值表（未指定即用此默认，绝不反复问）
+---
 
-| 维度 | 默认值 | 说明 |
-|---|---|---|
-| 框架 | `langgraph` | 生产级；要零依赖用 `bare` |
-| 图类型 | `single` | 需多智能体才改 `supervisor` |
-| LLM 提供商/模型 | `openai` / `gpt-4o` | 可按成本/能力改 deepseek/claude 等 |
-| 温度 / max_tokens | `0.7` / `4096` | — |
-| 工具（enabled） | `web_search, web_fetch, current_time, calculate` | 按用途加 `code_execute/run_code/file_read/file_write/read_csv/analyze_data/generate_chart` |
-| 记忆 | `buffer`（会话内） | 需要知识库加 RAG |
-| 编排 | `single` | 客服/协作类改 `supervisor` |
-| 安全强制 | `SECURITY_ENABLED=true` | 注入防御 + PII 脱敏 |
-| 规划 / 反思 | `off` | 需要思考链开启 `agent_framework.plan/reflect` |
-| 流式 | 开 | `/api/chat` SSE |
-| 前端 | chat + admin + workspace | 完整三视图 |
-| 部署 | uvicorn + 前端 dev | 可选 Docker |
+
+## Part 2 · 能力与架构（8 类能力 × 10 层架构 × 模板库）
 
 ### 1. 能力全景（A–H 全都要有，缺一不交付）
 
@@ -130,1103 +179,8 @@ python scripts/generate.py <agent.yaml> <output_dir> --framework=langgraph|bare
 **H. 平台与部署层**
 - Docker；配置管理（`.env` + pydantic-settings）；定时任务（`scheduler`）；插件 / 技能加载（`plugin_manager` / `skill_loader`）。
 
-### 2. 生成步骤（不询问，直接按默认值执行）
 
-```
-1) 写 agent.yaml（用默认值表；tools.enabled 每个名字必须在本 Skill 通用工具集或 tools.custom 中）
-2) python scripts/generate.py <agent.yaml> <out> --framework=langgraph   # 零依赖则 --framework=bare
-3) 验证：import app.main + pytest + 前端 build
-4) 交付运行说明（填 .env → 起后端 → 起前端）
-```
-
-### 3. 验证即交付（对照"生成产物完整性清单"逐项勾选，全部 ✅ 才算完成）
-
----
-
-## 功能深化规格（Functional Deep Spec）——每个模块都要做到位
-
-> **为什么需要本规格**：笼统描述（"做一个工作台""做一个技能管理"）只会让 AI 交出一个空壳/纯展示页。**必须把每个模块"拿来做什么、在哪里做、界面长什么样、怎么操作、怎么被调用、怎么 AI 生成"全部写清楚**，AI 才能照做。下面用统一模板描述所有模块，**每个模块必须满足其"验收"项才算完成**。
-
-### 通用模板（每个模块按此描述，缺一项即不完整）
-```
-【用途】这个功能是干嘛的，解决什么问题。
-【位置】在前端哪个视图/导航/路由；后端哪些 API。
-【调用方式】用户怎么触达：①界面按钮/菜单 ②对话内命令（如 /skill ...）③后台默认可用（智能体对话中随时可自动调用）。
-【界面规格】布局草图 + 元素列表 + 交互行为（点击/悬停/拖拽/弹窗/空态/加载/错误态）。
-【操作清单】增/删/改/查/导入/导出/启停/AI 生成，逐个写明。
-【AI 生成】用户给一句话描述，AI 一键产出什么（草稿/模板/配置）。
-【验收】能做哪些具体操作才算完成。
-```
-
----
-
-### M0. 技能/插件管理（flagship 范例——按此深度复制到所有模块）
-
-- **用途**：把"可复用的能力"（专家人设、原子技能、外部连接器）做成可管理、可被对话调动的实体，避免把功能写死在代码里。
-- **位置**：工作台「能力库」+ 管理台「技能管理」页；API `GET/POST/PUT/DELETE /api/skills`、`GET /api/skills/{kind}/{id}`；持久化 `data/skills.json`。
-- **调用方式**：① 界面按钮增删改查；② 对话框输入 `/skill 列出所有技能`、`/skill 启用 周报生成` 等命令；③ **后台默认可用**——智能体在任意对话中按需自动调用 `/api/skills` 检索并启用某个技能（不需要用户显式触发）。
-- **界面规格**：
-  - 左侧分类 Tab：`专家 / 技能 / 连接器`（三态切换，当前高亮）。
-  - 列表卡片：名称 + 类型标签 + 描述 + 标签 chips + 启用/停用开关（点击切换，即时持久化）。
-  - 顶部：搜索框（按名称/描述过滤）+「新建」按钮 +「导入」下拉 +「导出」按钮。
-  - 「新建」弹窗：字段 = 类型(单选) + 名称 + 描述 + 标签(多选/输入) + 配置(JSON 编辑器) + 「AI 生成」按钮。
-  - 「AI 生成」：用户输入一句描述（如"写一个周报生成技能"），AI 返回**完整的技能配置模板**（名称/描述/标签/config/触发词），一键填入并保存。
-  - 卡片操作：编辑 / 删除(确认弹窗) / 导出(单个 YAML/JSON) / 复制。
-  - 空态：无数据时显示引导（"暂无技能，点击新建或 AI 生成"）。
-- **操作清单**：新建 / 查看详情 / 编辑 / 删除 / 启停 / 搜索 / 单条导出 / 批量导出(JSON) / 从文件导入 / AI 生成 / 命令调用。
-- **AI 生成**：`/skill 生成 <描述>` 或管理页「AI 生成」→ 返回可保存的完整技能模板（含 `kind/name/description/tags/config/触发词`），并给出「已生成，可在对话中输入 /skill 触发」提示。
-- **验收**：能在界面增删改查并立即生效；能 `/skill ...` 命令在对话中调用；智能体在对话中能自动检索并启用技能；能导入导出；能 AI 生成完整模板。
-
----
-
-### M1. 提示词管理（prompts）
-- 用途：统一管理系统提示词，带版本、回滚、A/B 分流，避免改一句提示词就改代码。
-- 位置：管理台「提示词管理」；API `/api/admin/prompts*`。
-- 调用方式：界面 CRUD；Agent 运行时按 `prompt_id` 读取当前启用版本。
-- 界面规格：左列表（名称/状态/版本）+ 右 4-Tab 详情（配置/测试/运行/审计）；编辑区带变量占位符 + 「AI 优化/改写/多语言/审查」按钮；版本历史 + 一键回滚；A/B 分流开关（线上流量比例）。
-- 操作：新建/编辑/删除/启停/版本历史/回滚/A-B/导入导出/AI 生成（描述→提示词草稿）。
-- AI 生成：`生成客服引导提示词` → 返回可保存的提示词正文 + 变量说明 + 版本号。
-- 验收：能 CRUD、能版本回滚、能 A/B、能 AI 生成、Agent 读到的是启用版本。
-
-### M2. 模型管理（models）
-- 用途：配置多个 LLM 提供商/模型 + key 池 + 回退链，一处切换全 Agent 生效。
-- 位置：管理台「模型管理」；API `/api/admin/models*`。
-- 界面规格：模型列表（提供商/模型/base_url/状态/延迟）+「测试连通」按钮(实时 ping 返回延迟与错误)+ key 池管理 + 回退链顺序拖拽。
-- 操作：增删改/测试连通/key 池增删/回退链配置/设为默认。
-- 验收：能加模型并测试连通；主模型失败自动走回退链；默认模型可切换。
-
-### M3. 工具管理（tools / MCP）
-- 用途：管理内置工具与外部 MCP 工具，可试跑、可热加载。
-- 位置：管理台「工具管理」；API `/api/tools`、`/api/admin/tools*`、`/api/mcp/*`。
-- 界面规格：工具列表（名称/描述/分类/来源）+「试跑」(填参数→看结果/延迟)+「连接 MCP」(HTTP/stdio)+ MCP 服务器状态面板。
-- 操作：查看/试跑/启停/连接/断开 MCP/热加载目录/导入工具。
-- 验收：能试跑工具返回真实结果；能连接 MCP 并导入其工具；工具可在对话中被调用。
-
-### M4. Agent 管理（agents）
-- 用途：把"一个 Agent"作为可配置资产（prompt+模型+工具+编排），可生成/导入/发布。
-- 位置：管理台「Agent 管理」；API `/api/admin/agents*`。
-- 界面规格：Agent 列表 +「新建」弹窗(描述→AI 生成 agent.yaml)+ 流程图编辑(节点/边拖拽保存)+ 版本/发布流量。
-- 操作：增删改/查看图/AI 生成/导入(yaml/json)/发布(版本+流量)/启停。
-- AI 生成：`做一个客服 Agent` → 返回完整 `agent.yaml`（agent/llm/prompt/tools/orchestration/ui）+ 可直接提交生成代码。
-- 验收：能 AI 生成并保存 Agent；能从 yaml 导入；能发布指定流量；能生成可运行代码。
-
-### M5. 记忆/知识库（memory）
-- 用途：管理会话记忆与文档知识库，支持向量检索。
-- 位置：工作台「记忆检索」+ 管理台「记忆管理」；API `/api/admin/memory*`。
-- 界面规格：知识库列表（文档数/分块数/嵌入方式）+「检索测试」(输入 query→Top-K 命中带相似度/来源/引用)+ 文档增删。
-- 操作：建库/删库/加文档/删文档/检索测试/清空/提取预览。
-- 验收：能建库加文档；检索返回带引用的命中；Agent 在对话中能 RAG 召回。
-
-### M6. 编排/工作流（workflows）
-- 用途：可视化编排多 Agent/工具为工作流，可保存复跑。
-- 位置：管理台「编排管理」+ 工作台「编排画布」；API `/api/admin/workflows*`、`/api/canvas*`。
-- 界面规格：画布 = 节点(trigger/agent/tool/memory/llm/output 分色)+ 连线(带标签)+ 节点属性面板 + 保存/加载画布列表。
-- 操作：拖拽建节点/连线/改名/删除节点连线/保存加载/导出画布 JSON。
-- 验收：能搭出带节点连线的图并保存；能加载回画布；能作为工作流被 Agent 执行。
-
-### M7. 会话/工作区（sessions / workspaces）
-- 用途：多会话管理 + 部门/项目/个人工作区资源隔离。
-- 位置：侧边栏会话 + 工作台「工作区」；API `/api/sessions*`、`/api/workspaces*`。
-- 界面规格：会话列表（分组/收藏/搜索/分享/导出 MD/附件）+ 工作区卡片（类型色标/成员/资源配额）。
-- 操作：会话增删改名/分组/收藏/分享/导出/传附件；工作区建删/成员管理/类型切换。
-- 验收：能管理会话并跨会话续聊；能建工作区并隔离资源。
-
-### M8. 任务（tasks）
-- 用途：跟踪长任务进度（步骤日志/进度/结果/重试/取消）。
-- 位置：工作台「任务」；API `/api/tasks*`。
-- 界面规格：任务卡片（状态灯/进度条/步骤列表/结果/耗时/重试/取消/删除）。
-- 操作：创建/查看进度/重试/取消/删除；后台运行时可实时刷进度。
-- 验收：能创建并看到进度推进；能取消/重试；步骤日志可见。
-
-### M9. 通知（notifications）
-- 用途：汇总系统/Agent 事件通知，带未读角标与实时推送。
-- 位置：顶部「通知铃铛」；API `/api/notifications*` + WS `/api/notifications/ws`。
-- 界面规格：铃铛 + 未读红点数字；下拉面板（等级色点/模块/时间/未读高亮）+「全部已读」+ 单条点击已读。
-- 操作：查看/单条已读/全部已读/删除/实时刷新。
-- 验收：有未读角标；点击单条变已读；能实时收到新通知。
-
-### M10. 命令面板（command palette）
-- 用途：⌘K 全局快速命令，免点菜单直达任何功能。
-- 位置：全局（任意页面 Ctrl/Cmd+K 唤起）；数据来自各模块。
-- 界面规格：遮罩 + 输入框 + 命令列表（分组：导航/工作区/能力库/通知）+ 上下键选择 + 回车执行 + Esc 关闭。
-- 操作：搜索/选择/执行/关闭。
-- 验收：⌘K 能唤起；能搜索并执行跳转。
-
-### M11. 评估（evaluations）
-- 用途：用数据集跑 Agent 版本得分，支持通过率阈值与报告。
-- 位置：管理台「评估管理」；API `/api/admin/evaluations*`；离线 `scripts/evaluate.py`。
-- 界面规格：评估任务列表（状态/通过率/耗时）+「运行评估」(选数据集/版本/阈值→跑分报告)+ 用例明细。
-- 操作：建数据集/运行/查看报告/删除。
-- 验收：能运行评估并出报告；能按阈值判定通过。
-
-### M12. 监控/告警（monitoring）
-- 用途：指标、日志、告警、Trace 可视化，支撑排障。
-- 位置：管理台「监控告警」；API `/api/admin/metrics|alerts|logs|traces|drift`。
-- 界面规格：指标曲线 + 系统健康灯 + 告警列表(增删改/历史) + 日志查看 + 漂移面板。
-- 操作：查看指标/配告警规则/查日志/看漂移。
-- 验收：能看到指标曲线；能配告警并触发历史记录。
-
-### M13. 成本计费（usage）
-- 用途：按天/按模型统计 tokens 与费用，设置预算。
-- 位置：管理台「设置/计费」；API `/api/admin/usage`。
-- 界面规格：日费用曲线 + 按模型统计表 + 月度预算进度 + 预算设置。
-- 操作：查看/设预算。
-- 验收：能看费用趋势；超预算能提示。
-
-### M14. 安全（security）
-- 用途：注入防御、PII 脱敏、限流、认证、审计。
-- 位置：管理台「权限安全」+ 管线自动生效；API `/api/security/*`。
-- 界面规格：扫描测试台(输入→注入/PII/内容结果)+ 用户/API Key 管理 + 审计日志 + 熔断器状态。
-- 操作：扫描测试/用户与 Key 管理/查审计/看熔断。
-- 验收：能测试扫描；注入/PII 在对话管线中自动生效；API Key 认证生效。
-
-### M15. 定时任务（schedule）
-- 用途：按 cron 触发 Agent 任务。
-- 位置：管理台「定时任务」；API `/api/admin/tasks`（cron）。
-- 界面规格：任务列表(名称/cron/启停/上次运行)+ 新建(cron 表达式+动作)+ 立即运行。
-- 操作：增删改/启停/立即运行。
-- 验收：能建 cron 任务并启停。
-
-### M16. 语音（voice）
-- 用途：TTS 朗读 + STT 转写，支持语音对话。
-- 位置：对话输入框麦克风按钮；API `/api/voice/*`。
-- 界面规格：录音按钮(按住录制/取消/发送)+ 播放按钮(朗读回复)。
-- 操作：录音转写/朗读。
-- 验收：能录音转成文本发送；能朗读回复。
-
----
-
-**统一验收原则**：任何模块若只做出"能看不能操作"的空壳 = 未完成。每个模块必须满足上述【验收】，且交互（增删改查/导入导出/AI 生成/命令调用）都要落到真实 API，禁止 mock 假数据。
-
----
-
-## 深度工程规格（Deep Engineering Spec）——跨模块的底层深度
-
-> 前面 M0–M16 是"每个模块怎么做"。这里补齐**贯穿所有模块的深度工程方面**——这些是一个生产级通用 Agent 的底层骨架，缺了就是"demo 而非产品"。同样按 用途/机制/落地/验收 写清。
-
-### D1. 上下文与 Token 管理（Context & Token Budget）
-- **用途**：长对话不爆 token、不丢关键信息，让 Agent 始终在预算内运转。
-- **机制**：① Token 预算计费（`token_manager`，按模型计价）；② 超预算自动**压缩**（`l6_memory/summary` 摘要旧消息）+ **滑动窗口**（丢弃最旧非关键消息）；③ 关键信息抽取（user 目标/约束/结论单独沉淀到 state）；④ 上下文注入顺序（system → 计划 → 记忆 → 历史 → 当前输入）。
-- **落地**：`ChatInterface` 在组消息时先估 token，超阈值触发 `summary.compress()` 并标记压缩点；`/api/chat` 返回 `usage` 与 `compressed` 标记；管理台「上下文」面板可视化 token 占用与压缩日志。
-- **验收**：连续对话 50 轮后 API 仍不超预算；能看到压缩历史；关键约束不被压缩丢失。
-
-### D2. 工具调用工程（Tool-calling Engineering）
-- **用途**：工具调用可靠、可并行、可恢复，而不是"调一次失败就崩"。
-- **机制**：① 并行工具调用（一条消息多个 tool_call 同时执行）；② 参数校验（JSON Schema，`l5_tools/schemas`）；③ 失败分级（可重试 / 终态失败）+ 自动重试；④ 超时（`TOOL_TIMEOUT`）与熔断；⑤ 工具结果入 state 并回填给 LLM；⑥ 工具白名单/敏感工具需审批。
-- **落地**：`tool_node` 并行执行 + `executor.py` 校验/超时/重试；`ToolRegistry` 支持并发注册与调用计数；管理台「工具试跑」返回 latency/error。
-- **验收**：一条含 3 个并行 tool_call 的消息能并行执行并全部回填；参数错能给出可读错误；敏感工具触发审批。
-
-### D3. 记忆工程（Memory Engineering）
-- **用途**：把记忆做成**分层**（工作/情景/语义/程序），能检索、能合并、能遗忘，支撑跨会话连续性。
-- **机制**：① 工作记忆 = 当前会话 buffer；② 情景记忆 = 已结束会话的可检索记录（`session_manager`）；③ 语义记忆 = 向量知识库（`vector_store`/`rag_engine`）；④ 程序记忆 = 学到的工作流/偏好（可写 `data/preferences.json`）；⑤ 检索路由：先语义召回 Top-K 再按相关性过滤；⑥ 遗忘策略：超期/低价值记录降权或清理。
-- **落地**：`l6_memory` 分层类 + 统一 `MemoryRouter.retrieve(query)`；检索命中带 `source`（会话/知识库/偏好）与 `score`；管理台「记忆」按层查看与清理。
-- **验收**：能按层查看记忆；跨会话能想起之前结论；能手动/自动清理过期记忆。
-
-### D4. 规划工程（Planning Engineering）
-- **用途**：复杂任务先拆解成可执行步骤，动态重规划，失败可恢复。
-- **机制**：① 任务分解（`orchestrator/decomposer`：目标→子任务 DAG）；② 优先级排序与依赖；③ 顺序执行或并行（无依赖子任务并发）；④ 动态重规划（某步失败→重新拆解）；⑤ 计划进度状态机（pending/running/done/failed，落 `tasks`）。
-- **落地**：`planner_node`（已内置）+ `decomposer` 拆 DAG；执行进度写 `/api/tasks`；管理台「任务」可视化 DAG 与进度。
-- **验收**：复杂任务能自动拆解出有序步骤；某步失败能重规划；进度实时可查。
-
-### D5. 反思与自愈（Reflection & Self-healing）
-- **用途**：Agent 出错能自评、自修复、自收敛，而不是一次失败就结束。
-- **机制**：① 反思（`reflect_node` 已内置：评价+修正）；② 错误分类（LLM/工具/输入/超时）→ 对应策略；③ 自动修复重试（修复后重跑，限 N 次）；④ 收敛判定（连续 M 次无改进则停，防死循环）。
-- **落地**：agent 循环内接 reflect + 重试上限（`max_iterations`）；错误与修复轨迹写 `error`/`reflection` 到 state 并暴露给监控。
-- **验收**：能识别并自动修复一类可修复错误；有重试上限不会死循环；修复轨迹可查。
-
-### D6. 多智能体协作（Multi-Agent Collaboration）
-- **用途**：多 Agent 分工、交接、结果合并，形成"团队"而非"多个单 Agent 堆叠"。
-- **机制**：① 角色分工（supervisor 路由到 specialist，已实现）；② 交接（handoff：A 把上下文交给 B，返回控制权）；③ 共享状态（`state` 全局可见，各 Agent 增量更新）；④ 冲突处理（结果矛盾→协调 Agent 裁决）；⑤ 结果合并（`aggregator` 汇总各 specialist 输出）。
-- **落地**：`supervisor` 图 + `aggregator`（已实现）；新增 handoff 节点；管理台「编排」可视化多 Agent 协作关系。
-- **验收**：多 Agent 能分工完成一个总任务；能交接上下文；最终输出是合并后的结果。
-
-### D7. 安全与治理纵深（Security & Governance Depth）
-- **用途**：纵深防御 + 可审计 + 可隔离，满足生产合规。
-- **机制**：① 输入侧：注入检测（已接入）+ PII 脱敏（已接入）+ 内容过滤；② 工具侧：白名单/敏感命令审批（`code_execute` 高危检测）；③ 数据侧：落库脱敏、数据保留策略；④ 控制侧：限流、认证（API Key）、RBAC 角色；⑤ 审计：关键操作（建/删/发布/改权限）写审计日志；⑥ 熔断与降级。
-- **落地**：`ai_security` + 中间件（认证/限流/日志）+ `/api/security/audit`；敏感工具调用需 `agent_node_with_human` 审批。
-- **验收**：注入/PII 在管线自动生效；敏感工具可触发审批；关键操作有审计记录；能按角色限权。
-
-### D8. 可靠性与容错（Reliability & Fault-tolerance）
-- **用途**：网络抖动、模型抽风、超时不至于让整个 Agent 挂掉。
-- **机制**：① 重试（指数退避，`retry.py`）；② 熔断（`circuit_breaker`：连续失败→开闸→半开）；③ 超时（LLM/工具/HTTP 全链超时）；④ 降级（主模型失败→回退链/缓存兜底）；⑤ 幂等（任务/工具调用去重）；⑥ 并发控制（限制并发会话/工具数）。
-- **落地**：`retry` + `circuit_breaker` + `TOOL_TIMEOUT` + 回退链；管理台「监控」展示熔断/降级状态。
-- **验收**：断网重试能恢复；连续失败能熔断；超时能优雅失败而非卡死。
-
-### D9. 可观测性纵深（Observability Depth）
-- **用途**：一次请求从头到尾可追踪、可定位、可复盘。
-- **机制**：① 请求 ID 贯穿（`request_id`）；② 端到端 Trace（请求→节点→工具→LLM，含耗时/输入输出摘要）；③ 指标（延迟/错误率/token/成本，Prometheus）；④ 结构化日志（`StructuredLogger`）；⑤ 告警规则与历史；⑥ 漂移检测（输入分布/表现变化）。
-- **落地**：中间件生成 request_id；`/api/admin/traces|logs|metrics|drift`；监控面板可视化。
-- **验收**：能按 request_id 查一次完整链路；能看指标曲线；能配告警并查历史。
-
-### D10. 评估与质量（Evaluation & Quality）
-- **用途**：改一处不回归，用数据说话，而非"感觉变好了"。
-- **机制**：① 数据集管理（用例：输入/期望/标签）；② 批量跑分（`scripts/evaluate.py`）；③ 回归对比（基线 vs 新版本，`pass_rate` 差异）；④ 分维度评分（准确/安全/延迟）；⑤ A/B 与阈值判定；⑥ 红队用例（注入/越狱）。
-- **落地**：`eval/` + `/api/admin/evaluations*`；管理台「评估」出报告并可对比历史。
-- **验收**：能跑数据集出报告；能对比两版本通过率；红队用例能防住注入。
-
-### D11. 部署与运维（Deployment & Ops）
-- **用途**：一键部署、可配置、可备份恢复、可平滑升级。
-- **机制**：① Docker 化（`Dockerfile`/`docker-compose`）；② 配置管理（`.env` + pydantic-settings）；③ 密钥管理（不落代码，从 env/secret 读）；④ 健康检查（`/api/health`）；⑤ 优雅关闭（lifespan）；⑥ 备份/恢复（`/api/admin/backup`）；⑦ 多环境（dev/prod 配置覆盖）。
-- **落地**：`docker-compose up --build` 一键起；`/api/health` 就绪探针；备份导出/恢复。
-- **验收**：能一键起服务；健康检查通过；能导出备份并恢复。
-
-### D12. 性能与扩展（Performance & Extensibility）
-- **用途**：并发高、检索快、能插拔扩展。
-- **机制**：① 缓存（LLM 响应/向量索引/结果去重）；② 异步/并发（asyncio + 限制并发）；③ 向量索引优化（索引类型/分片，`vector_store`）；④ 插件/SDK（`plugin_manager`/`skill_loader` 动态加载）；⑤ 模板市场（`/api/admin/agents/templates`）；⑥ 技能市场（导入导出共享）。
-- **落地**：`mcp_client`/`plugin_manager` 动态加载；`cache` 可选；管理台「工具/技能」导入导出。
-- **验收**：能并发处理多个会话不崩；能动态加载插件/技能；检索在大知识库下延迟可接受。
-
----
-
-**统一深度验收原则**：以上 D1–D12 任一深度方面若只是"留了口子没实现"= 未达标。生产级 Agent 必须让每一项都有可运行代码 + 管理界面入口 + 数据可见，而非空接口。
-
----
-
-## AI Behavior Guidelines
-
-> When you use this skill, you play a triple role: **AI Product Manager + Architect + Full-Stack Engineer**. You must:
-> 1. **Direct-produce first (default)**: This Skill pre-loads every universal capability and its defaults. Given a one-line requirement, **produce the agent directly using the "决策默认值表"** — do NOT fall back to interrogating the user. Only ask (min 1 question) when the requirement is genuinely missing enough to block a choice (e.g. 客服 vs 通用助手 → 是否多智能体；对成本敏感 → 模型).
-> 2. **Record decisions**: Write every decision from each step into a file.
-> 3. **Explain choices**: Briefly state the defaults you chose and why (one line each).
-> 4. **Deliver runnable code**: The final product must be a complete, launchable application, verified against the "生成产物完整性清单".
-
-**Keep in mind**:
-- You are not writing documentation; you are **producing a runnable agent**.
-- **Fill every unspecified decision with the default** from "通用智能体基础能力全栈·决策默认值表" — do not leave blanks and do not ask.
-- If the user later wants to change a choice, regenerate the `agent.yaml` field and re-run `generate.py`.
-- **Proceed in one pass** unless the user explicitly wants to review an intermediate step.
-
----
-
-## When to Use / When NOT to Use
-
-**Use this skill when:**
-- User wants to build/create/generate an AI agent or assistant
-- User describes an agent idea and wants it implemented
-- User needs a full-stack agent application (backend + frontend)
-- User asks for an agent with specific tools, LLM, or multi-agent orchestration
-
-**Do NOT use this skill when:**
-- User only wants to chat with an AI (use direct LLM interaction)
-- User wants to modify an existing agent's code (use direct code editing)
-- User asks about agent concepts/theory without wanting to build one
-- User wants a simple API wrapper without agent capabilities
-
----
-
-## Core Workflow (5-Step Method)
-
-```
-Step 1: Discovery  →  Step 2: Architecture Design  →  Step 3: Config Generation  →  Step 4: Code Generation  →  Step 5: Deployment & Verification
-  User states requirements   Choose template & architecture    Generate YAML config       Generate complete code         Launch & test
-```
-
----
-
-### Step 1: Discovery
-
-**Goal**: Through conversation, understand the Agent the user wants and produce a structured requirements document `agent_requirements.md`.
-
-**AI behavior**: You need to act like a product manager, gradually uncovering user needs through dialogue. **Do not throw all the questions at the user at once**. Instead, follow the order below, asking 1–2 questions at a time and waiting for the user's answer before continuing.
-
-#### Conversation Opener
-
-```
-AI: Hello! I'm here to help you build an AI Agent. First, could you describe in one sentence what you want this Agent to do?
-User: I want a research assistant that helps me search and analyze information.
-
-AI: Great! Let's pin down the requirements step by step.
-```
-
-#### 1.1 Core Functionality (Ask This First)
-
-| Question | Options | Record Field |
-|----------|---------|--------------|
-| What does your Agent mainly do? | Free description | `purpose` |
-| Which type does it belong to? | Chat assistant / Research assistant / Coding assistant / Customer service / Data analysis / Custom | `agent_type` |
-
-**AI dialogue example**:
-```
-AI: What problem does your Agent mainly solve? Could you describe the use case specifically?
-User: I need a research assistant that can search the web, summarize content, and save notes.
-
-AI: Got it — this falls under the "research assistant" type. Next, let me ask about the technical details.
-```
-
-#### 1.2 Technology Selection (Ask This Next)
-
-| Question | Options | Record Field |
-|----------|---------|--------------|
-| Which LLM do you want to use? | OpenAI / Anthropic / DeepSeek / Ollama / Hybrid | `llm_provider` |
-| Which specific model? | GPT-4o / Claude-3.5 / DeepSeek-V3 / Custom | `llm_model` |
-| Do you need local deployment? | Yes / No | `local_deploy` |
-
-**AI dialogue example**:
-```
-AI: Which LLM do you prefer? For overall capability I recommend GPT-4o, for coding I recommend Claude-3.5,
-for cost-effectiveness I recommend DeepSeek-V3, and for local deployment you can use Ollama.
-User: Let's go with GPT-4o.
-
-AI: Sounds good. Do you need local deployment? If not, we'll use the cloud API.
-User: No local deployment needed.
-```
-
-#### 1.3 Tool Requirements
-
-| Question | Options | Record Field |
-|----------|---------|--------------|
-| Do you need web search? | Yes / No | `tools.web_search` |
-| Do you need file read/write? | Yes / No | `tools.file_ops` |
-| Do you need code execution? | Yes / No | `tools.code_exec` |
-| Do you need custom tools? | Yes / No → describe | `tools.custom` |
-
-#### 1.4 Memory & Knowledge
-
-| Question | Options | Record Field |
-|----------|---------|--------------|
-| Do you need conversation history? | Short-term (current session) / Long-term (cross-session) / Not needed | `memory.type` |
-| Do you need to upload knowledge documents? | Yes / No | `knowledge.enabled` |
-
-#### 1.5 Multi-Agent & Orchestration
-
-| Question | Options | Record Field |
-|----------|---------|--------------|
-| Do you need multiple Agents to collaborate? | Single Agent / Multi-Agent | `orchestration.mode` |
-
-#### 1.6 Interface & Deployment
-
-| Question | Options | Record Field |
-|----------|---------|--------------|
-| What interface do you need? | Chat window / Dashboard / Admin console / Minimal | `ui.type` |
-| Deployment method? | Docker / Cloud service / Local direct run | `deployment.type` |
-
-#### Output: `agent_requirements.md`
-
-After collecting all the information, generate `agent_requirements.md`:
-
-```markdown
-# Agent Requirements Document
-
-## Basic Information
-- **Name**: ResearchAssistant
-- **Type**: research
-- **Purpose**: A web search research assistant that can search, summarize, and save notes
-
-## Technology Selection
-- **LLM Provider**: openai
-- **LLM Model**: gpt-4o
-- **Local Deployment**: No
-
-## Tools
-- web_search: Web search
-- web_fetch: Web fetching
-- current_time: Get current time
-- calculate: Math calculation
-- save_note: Save notes (custom)
-
-## Memory & Knowledge
-- **Memory Type**: buffer
-- **Knowledge Base**: None
-
-## Orchestration
-- **Mode**: single
-
-## Interface
-- **UI Type**: chat
-- **Deployment Method**: docker
-```
-
----
-
-### Step 2: Architecture Design
-
-**Goal**: Based on the requirements document, select an architecture template and determine the configuration of each layer.
-
-**AI behavior**: According to the `agent_type` in the requirements document, select the corresponding architecture template and explain the choice to the user.
-
-#### 2.1 Agent Type Decision Tree
-
-```
-User Requirements
-    │
-    ├── General conversation, simple Q&A → Template A: Chat Assistant (chat)
-    │
-    ├── Search, summarize, research → Template B: Research Assistant (research)
-    │
-    ├── Write code, debug, review → Template C: Coding Assistant (coding)
-    │
-    ├── Multi-Agent division of labor → Template D: Customer Service (customer_service)
-    │
-    ├── Data analysis, charts → Template E: Data Analysis (data_analysis)
-    │
-    └── Other special needs → Freely combine layers
-```
-
-**AI dialogue example**:
-```
-AI: Based on your requirements, I recommend the "Research Assistant" template. This template comes pre-configured with:
-- Search and web fetch tools
-- Prompt templates suited for research scenarios
-- Conversation memory management
-
-Does this direction look right to you, or would you like to adjust anything?
-```
-
-#### 2.2 Per-Layer Configuration Confirmation
-
-Based on the requirements document, confirm the configuration layer by layer. **AI behavior**: Do not list all layers at once; confirm them in order of importance:
-
-```
-Confirmation order: L1 (Model) → L5 (Tools) → L4 (Single/Multi-Agent) → L3 (Prompts) → L6 (Memory) → L9 (UI) → L10 (Deployment)
-```
-
-When confirming each layer, **AI behavior**:
-1. Explain to the user what this layer does
-2. Provide the recommended configuration
-3. Let the user confirm or modify
-
-**Example**:
-```
-AI: Next, let's determine the L1 LLM layer. You chose GPT-4o — are the default temperature and max tokens
-(0.7 and 4096) okay? These parameters affect the creativity and length of responses.
-User: That's fine.
-```
-
-#### 2.3 Architecture Document Output
-
-Generate `architecture.md`:
-
-```markdown
-# Architecture Design Document
-
-## Architecture Blueprint
-Research Assistant — Single Agent
-
-## Per-Layer Configuration
-
-### L1 LLM Layer
-- Provider: openai
-- Model: gpt-4o
-- Temperature: 0.7
-- Max Tokens: 4096
-
-### L2 Model Interface Layer
-- Retry: Enabled (max 3 times, 1 second delay)
-- Model Fallback: Disabled
-
-### L3 Prompt Engineering Layer
-- Role Template: research_assistant
-- Output Format: markdown
-- Custom System Prompt: Set
-
-### L4 Agent Framework Layer
-- Graph Type: single (single Agent)
-- Max Iterations: 10
-- Checkpointer: memory
-
-### L5 Tool Execution Layer
-- Base Tools: web_search, web_fetch, current_time, calculate
-- Custom Tools: save_note (save research notes)
-
-### L6 Memory & Knowledge Layer
-- Memory Type: buffer
-- Max Messages: 50
-- Knowledge Base: None
-
-### L7 Orchestration Layer
-- Mode: single
-- Max Subtasks: 5
-
-### L8 API Service Layer
-- Endpoints: /api/chat, /api/health, /api/sessions
-- Auth: None
-- Rate Limit: 60 requests/minute
-
-### L9 Frontend UI Layer
-- Components: ChatWindow, Sidebar, Header
-- Features: Tool call visualization, multi-session management, Markdown rendering
-
-### L10 Infrastructure Layer
-- Deployment: docker
-- Log Level: INFO
-```
-
----
-
-### Step 3: Config Generation
-
-**Goal**: Based on the architecture design, generate the `agent.yaml` configuration file.
-
-**AI behavior**:
-1. Generate `agent.yaml` based on the architecture document
-2. Show the user the key configuration items
-3. Let the user confirm before continuing
-
-```yaml
-# ============================================================
-# agent.yaml - Complete Agent configuration (single source of truth)
-# All code generation is based on this configuration
-# ============================================================
-
-# Agent basic information
-agent:
-  name: "ResearchAssistant"
-  type: "research"
-  description: "A web search research assistant that can search the web, summarize content, and save notes"
-
-# L1: LLM Layer
-llm:
-  provider: "openai"           # openai | anthropic | deepseek | ollama
-  model: "gpt-4o"
-  api_base: ""                 # Optional, for third-party services compatible with the OpenAI format
-  temperature: 0.7
-  max_tokens: 4096
-
-# L2: Model Interface Layer
-interface:
-  retry:
-    enabled: true
-    max_retries: 3
-    delay: 1.0
-  fallback:
-    enabled: false
-    models: []
-
-# L3: Prompt Engineering Layer
-prompt:
-  system_prompt: |
-    你是一个专业的研究助手。你的任务是：
-    1. 理解用户的问题
-    2. 搜索相关信息
-    3. 总结和分析结果
-    4. 给出有深度、有来源的回答
-  role_template: "research_assistant"
-  output_format: "markdown"
-
-# L4: Agent Framework Layer
-agent_framework:
-  graph_type: "single"         # single | multi | supervisor
-  max_iterations: 10
-  checkpointer: "memory"       # memory | postgres | none
-
-# L5: Tool Execution Layer
-tools:
-  enabled:
-    - web_search
-    - web_fetch
-    - current_time
-    - calculate
-  custom:
-    - name: "save_note"
-      description: "Save research notes to a local file"
-      parameters:
-        title: { type: "string", description: "Note title" }
-        content: { type: "string", description: "Note content" }
-
-# L6: Memory & Knowledge Layer
-memory:
-  type: "buffer"               # buffer | vector | both
-  max_messages: 50
-  knowledge:
-    enabled: false
-    vector_store: "chroma"
-
-# L7: Orchestration Layer
-orchestration:
-  mode: "single"               # single | multi
-  max_subtasks: 5
-  timeout: 120
-
-# L8: API Service Layer
-api:
-  auth_enabled: false
-  rate_limit: 60
-  cors_origins:
-    - "http://localhost:5173"
-    - "http://localhost:3000"
-
-# L9: Frontend UI Layer
-ui:
-  type: "chat"                 # chat | dashboard | minimal
-  title: "Research Assistant"
-  features:
-    - tool_visualization
-    - session_management
-    - markdown_rendering
-
-# L10: Infrastructure Layer
-deployment:
-  type: "docker"               # docker | local
-  log_level: "INFO"
-  debug: false
-```
-
-**AI dialogue example**:
-```
-AI: The configuration has been generated. Here are the key settings:
-- Model: GPT-4o
-- Tools: Search, web fetch, calculate, save notes
-- Architecture: Single Agent
-- UI: Chat window
-- Deployment: Docker
-
-Please confirm whether to generate code based on this configuration, or do you need to adjust anything?
-```
-
----
-
-### Step 4: Code Generation
-
-**Goal**: Based on the `agent.yaml` configuration, generate the complete code layer by layer.
-
-**AI behavior**:
-1. Run the `scripts/generate.py` script to generate the code
-2. Or manually generate the code layer by layer (in L1 → L10 order)
-3. After generating each layer, verify the correctness of that layer's code
-4. Finally produce a complete project directory
-
-#### Using the Generation Script (Recommended)
-
-```bash
-# Syntax: python scripts/generate.py <config.yaml> <output_dir>
-python scripts/generate.py agent.yaml ./generated_agent
-```
-
-#### Manual Generation Strategy
-
-If the auto-generation script is unavailable, generate layer by layer in L1 → L10 order. Generation rules per layer:
-
-| Layer | Config Source | Generation Target | Key Operations |
-|-------|---------------|-------------------|----------------|
-| L1 | `llm.*` | `app/l1_llm/factory.py` | Keep only the configured provider adapter |
-| L2 | `interface.*` | `app/l2_interface/chat_interface.py` | Configure retry and fallback strategies |
-| L3 | `prompt.*` | `app/l3_prompt/system_prompts.py` | Inject system prompts and role templates |
-| L4 | `agent_framework.*` | `app/l4_agent/graph.py` | Single Agent or multi-Agent graph |
-| L5 | `tools.*` | `app/l5_tools/` | Register only enabled tools |
-| L6 | `memory.*` | `app/l6_memory/` | Configure memory type |
-| L7 | `orchestration.*` | `app/l7_orchestrator/` | Single/multi-Agent orchestration |
-| L8 | `api.*` | `app/l8_api/routes/` | Generate API routes |
-| L9 | `ui.*` | `frontend/src/` | Dynamically render UI components |
-| L10 | `deployment.*` | `docker-compose.yml`, `.env` | Deployment configuration |
-
-#### Generated Project Structure
-
-```
-generated_agent/
-├── agent.yaml                    # Configuration file (single source of truth)
-├── agent_requirements.md         # Requirements document
-├── architecture.md               # Architecture document
-├── .env.example                  # Environment variable template
-├── docker-compose.yml            # Docker orchestration
-├── Dockerfile                    # Backend image
-├── requirements.txt              # Python dependencies
-├── app/
-│   ├── main.py                   # Application entry (L8+L10)
-│   ├── l1_llm/                   # LLM Layer
-│   │   ├── __init__.py
-│   │   ├── base.py               # Abstract base class
-│   │   ├── openai_adapter.py     # Only keep the configured provider
-│   │   └── factory.py            # Factory method
-│   ├── l2_interface/             # Model Interface Layer
-│   │   ├── __init__.py
-│   │   ├── chat_interface.py     # Unified chat interface
-│   │   ├── streaming.py          # Streaming handling
-│   │   └── retry.py              # Retry strategy
-│   ├── l3_prompt/                # Prompt Engineering Layer
-│   │   ├── __init__.py
-│   │   ├── system_prompts.py     # System prompts (injected from config)
-│   │   ├── prompt_builder.py     # Prompt builder
-│   │   └── output_parsers.py     # Output parsers
-│   ├── l4_agent/                 # Agent Framework Layer
-│   │   ├── __init__.py
-│   │   ├── state.py              # Agent state definition
-│   │   ├── graph.py              # Graph construction (single/multi-Agent)
-│   │   ├── nodes.py              # Node logic
-│   │   └── router.py             # Routing decisions
-│   ├── l5_tools/                 # Tool Execution Layer
-│   │   ├── __init__.py
-│   │   ├── registry.py           # Tool registry
-│   │   ├── base_tools.py         # Base tool implementations
-│   │   └── custom_tools.py       # Custom tool implementations
-│   ├── l6_memory/                # Memory & Knowledge Layer
-│   │   ├── __init__.py
-│   │   ├── buffer.py             # Conversation buffer
-│   │   ├── session_manager.py    # Session management
-│   │   └── vector_store.py       # Vector store (optional)
-│   ├── l7_orchestrator/          # Orchestration Layer
-│   │   ├── __init__.py
-│   │   ├── base.py               # Orchestrator base class
-│   │   ├── orchestrator.py       # Orchestrator
-│   │   └── aggregator.py         # Result aggregation
-│   └── l8_api/                   # API Service Layer
-│       ├── __init__.py
-│       ├── schemas.py            # Data models
-│       ├── routes/
-│       │   ├── chat.py           # Chat endpoint
-│       │   └── health.py         # Health check
-│       └── middleware/
-│           └── auth.py           # Authentication (optional)
-├── frontend/
-│   ├── package.json
-│   ├── vite.config.ts
-│   ├── index.html
-│   └── src/
-│       ├── main.tsx
-│       ├── App.tsx               # Root component (dynamic rendering)
-│       ├── l8_api/
-│       │   └── api.ts            # API client
-│       ├── l9_ui/
-│       │   ├── chat/
-│       │   │   ├── ChatWindow.tsx
-│       │   │   ├── ChatInput.tsx
-│       │   │   ├── MessageBubble.tsx
-│       │   │   └── ToolCall.tsx
-│       │   └── layout/
-│       │       ├── Header.tsx
-│       │       └── Sidebar.tsx
-│       ├── types/
-│       │   └── index.ts
-│       └── styles/
-│           └── index.css
-└── scripts/
-    ├── start.sh                  # Start script
-    └── run.sh                    # One-click run
-```
-
-#### Verification Checklist
-
-After generating each layer, check:
-
-- [ ] L1: Adapter code is correct; the factory method supports the configured provider
-- [ ] L2: Interface layer has the correct retry and fallback strategies configured
-- [ ] L3: System prompt injected; role template set
-- [ ] L4: Graph structure is correct (single-Agent / multi-Agent)
-- [ ] L5: Tools registered per config; custom tools implemented
-- [ ] L6: Memory type configured
-- [ ] L7: Orchestration mode configured
-- [ ] L8: API routes registered; authentication configured
-- [ ] L9: Frontend components rendered per feature config
-- [ ] L10: Deployment config complete; environment variables correct
-
----
-
-### Step 5: Deployment & Verification
-
-**Goal**: Ensure the generated code runs correctly.
-
-**AI behavior**:
-1. Guide the user to configure environment variables
-2. Start the backend and frontend
-3. Verify basic functionality
-4. If using Docker, verify the Docker deployment
-
-#### 5.1 Environment Configuration
-
-```bash
-cd generated_agent
-
-# Copy the environment variable template
-cp .env.example .env
-
-# Edit .env and fill in the LLM API Key
-# OPENAI_API_KEY=sk-...
-```
-
-**AI dialogue example**:
-```
-AI: The code has been generated! Now let's deploy. First, please fill in your API Key in the .env file.
-If you're using OpenAI, you need to set OPENAI_API_KEY.
-```
-
-#### 5.2 Start the Backend
-
-```bash
-# Install dependencies
-cd generated_agent
-pip install -r requirements.txt
-
-# Start the backend
-uvicorn app.main:app --reload --port 8000
-```
-
-Verify: `curl http://localhost:8000/api/health`
-
-#### 5.3 Start the Frontend
-
-```bash
-cd generated_agent/frontend
-npm install
-npm run dev
-```
-
-Verify: Open `http://localhost:5173` in the browser
-
-#### 5.4 Docker Deployment
-
-```bash
-cd generated_agent
-docker-compose up --build
-```
-
-Verify: `http://localhost:5173` + `http://localhost:8000/docs`
-
-#### 5.5 Functional Testing
-
-- [ ] Sending a message returns a reply
-- [ ] Streaming output works correctly
-- [ ] Tool calls execute correctly
-- [ ] Multi-session switching works
-- [ ] Error handling shows friendly messages
-
----
-
-## Architecture Template Library
-
-### Template A: Chat Assistant
-
-**Applicable scenario**: General conversational assistant, the simplest Agent
-
-**Configuration differences**:
-- `llm.model`: `gpt-4o-mini` (a low-cost model is sufficient)
-- `tools.enabled`: `[current_time]` (minimal tools)
-- `agent_framework.graph_type`: `single`
-- `ui.features`: `[session_management]`
-
-**Core code volume**: Minimal, about 10 files
-
-**YAML configuration**:
-```yaml
-agent:
-  name: "ChatAssistant"
-  type: "chat"
-  description: "General conversational assistant"
-
-llm:
-  provider: "openai"
-  model: "gpt-4o-mini"
-
-tools:
-  enabled: [current_time]
-
-prompt:
-  role_template: "default"
-
-agent_framework:
-  graph_type: "single"
-
-orchestration:
-  mode: "single"
-
-ui:
-  type: "chat"
-  features: [session_management]
-```
-
----
-
-### Template B: Research Assistant
-
-**Applicable scenario**: Search, analyze, and summarize information
-
-**Configuration differences**:
-- `llm.model`: `gpt-4o` (stronger reasoning capability)
-- `tools.enabled`: `[web_search, web_fetch, current_time, calculate]`
-- `prompt.role_template`: `research_assistant`
-- `prompt.output_format`: `markdown`
-- `memory.max_messages`: `100` (longer memory)
-
-**Key code differences**:
-```python
-# L3 layer: Research assistant role template
-SYSTEM_PROMPT = """You are a professional research assistant. Your tasks are:
-1. Understand the user's question
-2. Search for relevant information
-3. Summarize and analyze results
-4. Provide in-depth, sourced answers"""
-
-# Custom tool
-@tool
-async def save_note(title: str, content: str) -> str:
-    """Save research notes to a local file"""
-    with open(f"notes/{title}.md", "w", encoding="utf-8") as f:
-        f.write(content)
-    return f"Note saved: {title}.md"
-```
-
----
-
-### Template C: Coding Assistant
-
-**Applicable scenario**: Programming assistance, code review, debugging
-
-**Configuration differences**:
-- `llm.provider`: `anthropic`
-- `llm.model`: `claude-3-5-sonnet-20241022` (strongest coding capability)
-- `tools.enabled`: `[web_search, code_execute, file_read, file_write, current_time]`
-- `prompt.role_template`: `code_reviewer`
-
-**Key code differences**:
-```python
-# L3 layer: Coding assistant role template
-SYSTEM_PROMPT = """You are a professional coding assistant. You excel at:
-1. Writing high-quality code
-2. Code review and optimization
-3. Debugging and fixing bugs
-4. Architecture design recommendations
-
-Code standards:
-- Follow PEP 8 / language standard conventions
-- Add necessary type annotations
-- Include error handling
-- Focus on readability and maintainability"""
-
-# Code execution tool
-@tool
-async def code_execute(code: str, language: str = "python") -> str:
-    """Execute code in a sandbox"""
-    # Use a Docker sandbox or subprocess
-    ...
-
-@tool
-async def file_read(path: str) -> str:
-    """Read file contents"""
-    ...
-
-@tool
-async def file_write(path: str, content: str) -> str:
-    """Write content to a file"""
-    ...
-```
-
----
-
-### Template D: Customer Service
-
-**Applicable scenario**: Multi-Agent collaborative customer service system
-
-**Configuration differences**:
-- `agent_framework.graph_type`: `multi`
-- `orchestration.mode`: `multi`
-- Need to define multiple sub-Agents
-
-**Multi-Agent configuration**:
-```yaml
-agent:
-  name: "CustomerService"
-  type: "customer_service"
-
-llm:
-  provider: "openai"
-  model: "gpt-4o"
-
-tools:
-  enabled: [web_search, current_time]
-
-agent_framework:
-  graph_type: "multi"
-
-orchestration:
-  mode: "multi"
-  agents:
-    - name: "classifier"
-      role: "Question classification"
-      system_prompt: "You classify user questions into: orders, refunds, product inquiries"
-      tools: []
-    - name: "order_agent"
-      role: "Order handling"
-      system_prompt: "You handle order-related queries"
-      tools: [query_order, cancel_order]
-    - name: "refund_agent"
-      role: "Refund handling"
-      system_prompt: "You handle refund requests"
-      tools: [process_refund, check_refund_status]
-    - name: "aggregator"
-      role: "Result aggregation"
-      system_prompt: "You aggregate all sub-agent results and generate the final response"
-      tools: []
-
-ui:
-  type: "chat"
-  features: [tool_visualization, session_management]
-```
-
-**Key code differences — LangGraph adapter (v1.0+)**: 
-```python
-from langgraph.graph import StateGraph, START, END
-from langgraph.graph.state import Command
-
-# L4 layer: Multi-Agent graph
-def build_multi_agent_graph(agents: list) -> StateGraph:
-    """Build a multi-Agent orchestration graph (v1.0 API)"""
-    workflow = StateGraph(AgentState)
-
-    # Classification Agent
-    workflow.add_node("classifier", create_agent_node(agents[0]))
-    # Specialist Agents
-    workflow.add_node("order_agent", create_agent_node(agents[1]))
-    workflow.add_node("refund_agent", create_agent_node(agents[2]))
-    # Aggregation Agent
-    workflow.add_node("aggregator", create_agent_node(agents[3]))
-
-    # Use add_edge(START, node) instead of set_entry_point
-    workflow.add_edge(START, "classifier")
-
-    # Conditional routing: classifier → specialist Agent
-    workflow.add_conditional_edges(
-        "classifier",
-        classifier_router,
-        {
-            "order_agent": "order_agent",
-            "refund_agent": "refund_agent",
-            "aggregator": "aggregator",
-        },
-    )
-
-    # Specialist Agent → aggregator
-    workflow.add_edge("order_agent", "aggregator")
-    workflow.add_edge("refund_agent", "aggregator")
-    # Use add_edge(node, END) instead of set_finish_point
-    workflow.add_edge("aggregator", END)
-
-    return workflow
-```
-
----
-
-### Template E: Data Analysis
-
-**Applicable scenario**: Data upload, analysis, visualization
-
-**Configuration differences**:
-- `tools.enabled`: `[read_csv, analyze_data, generate_chart, current_time]`
-- `memory.knowledge.enabled`: `true`
-- `ui.features`: `[tool_visualization, file_upload, chart_display]`
-
-**Key code differences**:
-```python
-# L5 layer: Data analysis tools
-@tool
-async def read_csv(file_path: str) -> str:
-    """Read a CSV file and return a data summary"""
-    import pandas as pd
-    df = pd.read_csv(file_path)
-    return f"Rows: {len(df)}, Columns: {list(df.columns)}\n{df.describe().to_string()}"
-
-@tool
-async def analyze_data(data_description: str, analysis_type: str) -> str:
-    """Perform data analysis"""
-    ...
-
-@tool
-async def generate_chart(data: str, chart_type: str = "bar") -> str:
-    """Generate a chart and save it as an image"""
-    import matplotlib.pyplot as plt
-    ...
-```
-
----
-
-## Complete Architecture Layers (10 Layers)
+### Complete Architecture Layers (10 Layers)
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -1594,7 +548,7 @@ The hierarchical subagent mode introduced in Claude Agent SDK 2026, supporting u
 from langgraph_supervisor import create_supervisor
 from langgraph.prebuilt import create_react_agent
 
-# Define sub-Agents
+### Define sub-Agents
 research_agent = create_react_agent(
     model=llm,
     tools=[web_search, web_fetch],
@@ -1609,14 +563,14 @@ analysis_agent = create_react_agent(
     name="analysis_agent",
 )
 
-# Create the supervisor Agent
+### Create the supervisor Agent
 supervisor = create_supervisor(
     agents=[research_agent, analysis_agent],
     model=llm,
     prompt="You coordinate research and analysis tasks.",
 )
 
-# Compile and run
+### Compile and run
 app = supervisor.compile()
 ```
 
@@ -1666,7 +620,7 @@ GET  /api/sessions      # Session list
 GET  /api/tools         # Available tools list
 GET  /api/config        # Get current Agent configuration
 
-# A2A protocol endpoints
+### A2A protocol endpoints
 GET  /.well-known/agent.json  # Agent Card capability declaration
 POST /a2a/task               # Submit A2A task (JSON-RPC 2.0)
 POST /a2a/task/stream        # Streaming A2A task (SSE)
@@ -1744,297 +698,1076 @@ Deployment, runtime, and operations-related configuration.
 
 ---
 
-## Complete Call Chain
 
-The complete call chain from user input to final output, running through all 10 layers and supporting A2A cross-Agent communication:
+### Architecture Template Library
 
-```
-User Input
-    │
-    ▼
-[L9 Frontend] User enters message → calls API
-    │
-    ▼
-[L8 API] /api/chat endpoint → parameter validation → create SSE stream
-    │                                  │
-    │                                  └→ [A2A endpoint] Expose Agent Card capabilities
-    │
-    ▼
-[L7 Orchestration] Determine whether multi-Agent is needed → task decomposition → forward
-    │                                  │
-    │                                  ├→ [A2A client] Delegate to external Agent
-    │                                  └→ [Hierarchical subagent] Internal sub-Agent execution
-    │
-    ▼
-[L6 Memory] Load conversation history → retrieve relevant knowledge → inject context
-    │
-    ▼
-[L4 Agent] Enter Agent node → prepare messages
-    │
-    ▼
-[L3 Prompt] Build system prompt → inject role template → assemble complete prompt
-    │
-    ▼
-[L2 Interface] Call LLM → stream → handle callbacks
-    │
-    ▼
-[L1 LLM] GPT-4o / Claude / DeepSeek actual reasoning
-    │
-    ▼
-[L2 Interface] Receive streaming tokens → return piece by piece
-    │
-    ▼
-[L4 Agent] Parse response → determine whether a tool call is needed
-    │
-    ├── Needs tool → [L5 Tool Execution] → call tool (incl. MCP remote tools)
-    │                              │
-    │                              └→ Call external tool service via MCP protocol
-    │
-    └── Direct answer → [L8 SSE] → stream push to frontend
-                            │
-                            ▼
-                        [L9 Frontend] Render tokens in real time
-                            │
-                            ▼
-                        [L6 Memory] Save conversation history
-                            │
-                            ▼
-                        User sees the final answer
+### Template A: Chat Assistant
+
+**Applicable scenario**: General conversational assistant, the simplest Agent
+
+**Configuration differences**:
+- `llm.model`: `gpt-4o-mini` (a low-cost model is sufficient)
+- `tools.enabled`: `[current_time]` (minimal tools)
+- `agent_framework.graph_type`: `single`
+- `ui.features`: `[session_management]`
+
+**Core code volume**: Minimal, about 10 files
+
+**YAML configuration**:
+```yaml
+agent:
+  name: "ChatAssistant"
+  type: "chat"
+  description: "General conversational assistant"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o-mini"
+
+tools:
+  enabled: [current_time]
+
+prompt:
+  role_template: "default"
+
+agent_framework:
+  graph_type: "single"
+
+orchestration:
+  mode: "single"
+
+ui:
+  type: "chat"
+  features: [session_management]
 ```
 
 ---
 
-## A2A Protocol (Agent-to-Agent)
+### Template B: Research Assistant
 
-The A2A (Agent-to-Agent) protocol proposed by Google (Apr 2025) has become an industry standard alongside MCP. The relationship between the two:
+**Applicable scenario**: Search, analyze, and summarize information
 
-> **MCP gives your Agent hands; A2A gives your Agent colleagues.**
+**Configuration differences**:
+- `llm.model`: `gpt-4o` (stronger reasoning capability)
+- `tools.enabled`: `[web_search, web_fetch, current_time, calculate]`
+- `prompt.role_template`: `research_assistant`
+- `prompt.output_format`: `markdown`
+- `memory.max_messages`: `100` (longer memory)
 
-- **MCP** = Agent-to-Tool communication (vertical layer: Agent calls tools)
-- **A2A** = Agent-to-Agent communication (horizontal layer: Agents collaborate with each other)
-
-A2A has received support from 150+ organizations, with 22,000+ GitHub stars.
-
-### Three Core Primitives
-
-| Primitive | Description | Key Fields |
-|-----------|-------------|------------|
-| **Agent Card** | Agent capability declaration, located at `/.well-known/agent.json` | `name`, `description`, `capabilities`, `skills`, `endpoints` |
-| **Task** | Task lifecycle management | `id`, `status` (submitted→working→input-required→completed/failed/canceled), `input`, `output` |
-| **Artifact** | Task products (files, text, structured data) | `id`, `type`, `content`, `metadata` |
-
-### Communication Methods
-
-- **Short tasks**: JSON-RPC 2.0 over HTTPS, synchronous request-response
-- **Long tasks**: SSE streaming push, real-time task status updates
-- **Multi-turn interaction**: The `input-required` status allows an Agent to ask the requester for more information
-
-### Agent Card Example
-
-```json
-{
-  "name": "ResearchAssistant",
-  "description": "Web search research assistant",
-  "capabilities": ["web_search", "summarization", "note_taking"],
-  "skills": [
-    {
-      "id": "research",
-      "name": "Information Research",
-      "description": "Search and summarize web information",
-      "input": { "type": "text", "description": "Research topic" },
-      "output": { "type": "markdown", "description": "Research report" }
-    }
-  ],
-  "endpoints": {
-    "base_url": "https://assistant.example.com",
-    "task_submit": "/a2a/task",
-    "task_stream": "/a2a/task/stream"
-  }
-}
-```
-
-### Relationship to the Architecture
-
-In the 10-layer architecture, A2A spans the **L7 Orchestration Layer** and the **L8 API Service Layer**:
-
-- An Agent exposes its own capabilities via `/.well-known/agent.json` (L8)
-- The orchestrator delegates subtasks to other Agents via the A2A Task protocol (L7)
-- Supports cross-framework communication: LangGraph Agent ↔ Claude Agent SDK Agent ↔ OpenAI Agents SDK Agent
-
----
-
-## MCP Protocol Update (2026-07-28 Stateless Spec)
-
-MCP (Model Context Protocol) was upgraded to a **stateless protocol** on 2026-07-28, no longer using bidirectional handshakes and stateful sessions.
-
-### Key Changes
-
-| Old Protocol (Stateful) | New Protocol (Stateless 2026-07-28) |
-|-------------------------|-------------------------------------|
-| `initialize` / `initialized` handshake | No handshake needed; each request is self-describing |
-| `Mcp-Session-Id` header | Removed |
-| Duplex connection, server push | Pure request-response, Header routing |
-| Implicit session state | `_meta` passed explicitly in requests (protocol version, identity, capabilities) |
-| Not cacheable | List results cacheable (with `cache_hint`) |
-
-### New Protocol Characteristics
-
-- **Self-describing requests**: Each request carries `protocol_version`, `client_id`, and `capabilities` in `_meta`
-- **Header routing**: `Mcp-Method` and `Mcp-Name` HTTP headers replace method name encoding
-- **Cacheable lists**: List responses include `cache_hint` (TTL suggestion), and clients can cache them
-- **server/discover**: New RPC for optional capability discovery
-- **MRTR** (Multi Round-Trip Requests): Supports multi-round communication from server to client
-
-### Server Code Example (FastMCP)
-
+**Key code differences**:
 ```python
-from mcp.server.fastmcp import FastMCP
+### L3 layer: Research assistant role template
+SYSTEM_PROMPT = """You are a professional research assistant. Your tasks are:
+1. Understand the user's question
+2. Search for relevant information
+3. Summarize and analyze results
+4. Provide in-depth, sourced answers"""
 
-# Create MCP server (stateless, no handshake needed)
-mcp = FastMCP("ResearchAssistant", version="1.0.0")
-
-@mcp.tool()
-async def web_search(query: str) -> str:
-    """Search web information"""
-    # Tool implementation...
-    return f"Search results: {query}"
-
-@mcp.tool()
+### Custom tool
+@tool
 async def save_note(title: str, content: str) -> str:
-    """Save a note"""
+    """Save research notes to a local file"""
     with open(f"notes/{title}.md", "w", encoding="utf-8") as f:
         f.write(content)
     return f"Note saved: {title}.md"
-
-# Start MCP service (stdio or HTTP)
-if __name__ == "__main__":
-    mcp.run(transport="stdio")
-    # Or HTTP mode:
-    # mcp.run(transport="http", host="0.0.0.0", port=8001)
 ```
 
 ---
 
-## Technology Stack
+### Template C: Coding Assistant
 
-| Layer | Technology | Version | Description |
-|-------|------------|---------|-------------|
-| **L1 LLM** | GPT-4o / Claude / DeepSeek / Ollama | - | Multiple model support |
-| **L2 Model Interface** | Provider factory (8 vendor adapters) + langchain_core messages | - | Unified LLM call abstraction (openai/anthropic/deepseek/ollama/gemini/qwen/glm/kimi) |
-| **L3 Prompt Engineering** | Native prompt_builder / role_templates | - | Prompt templates, few-shot, output parsers, sanitizer |
-| **L4 Agent Framework** | AgentRuntime + 6 adapters | - | bare / LangGraph / OpenAI Agents / Claude SDK / ADK / AutoGen (framework-agnostic) |
-| **L5 Tool Execution** | Native registry/executor + MCP | 2026-07-28 | Tool registration & execution + MCP client/server (stateless) |
-| **L6 Memory & Knowledge** | VectorStore (stdlib) / ChromaDB | 0.6+ | Memory and vector retrieval (stdlib-first, optional backends) |
-| **L7 Orchestration** | Supervisor/Router/Workflow + A2A | 1.0 | Multi-Agent collaboration + cross-Agent communication protocol |
-| **L8 API Service** | FastAPI + SSE | 0.115+ | High-performance async API |
-| **L9 Frontend UI** | React 19 + TypeScript | 19+ / 5.7+ | Modern frontend |
-| **L10 Infrastructure** | Docker + Docker Compose | 27+ / 2.27+ | Deployment and operations |
-| **Cross-layer** | Pydantic | 2.10+ | Data models and validation |
+**Applicable scenario**: Programming assistance, code review, debugging
 
----
+**Configuration differences**:
+- `llm.provider`: `anthropic`
+- `llm.model`: `claude-3-5-sonnet-20241022` (strongest coding capability)
+- `tools.enabled`: `[web_search, code_execute, file_read, file_write, current_time]`
+- `prompt.role_template`: `code_reviewer`
 
-## Code Generation Reference
-
-### Key Patterns for Generating from Config
-
-When generating code, always follow these principles:
-
-1. **Config-driven**: All variable behavior is read from `agent.yaml`; do not hardcode
-2. **Generate on demand**: Only generate the code that is needed; do not keep unused modules
-3. **Template substitution**: Use template strings to substitute config values rather than complex AST operations
-4. **Stay readable**: Generated code should be readable and manually modifiable
-
-### Config → Code Mapping Table
-
+**Key code differences**:
 ```python
-# agent.yaml config items → code generation rules per layer
+### L3 layer: Coding assistant role template
+SYSTEM_PROMPT = """You are a professional coding assistant. You excel at:
+1. Writing high-quality code
+2. Code review and optimization
+3. Debugging and fixing bugs
+4. Architecture design recommendations
 
-config = {
-    "llm": {"provider": "openai", "model": "gpt-4o"},
-    "tools": {"enabled": ["web_search", "web_fetch"]},
-    "prompt": {"system_prompt": "You are a research assistant..."},
-}
+Code standards:
+- Follow PEP 8 / language standard conventions
+- Add necessary type annotations
+- Include error handling
+- Focus on readability and maintainability"""
 
-# L1 → app/l1_llm/factory.py
-def create_llm():
-    provider = config["llm"]["provider"]  # "openai"
-    model = config["llm"]["model"]        # "gpt-4o"
-    return OpenAIAdapter(model=model)
+### Code execution tool
+@tool
+async def code_execute(code: str, language: str = "python") -> str:
+    """Execute code in a sandbox"""
+    # Use a Docker sandbox or subprocess
+    ...
 
-# L3 → app/l3_prompt/system_prompts.py
-SYSTEM_PROMPT = """{config['prompt']['system_prompt']}"""
+@tool
+async def file_read(path: str) -> str:
+    """Read file contents"""
+    ...
 
-# L5 → app/l5_tools/registry.py
-def register_tools():
-    for tool_name in config["tools"]["enabled"]:
-        ToolRegistry.register(tool_name)
+@tool
+async def file_write(path: str, content: str) -> str:
+    """Write content to a file"""
+    ...
 ```
 
 ---
 
-## Best Practices
+### Template D: Customer Service
 
-### 1. Discovery Principles
-- Ask open-ended questions first, then multiple-choice questions
-- Ask about only one dimension per question
-- Record the user's answers — don't omit anything
-- **AI behavior**: Don't throw all questions at the user at once; guide gradually
+**Applicable scenario**: Multi-Agent collaborative customer service system
 
-### 2. Architecture Design Principles
-- Start simple: prefer a single Agent
-- Only introduce multi-Agent orchestration when needed
-- Enable tools on demand; don't over-engineer
-- **AI behavior**: When confirming each layer, explain the layer's role to the user
+**Configuration differences**:
+- `agent_framework.graph_type`: `multi`
+- `orchestration.mode`: `multi`
+- Need to define multiple sub-Agents
 
-### 3. Config Generation Principles
-- The config is the single source of truth
-- All code generation is based on the config; do not manually modify generated code
-- Regenerate code when the config changes
-- **AI behavior**: After generating the config, show the key items to the user for confirmation
+**Multi-Agent configuration**:
+```yaml
+agent:
+  name: "CustomerService"
+  type: "customer_service"
 
-### 4. Code Generation Principles
-- Each layer focuses only on its own responsibilities
-- Lower layers don't depend on upper layers; upper layers depend on lower layers
-- Layers communicate through well-defined interfaces
-- Any layer can be replaced without modifying the others
-- **AI behavior**: Prefer the `generate.py` script; manual generation as a fallback
+llm:
+  provider: "openai"
+  model: "gpt-4o"
 
-### 5. Tool Design Principles
-- Each tool does one thing, and does it well
-- Define tool parameters strictly with Pydantic models
-- Include detailed docstrings in tool functions
+tools:
+  enabled: [web_search, current_time]
 
-### 6. Error Handling
-- Every tool node has try-catch
-- Routing nodes have fallback logic
-- The frontend shows friendly error messages
-- **AI behavior**: During deployment testing, if errors occur, analyze the cause and fix them
+agent_framework:
+  graph_type: "multi"
 
-### 7. Security
-- Read API Keys from environment variables
-- Apply length limits to user input
-- Tools have timeout mechanisms
+orchestration:
+  mode: "multi"
+  agents:
+    - name: "classifier"
+      role: "Question classification"
+      system_prompt: "You classify user questions into: orders, refunds, product inquiries"
+      tools: []
+    - name: "order_agent"
+      role: "Order handling"
+      system_prompt: "You handle order-related queries"
+      tools: [query_order, cancel_order]
+    - name: "refund_agent"
+      role: "Refund handling"
+      system_prompt: "You handle refund requests"
+      tools: [process_refund, check_refund_status]
+    - name: "aggregator"
+      role: "Result aggregation"
+      system_prompt: "You aggregate all sub-agent results and generate the final response"
+      tools: []
+
+ui:
+  type: "chat"
+  features: [tool_visualization, session_management]
+```
+
+**Key code differences — LangGraph adapter (v1.0+)**: 
+```python
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.state import Command
+
+### L4 layer: Multi-Agent graph
+def build_multi_agent_graph(agents: list) -> StateGraph:
+    """Build a multi-Agent orchestration graph (v1.0 API)"""
+    workflow = StateGraph(AgentState)
+
+    # Classification Agent
+    workflow.add_node("classifier", create_agent_node(agents[0]))
+    # Specialist Agents
+    workflow.add_node("order_agent", create_agent_node(agents[1]))
+    workflow.add_node("refund_agent", create_agent_node(agents[2]))
+    # Aggregation Agent
+    workflow.add_node("aggregator", create_agent_node(agents[3]))
+
+    # Use add_edge(START, node) instead of set_entry_point
+    workflow.add_edge(START, "classifier")
+
+    # Conditional routing: classifier → specialist Agent
+    workflow.add_conditional_edges(
+        "classifier",
+        classifier_router,
+        {
+            "order_agent": "order_agent",
+            "refund_agent": "refund_agent",
+            "aggregator": "aggregator",
+        },
+    )
+
+    # Specialist Agent → aggregator
+    workflow.add_edge("order_agent", "aggregator")
+    workflow.add_edge("refund_agent", "aggregator")
+    # Use add_edge(node, END) instead of set_finish_point
+    workflow.add_edge("aggregator", END)
+
+    return workflow
+```
 
 ---
 
-## Output Requirements
+### Template E: Data Analysis
 
-After each build is complete, you must ensure:
+**Applicable scenario**: Data upload, analysis, visualization
 
-1. **agent_requirements.md**: Requirements document is complete
-2. **architecture.md**: Architecture design document is complete
-3. **agent.yaml**: Configuration file is complete
-4. **L1–L10 each layer's code is complete**: No layer is missing
-5. **Backend is runnable**: `pip install -r requirements.txt && uvicorn app.main:app --reload`
-6. **Frontend is runnable**: `npm install && npm run dev`
-7. **Full stack is runnable**: `docker-compose up`
-8. **Streaming response**: SSE streaming works correctly
-9. **Error handling**: API errors return reasonable error messages
-10. **Type safety**: TypeScript and Python type definitions are complete
+**Configuration differences**:
+- `tools.enabled`: `[read_csv, analyze_data, generate_chart, current_time]`
+- `memory.knowledge.enabled`: `true`
+- `ui.features`: `[tool_visualization, file_upload, chart_display]`
+
+**Key code differences**:
+```python
+### L5 layer: Data analysis tools
+@tool
+async def read_csv(file_path: str) -> str:
+    """Read a CSV file and return a data summary"""
+    import pandas as pd
+    df = pd.read_csv(file_path)
+    return f"Rows: {len(df)}, Columns: {list(df.columns)}\n{df.describe().to_string()}"
+
+@tool
+async def analyze_data(data_description: str, analysis_type: str) -> str:
+    """Perform data analysis"""
+    ...
+
+@tool
+async def generate_chart(data: str, chart_type: str = "bar") -> str:
+    """Generate a chart and save it as an image"""
+    import matplotlib.pyplot as plt
+    ...
+```
 
 ---
 
-## Usage Examples
+
+## Part 3 · 详细规格（模块 M0-M16 × 深度 D1-D12）
+
+### 功能深化规格（Functional Deep Spec）——每个模块都要做到位
+
+> **为什么需要本规格**：笼统描述（"做一个工作台""做一个技能管理"）只会让 AI 交出一个空壳/纯展示页。**必须把每个模块"拿来做什么、在哪里做、界面长什么样、怎么操作、怎么被调用、怎么 AI 生成"全部写清楚**，AI 才能照做。下面用统一模板描述所有模块，**每个模块必须满足其"验收"项才算完成**。
+
+### 通用模板（每个模块按此描述，缺一项即不完整）
+```
+【用途】这个功能是干嘛的，解决什么问题。
+【位置】在前端哪个视图/导航/路由；后端哪些 API。
+【调用方式】用户怎么触达：①界面按钮/菜单 ②对话内命令（如 /skill ...）③后台默认可用（智能体对话中随时可自动调用）。
+【界面规格】布局草图 + 元素列表 + 交互行为（点击/悬停/拖拽/弹窗/空态/加载/错误态）。
+【操作清单】增/删/改/查/导入/导出/启停/AI 生成，逐个写明。
+【AI 生成】用户给一句话描述，AI 一键产出什么（草稿/模板/配置）。
+【验收】能做哪些具体操作才算完成。
+```
+
+---
+
+### M0. 技能/插件管理（flagship 范例——按此深度复制到所有模块）
+
+- **用途**：把"可复用的能力"（专家人设、原子技能、外部连接器）做成可管理、可被对话调动的实体，避免把功能写死在代码里。
+- **位置**：工作台「能力库」+ 管理台「技能管理」页；API `GET/POST/PUT/DELETE /api/skills`、`GET /api/skills/{kind}/{id}`；持久化 `data/skills.json`。
+- **调用方式**：① 界面按钮增删改查；② 对话框输入 `/skill 列出所有技能`、`/skill 启用 周报生成` 等命令；③ **后台默认可用**——智能体在任意对话中按需自动调用 `/api/skills` 检索并启用某个技能（不需要用户显式触发）。
+- **界面规格**：
+  - 左侧分类 Tab：`专家 / 技能 / 连接器`（三态切换，当前高亮）。
+  - 列表卡片：名称 + 类型标签 + 描述 + 标签 chips + 启用/停用开关（点击切换，即时持久化）。
+  - 顶部：搜索框（按名称/描述过滤）+「新建」按钮 +「导入」下拉 +「导出」按钮。
+  - 「新建」弹窗：字段 = 类型(单选) + 名称 + 描述 + 标签(多选/输入) + 配置(JSON 编辑器) + 「AI 生成」按钮。
+  - 「AI 生成」：用户输入一句描述（如"写一个周报生成技能"），AI 返回**完整的技能配置模板**（名称/描述/标签/config/触发词），一键填入并保存。
+  - 卡片操作：编辑 / 删除(确认弹窗) / 导出(单个 YAML/JSON) / 复制。
+  - 空态：无数据时显示引导（"暂无技能，点击新建或 AI 生成"）。
+- **操作清单**：新建 / 查看详情 / 编辑 / 删除 / 启停 / 搜索 / 单条导出 / 批量导出(JSON) / 从文件导入 / AI 生成 / 命令调用。
+- **AI 生成**：`/skill 生成 <描述>` 或管理页「AI 生成」→ 返回可保存的完整技能模板（含 `kind/name/description/tags/config/触发词`），并给出「已生成，可在对话中输入 /skill 触发」提示。
+- **验收**：能在界面增删改查并立即生效；能 `/skill ...` 命令在对话中调用；智能体在对话中能自动检索并启用技能；能导入导出；能 AI 生成完整模板。
+
+---
+
+### M1. 提示词管理（prompts）
+- 用途：统一管理系统提示词，带版本、回滚、A/B 分流，避免改一句提示词就改代码。
+- 位置：管理台「提示词管理」；API `/api/admin/prompts*`。
+- 调用方式：界面 CRUD；Agent 运行时按 `prompt_id` 读取当前启用版本。
+- 界面规格：左列表（名称/状态/版本）+ 右 4-Tab 详情（配置/测试/运行/审计）；编辑区带变量占位符 + 「AI 优化/改写/多语言/审查」按钮；版本历史 + 一键回滚；A/B 分流开关（线上流量比例）。
+- 操作：新建/编辑/删除/启停/版本历史/回滚/A-B/导入导出/AI 生成（描述→提示词草稿）。
+- AI 生成：`生成客服引导提示词` → 返回可保存的提示词正文 + 变量说明 + 版本号。
+- 验收：能 CRUD、能版本回滚、能 A/B、能 AI 生成、Agent 读到的是启用版本。
+
+### M2. 模型管理（models）
+- 用途：配置多个 LLM 提供商/模型 + key 池 + 回退链，一处切换全 Agent 生效。
+- 位置：管理台「模型管理」；API `/api/admin/models*`。
+- 界面规格：模型列表（提供商/模型/base_url/状态/延迟）+「测试连通」按钮(实时 ping 返回延迟与错误)+ key 池管理 + 回退链顺序拖拽。
+- 操作：增删改/测试连通/key 池增删/回退链配置/设为默认。
+- 验收：能加模型并测试连通；主模型失败自动走回退链；默认模型可切换。
+
+### M3. 工具管理（tools / MCP）
+- 用途：管理内置工具与外部 MCP 工具，可试跑、可热加载。
+- 位置：管理台「工具管理」；API `/api/tools`、`/api/admin/tools*`、`/api/mcp/*`。
+- 界面规格：工具列表（名称/描述/分类/来源）+「试跑」(填参数→看结果/延迟)+「连接 MCP」(HTTP/stdio)+ MCP 服务器状态面板。
+- 操作：查看/试跑/启停/连接/断开 MCP/热加载目录/导入工具。
+- 验收：能试跑工具返回真实结果；能连接 MCP 并导入其工具；工具可在对话中被调用。
+
+### M4. Agent 管理（agents）
+- 用途：把"一个 Agent"作为可配置资产（prompt+模型+工具+编排），可生成/导入/发布。
+- 位置：管理台「Agent 管理」；API `/api/admin/agents*`。
+- 界面规格：Agent 列表 +「新建」弹窗(描述→AI 生成 agent.yaml)+ 流程图编辑(节点/边拖拽保存)+ 版本/发布流量。
+- 操作：增删改/查看图/AI 生成/导入(yaml/json)/发布(版本+流量)/启停。
+- AI 生成：`做一个客服 Agent` → 返回完整 `agent.yaml`（agent/llm/prompt/tools/orchestration/ui）+ 可直接提交生成代码。
+- 验收：能 AI 生成并保存 Agent；能从 yaml 导入；能发布指定流量；能生成可运行代码。
+
+### M5. 记忆/知识库（memory）
+- 用途：管理会话记忆与文档知识库，支持向量检索。
+- 位置：工作台「记忆检索」+ 管理台「记忆管理」；API `/api/admin/memory*`。
+- 界面规格：知识库列表（文档数/分块数/嵌入方式）+「检索测试」(输入 query→Top-K 命中带相似度/来源/引用)+ 文档增删。
+- 操作：建库/删库/加文档/删文档/检索测试/清空/提取预览。
+- 验收：能建库加文档；检索返回带引用的命中；Agent 在对话中能 RAG 召回。
+
+### M6. 编排/工作流（workflows）
+- 用途：可视化编排多 Agent/工具为工作流，可保存复跑。
+- 位置：管理台「编排管理」+ 工作台「编排画布」；API `/api/admin/workflows*`、`/api/canvas*`。
+- 界面规格：画布 = 节点(trigger/agent/tool/memory/llm/output 分色)+ 连线(带标签)+ 节点属性面板 + 保存/加载画布列表。
+- 操作：拖拽建节点/连线/改名/删除节点连线/保存加载/导出画布 JSON。
+- 验收：能搭出带节点连线的图并保存；能加载回画布；能作为工作流被 Agent 执行。
+
+### M7. 会话/工作区（sessions / workspaces）
+- 用途：多会话管理 + 部门/项目/个人工作区资源隔离。
+- 位置：侧边栏会话 + 工作台「工作区」；API `/api/sessions*`、`/api/workspaces*`。
+- 界面规格：会话列表（分组/收藏/搜索/分享/导出 MD/附件）+ 工作区卡片（类型色标/成员/资源配额）。
+- 操作：会话增删改名/分组/收藏/分享/导出/传附件；工作区建删/成员管理/类型切换。
+- 验收：能管理会话并跨会话续聊；能建工作区并隔离资源。
+
+### M8. 任务（tasks）
+- 用途：跟踪长任务进度（步骤日志/进度/结果/重试/取消）。
+- 位置：工作台「任务」；API `/api/tasks*`。
+- 界面规格：任务卡片（状态灯/进度条/步骤列表/结果/耗时/重试/取消/删除）。
+- 操作：创建/查看进度/重试/取消/删除；后台运行时可实时刷进度。
+- 验收：能创建并看到进度推进；能取消/重试；步骤日志可见。
+
+### M9. 通知（notifications）
+- 用途：汇总系统/Agent 事件通知，带未读角标与实时推送。
+- 位置：顶部「通知铃铛」；API `/api/notifications*` + WS `/api/notifications/ws`。
+- 界面规格：铃铛 + 未读红点数字；下拉面板（等级色点/模块/时间/未读高亮）+「全部已读」+ 单条点击已读。
+- 操作：查看/单条已读/全部已读/删除/实时刷新。
+- 验收：有未读角标；点击单条变已读；能实时收到新通知。
+
+### M10. 命令面板（command palette）
+- 用途：⌘K 全局快速命令，免点菜单直达任何功能。
+- 位置：全局（任意页面 Ctrl/Cmd+K 唤起）；数据来自各模块。
+- 界面规格：遮罩 + 输入框 + 命令列表（分组：导航/工作区/能力库/通知）+ 上下键选择 + 回车执行 + Esc 关闭。
+- 操作：搜索/选择/执行/关闭。
+- 验收：⌘K 能唤起；能搜索并执行跳转。
+
+### M11. 评估（evaluations）
+- 用途：用数据集跑 Agent 版本得分，支持通过率阈值与报告。
+- 位置：管理台「评估管理」；API `/api/admin/evaluations*`；离线 `scripts/evaluate.py`。
+- 界面规格：评估任务列表（状态/通过率/耗时）+「运行评估」(选数据集/版本/阈值→跑分报告)+ 用例明细。
+- 操作：建数据集/运行/查看报告/删除。
+- 验收：能运行评估并出报告；能按阈值判定通过。
+
+### M12. 监控/告警（monitoring）
+- 用途：指标、日志、告警、Trace 可视化，支撑排障。
+- 位置：管理台「监控告警」；API `/api/admin/metrics|alerts|logs|traces|drift`。
+- 界面规格：指标曲线 + 系统健康灯 + 告警列表(增删改/历史) + 日志查看 + 漂移面板。
+- 操作：查看指标/配告警规则/查日志/看漂移。
+- 验收：能看到指标曲线；能配告警并触发历史记录。
+
+### M13. 成本计费（usage）
+- 用途：按天/按模型统计 tokens 与费用，设置预算。
+- 位置：管理台「设置/计费」；API `/api/admin/usage`。
+- 界面规格：日费用曲线 + 按模型统计表 + 月度预算进度 + 预算设置。
+- 操作：查看/设预算。
+- 验收：能看费用趋势；超预算能提示。
+
+### M14. 安全（security）
+- 用途：注入防御、PII 脱敏、限流、认证、审计。
+- 位置：管理台「权限安全」+ 管线自动生效；API `/api/security/*`。
+- 界面规格：扫描测试台(输入→注入/PII/内容结果)+ 用户/API Key 管理 + 审计日志 + 熔断器状态。
+- 操作：扫描测试/用户与 Key 管理/查审计/看熔断。
+- 验收：能测试扫描；注入/PII 在对话管线中自动生效；API Key 认证生效。
+
+### M15. 定时任务（schedule）
+- 用途：按 cron 触发 Agent 任务。
+- 位置：管理台「定时任务」；API `/api/admin/tasks`（cron）。
+- 界面规格：任务列表(名称/cron/启停/上次运行)+ 新建(cron 表达式+动作)+ 立即运行。
+- 操作：增删改/启停/立即运行。
+- 验收：能建 cron 任务并启停。
+
+### M16. 语音（voice）
+- 用途：TTS 朗读 + STT 转写，支持语音对话。
+- 位置：对话输入框麦克风按钮；API `/api/voice/*`。
+- 界面规格：录音按钮(按住录制/取消/发送)+ 播放按钮(朗读回复)。
+- 操作：录音转写/朗读。
+- 验收：能录音转成文本发送；能朗读回复。
+
+---
+
+**统一验收原则**：任何模块若只做出"能看不能操作"的空壳 = 未完成。每个模块必须满足上述【验收】，且交互（增删改查/导入导出/AI 生成/命令调用）都要落到真实 API，禁止 mock 假数据。
+
+---
+
+
+### 深度工程规格（Deep Engineering Spec）——跨模块的底层深度
+
+> 前面 M0–M16 是"每个模块怎么做"。这里补齐**贯穿所有模块的深度工程方面**——这些是一个生产级通用 Agent 的底层骨架，缺了就是"demo 而非产品"。同样按 用途/机制/落地/验收 写清。
+
+### D1. 上下文与 Token 管理（Context & Token Budget）
+- **用途**：长对话不爆 token、不丢关键信息，让 Agent 始终在预算内运转。
+- **机制**：① Token 预算计费（`token_manager`，按模型计价）；② 超预算自动**压缩**（`l6_memory/summary` 摘要旧消息）+ **滑动窗口**（丢弃最旧非关键消息）；③ 关键信息抽取（user 目标/约束/结论单独沉淀到 state）；④ 上下文注入顺序（system → 计划 → 记忆 → 历史 → 当前输入）。
+- **落地**：`ChatInterface` 在组消息时先估 token，超阈值触发 `summary.compress()` 并标记压缩点；`/api/chat` 返回 `usage` 与 `compressed` 标记；管理台「上下文」面板可视化 token 占用与压缩日志。
+- **验收**：连续对话 50 轮后 API 仍不超预算；能看到压缩历史；关键约束不被压缩丢失。
+
+### D2. 工具调用工程（Tool-calling Engineering）
+- **用途**：工具调用可靠、可并行、可恢复，而不是"调一次失败就崩"。
+- **机制**：① 并行工具调用（一条消息多个 tool_call 同时执行）；② 参数校验（JSON Schema，`l5_tools/schemas`）；③ 失败分级（可重试 / 终态失败）+ 自动重试；④ 超时（`TOOL_TIMEOUT`）与熔断；⑤ 工具结果入 state 并回填给 LLM；⑥ 工具白名单/敏感工具需审批。
+- **落地**：`tool_node` 并行执行 + `executor.py` 校验/超时/重试；`ToolRegistry` 支持并发注册与调用计数；管理台「工具试跑」返回 latency/error。
+- **验收**：一条含 3 个并行 tool_call 的消息能并行执行并全部回填；参数错能给出可读错误；敏感工具触发审批。
+
+### D3. 记忆工程（Memory Engineering）
+- **用途**：把记忆做成**分层**（工作/情景/语义/程序），能检索、能合并、能遗忘，支撑跨会话连续性。
+- **机制**：① 工作记忆 = 当前会话 buffer；② 情景记忆 = 已结束会话的可检索记录（`session_manager`）；③ 语义记忆 = 向量知识库（`vector_store`/`rag_engine`）；④ 程序记忆 = 学到的工作流/偏好（可写 `data/preferences.json`）；⑤ 检索路由：先语义召回 Top-K 再按相关性过滤；⑥ 遗忘策略：超期/低价值记录降权或清理。
+- **落地**：`l6_memory` 分层类 + 统一 `MemoryRouter.retrieve(query)`；检索命中带 `source`（会话/知识库/偏好）与 `score`；管理台「记忆」按层查看与清理。
+- **验收**：能按层查看记忆；跨会话能想起之前结论；能手动/自动清理过期记忆。
+
+### D4. 规划工程（Planning Engineering）
+- **用途**：复杂任务先拆解成可执行步骤，动态重规划，失败可恢复。
+- **机制**：① 任务分解（`orchestrator/decomposer`：目标→子任务 DAG）；② 优先级排序与依赖；③ 顺序执行或并行（无依赖子任务并发）；④ 动态重规划（某步失败→重新拆解）；⑤ 计划进度状态机（pending/running/done/failed，落 `tasks`）。
+- **落地**：`planner_node`（已内置）+ `decomposer` 拆 DAG；执行进度写 `/api/tasks`；管理台「任务」可视化 DAG 与进度。
+- **验收**：复杂任务能自动拆解出有序步骤；某步失败能重规划；进度实时可查。
+
+### D5. 反思与自愈（Reflection & Self-healing）
+- **用途**：Agent 出错能自评、自修复、自收敛，而不是一次失败就结束。
+- **机制**：① 反思（`reflect_node` 已内置：评价+修正）；② 错误分类（LLM/工具/输入/超时）→ 对应策略；③ 自动修复重试（修复后重跑，限 N 次）；④ 收敛判定（连续 M 次无改进则停，防死循环）。
+- **落地**：agent 循环内接 reflect + 重试上限（`max_iterations`）；错误与修复轨迹写 `error`/`reflection` 到 state 并暴露给监控。
+- **验收**：能识别并自动修复一类可修复错误；有重试上限不会死循环；修复轨迹可查。
+
+### D6. 多智能体协作（Multi-Agent Collaboration）
+- **用途**：多 Agent 分工、交接、结果合并，形成"团队"而非"多个单 Agent 堆叠"。
+- **机制**：① 角色分工（supervisor 路由到 specialist，已实现）；② 交接（handoff：A 把上下文交给 B，返回控制权）；③ 共享状态（`state` 全局可见，各 Agent 增量更新）；④ 冲突处理（结果矛盾→协调 Agent 裁决）；⑤ 结果合并（`aggregator` 汇总各 specialist 输出）。
+- **落地**：`supervisor` 图 + `aggregator`（已实现）；新增 handoff 节点；管理台「编排」可视化多 Agent 协作关系。
+- **验收**：多 Agent 能分工完成一个总任务；能交接上下文；最终输出是合并后的结果。
+
+### D7. 安全与治理纵深（Security & Governance Depth）
+- **用途**：纵深防御 + 可审计 + 可隔离，满足生产合规。
+- **机制**：① 输入侧：注入检测（已接入）+ PII 脱敏（已接入）+ 内容过滤；② 工具侧：白名单/敏感命令审批（`code_execute` 高危检测）；③ 数据侧：落库脱敏、数据保留策略；④ 控制侧：限流、认证（API Key）、RBAC 角色；⑤ 审计：关键操作（建/删/发布/改权限）写审计日志；⑥ 熔断与降级。
+- **落地**：`ai_security` + 中间件（认证/限流/日志）+ `/api/security/audit`；敏感工具调用需 `agent_node_with_human` 审批。
+- **验收**：注入/PII 在管线自动生效；敏感工具可触发审批；关键操作有审计记录；能按角色限权。
+
+### D8. 可靠性与容错（Reliability & Fault-tolerance）
+- **用途**：网络抖动、模型抽风、超时不至于让整个 Agent 挂掉。
+- **机制**：① 重试（指数退避，`retry.py`）；② 熔断（`circuit_breaker`：连续失败→开闸→半开）；③ 超时（LLM/工具/HTTP 全链超时）；④ 降级（主模型失败→回退链/缓存兜底）；⑤ 幂等（任务/工具调用去重）；⑥ 并发控制（限制并发会话/工具数）。
+- **落地**：`retry` + `circuit_breaker` + `TOOL_TIMEOUT` + 回退链；管理台「监控」展示熔断/降级状态。
+- **验收**：断网重试能恢复；连续失败能熔断；超时能优雅失败而非卡死。
+
+### D9. 可观测性纵深（Observability Depth）
+- **用途**：一次请求从头到尾可追踪、可定位、可复盘。
+- **机制**：① 请求 ID 贯穿（`request_id`）；② 端到端 Trace（请求→节点→工具→LLM，含耗时/输入输出摘要）；③ 指标（延迟/错误率/token/成本，Prometheus）；④ 结构化日志（`StructuredLogger`）；⑤ 告警规则与历史；⑥ 漂移检测（输入分布/表现变化）。
+- **落地**：中间件生成 request_id；`/api/admin/traces|logs|metrics|drift`；监控面板可视化。
+- **验收**：能按 request_id 查一次完整链路；能看指标曲线；能配告警并查历史。
+
+### D10. 评估与质量（Evaluation & Quality）
+- **用途**：改一处不回归，用数据说话，而非"感觉变好了"。
+- **机制**：① 数据集管理（用例：输入/期望/标签）；② 批量跑分（`scripts/evaluate.py`）；③ 回归对比（基线 vs 新版本，`pass_rate` 差异）；④ 分维度评分（准确/安全/延迟）；⑤ A/B 与阈值判定；⑥ 红队用例（注入/越狱）。
+- **落地**：`eval/` + `/api/admin/evaluations*`；管理台「评估」出报告并可对比历史。
+- **验收**：能跑数据集出报告；能对比两版本通过率；红队用例能防住注入。
+
+### D11. 部署与运维（Deployment & Ops）
+- **用途**：一键部署、可配置、可备份恢复、可平滑升级。
+- **机制**：① Docker 化（`Dockerfile`/`docker-compose`）；② 配置管理（`.env` + pydantic-settings）；③ 密钥管理（不落代码，从 env/secret 读）；④ 健康检查（`/api/health`）；⑤ 优雅关闭（lifespan）；⑥ 备份/恢复（`/api/admin/backup`）；⑦ 多环境（dev/prod 配置覆盖）。
+- **落地**：`docker-compose up --build` 一键起；`/api/health` 就绪探针；备份导出/恢复。
+- **验收**：能一键起服务；健康检查通过；能导出备份并恢复。
+
+### D12. 性能与扩展（Performance & Extensibility）
+- **用途**：并发高、检索快、能插拔扩展。
+- **机制**：① 缓存（LLM 响应/向量索引/结果去重）；② 异步/并发（asyncio + 限制并发）；③ 向量索引优化（索引类型/分片，`vector_store`）；④ 插件/SDK（`plugin_manager`/`skill_loader` 动态加载）；⑤ 模板市场（`/api/admin/agents/templates`）；⑥ 技能市场（导入导出共享）。
+- **落地**：`mcp_client`/`plugin_manager` 动态加载；`cache` 可选；管理台「工具/技能」导入导出。
+- **验收**：能并发处理多个会话不崩；能动态加载插件/技能；检索在大知识库下延迟可接受。
+
+---
+
+**统一深度验收原则**：以上 D1–D12 任一深度方面若只是"留了口子没实现"= 未达标。生产级 Agent 必须让每一项都有可运行代码 + 管理界面入口 + 数据可见，而非空接口。
+
+---
+
+
+## Part 4 · 构建实施（五步照做 + 用法示例）
+
+### 2. 生成步骤（不询问，直接按默认值执行）
+
+```
+1) 写 agent.yaml（用默认值表；tools.enabled 每个名字必须在本 Skill 通用工具集或 tools.custom 中）
+2) python scripts/generate.py <agent.yaml> <out> --framework=langgraph   # 零依赖则 --framework=bare
+3) 验证：import app.main + pytest + 前端 build
+4) 交付运行说明（填 .env → 起后端 → 起前端）
+```
+
+### 3. 验证即交付（对照"生成产物完整性清单"逐项勾选，全部 ✅ 才算完成）
+
+---
+
+
+### Step 1: Discovery
+
+**Goal**: Through conversation, understand the Agent the user wants and produce a structured requirements document `agent_requirements.md`.
+
+**AI behavior**: You need to act like a product manager, gradually uncovering user needs through dialogue. **Do not throw all the questions at the user at once**. Instead, follow the order below, asking 1–2 questions at a time and waiting for the user's answer before continuing.
+
+#### Conversation Opener
+
+```
+AI: Hello! I'm here to help you build an AI Agent. First, could you describe in one sentence what you want this Agent to do?
+User: I want a research assistant that helps me search and analyze information.
+
+AI: Great! Let's pin down the requirements step by step.
+```
+
+#### 1.1 Core Functionality (Ask This First)
+
+| Question | Options | Record Field |
+|----------|---------|--------------|
+| What does your Agent mainly do? | Free description | `purpose` |
+| Which type does it belong to? | Chat assistant / Research assistant / Coding assistant / Customer service / Data analysis / Custom | `agent_type` |
+
+**AI dialogue example**:
+```
+AI: What problem does your Agent mainly solve? Could you describe the use case specifically?
+User: I need a research assistant that can search the web, summarize content, and save notes.
+
+AI: Got it — this falls under the "research assistant" type. Next, let me ask about the technical details.
+```
+
+#### 1.2 Technology Selection (Ask This Next)
+
+| Question | Options | Record Field |
+|----------|---------|--------------|
+| Which LLM do you want to use? | OpenAI / Anthropic / DeepSeek / Ollama / Hybrid | `llm_provider` |
+| Which specific model? | GPT-4o / Claude-3.5 / DeepSeek-V3 / Custom | `llm_model` |
+| Do you need local deployment? | Yes / No | `local_deploy` |
+
+**AI dialogue example**:
+```
+AI: Which LLM do you prefer? For overall capability I recommend GPT-4o, for coding I recommend Claude-3.5,
+for cost-effectiveness I recommend DeepSeek-V3, and for local deployment you can use Ollama.
+User: Let's go with GPT-4o.
+
+AI: Sounds good. Do you need local deployment? If not, we'll use the cloud API.
+User: No local deployment needed.
+```
+
+#### 1.3 Tool Requirements
+
+| Question | Options | Record Field |
+|----------|---------|--------------|
+| Do you need web search? | Yes / No | `tools.web_search` |
+| Do you need file read/write? | Yes / No | `tools.file_ops` |
+| Do you need code execution? | Yes / No | `tools.code_exec` |
+| Do you need custom tools? | Yes / No → describe | `tools.custom` |
+
+#### 1.4 Memory & Knowledge
+
+| Question | Options | Record Field |
+|----------|---------|--------------|
+| Do you need conversation history? | Short-term (current session) / Long-term (cross-session) / Not needed | `memory.type` |
+| Do you need to upload knowledge documents? | Yes / No | `knowledge.enabled` |
+
+#### 1.5 Multi-Agent & Orchestration
+
+| Question | Options | Record Field |
+|----------|---------|--------------|
+| Do you need multiple Agents to collaborate? | Single Agent / Multi-Agent | `orchestration.mode` |
+
+#### 1.6 Interface & Deployment
+
+| Question | Options | Record Field |
+|----------|---------|--------------|
+| What interface do you need? | Chat window / Dashboard / Admin console / Minimal | `ui.type` |
+| Deployment method? | Docker / Cloud service / Local direct run | `deployment.type` |
+
+#### Output: `agent_requirements.md`
+
+After collecting all the information, generate `agent_requirements.md`:
+
+```markdown
+### Agent Requirements Document
+
+### Basic Information
+- **Name**: ResearchAssistant
+- **Type**: research
+- **Purpose**: A web search research assistant that can search, summarize, and save notes
+
+### Technology Selection
+- **LLM Provider**: openai
+- **LLM Model**: gpt-4o
+- **Local Deployment**: No
+
+### Tools
+- web_search: Web search
+- web_fetch: Web fetching
+- current_time: Get current time
+- calculate: Math calculation
+- save_note: Save notes (custom)
+
+### Memory & Knowledge
+- **Memory Type**: buffer
+- **Knowledge Base**: None
+
+### Orchestration
+- **Mode**: single
+
+### Interface
+- **UI Type**: chat
+- **Deployment Method**: docker
+```
+
+---
+
+
+### Step 2: Architecture Design
+
+**Goal**: Based on the requirements document, select an architecture template and determine the configuration of each layer.
+
+**AI behavior**: According to the `agent_type` in the requirements document, select the corresponding architecture template and explain the choice to the user.
+
+#### 2.1 Agent Type Decision Tree
+
+```
+User Requirements
+    │
+    ├── General conversation, simple Q&A → Template A: Chat Assistant (chat)
+    │
+    ├── Search, summarize, research → Template B: Research Assistant (research)
+    │
+    ├── Write code, debug, review → Template C: Coding Assistant (coding)
+    │
+    ├── Multi-Agent division of labor → Template D: Customer Service (customer_service)
+    │
+    ├── Data analysis, charts → Template E: Data Analysis (data_analysis)
+    │
+    └── Other special needs → Freely combine layers
+```
+
+**AI dialogue example**:
+```
+AI: Based on your requirements, I recommend the "Research Assistant" template. This template comes pre-configured with:
+- Search and web fetch tools
+- Prompt templates suited for research scenarios
+- Conversation memory management
+
+Does this direction look right to you, or would you like to adjust anything?
+```
+
+#### 2.2 Per-Layer Configuration Confirmation
+
+Based on the requirements document, confirm the configuration layer by layer. **AI behavior**: Do not list all layers at once; confirm them in order of importance:
+
+```
+Confirmation order: L1 (Model) → L5 (Tools) → L4 (Single/Multi-Agent) → L3 (Prompts) → L6 (Memory) → L9 (UI) → L10 (Deployment)
+```
+
+When confirming each layer, **AI behavior**:
+1. Explain to the user what this layer does
+2. Provide the recommended configuration
+3. Let the user confirm or modify
+
+**Example**:
+```
+AI: Next, let's determine the L1 LLM layer. You chose GPT-4o — are the default temperature and max tokens
+(0.7 and 4096) okay? These parameters affect the creativity and length of responses.
+User: That's fine.
+```
+
+#### 2.3 Architecture Document Output
+
+Generate `architecture.md`:
+
+```markdown
+### Architecture Design Document
+
+### Architecture Blueprint
+Research Assistant — Single Agent
+
+### Per-Layer Configuration
+
+### L1 LLM Layer
+- Provider: openai
+- Model: gpt-4o
+- Temperature: 0.7
+- Max Tokens: 4096
+
+### L2 Model Interface Layer
+- Retry: Enabled (max 3 times, 1 second delay)
+- Model Fallback: Disabled
+
+### L3 Prompt Engineering Layer
+- Role Template: research_assistant
+- Output Format: markdown
+- Custom System Prompt: Set
+
+### L4 Agent Framework Layer
+- Graph Type: single (single Agent)
+- Max Iterations: 10
+- Checkpointer: memory
+
+### L5 Tool Execution Layer
+- Base Tools: web_search, web_fetch, current_time, calculate
+- Custom Tools: save_note (save research notes)
+
+### L6 Memory & Knowledge Layer
+- Memory Type: buffer
+- Max Messages: 50
+- Knowledge Base: None
+
+### L7 Orchestration Layer
+- Mode: single
+- Max Subtasks: 5
+
+### L8 API Service Layer
+- Endpoints: /api/chat, /api/health, /api/sessions
+- Auth: None
+- Rate Limit: 60 requests/minute
+
+### L9 Frontend UI Layer
+- Components: ChatWindow, Sidebar, Header
+- Features: Tool call visualization, multi-session management, Markdown rendering
+
+### L10 Infrastructure Layer
+- Deployment: docker
+- Log Level: INFO
+```
+
+---
+
+
+### Step 3: Config Generation
+
+**Goal**: Based on the architecture design, generate the `agent.yaml` configuration file.
+
+**AI behavior**:
+1. Generate `agent.yaml` based on the architecture document
+2. Show the user the key configuration items
+3. Let the user confirm before continuing
+
+```yaml
+### ============================================================
+### agent.yaml - Complete Agent configuration (single source of truth)
+### All code generation is based on this configuration
+### ============================================================
+
+### Agent basic information
+agent:
+  name: "ResearchAssistant"
+  type: "research"
+  description: "A web search research assistant that can search the web, summarize content, and save notes"
+
+### L1: LLM Layer
+llm:
+  provider: "openai"           # openai | anthropic | deepseek | ollama
+  model: "gpt-4o"
+  api_base: ""                 # Optional, for third-party services compatible with the OpenAI format
+  temperature: 0.7
+  max_tokens: 4096
+
+### L2: Model Interface Layer
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: false
+    models: []
+
+### L3: Prompt Engineering Layer
+prompt:
+  system_prompt: |
+    你是一个专业的研究助手。你的任务是：
+    1. 理解用户的问题
+    2. 搜索相关信息
+    3. 总结和分析结果
+    4. 给出有深度、有来源的回答
+  role_template: "research_assistant"
+  output_format: "markdown"
+
+### L4: Agent Framework Layer
+agent_framework:
+  graph_type: "single"         # single | multi | supervisor
+  max_iterations: 10
+  checkpointer: "memory"       # memory | postgres | none
+
+### L5: Tool Execution Layer
+tools:
+  enabled:
+    - web_search
+    - web_fetch
+    - current_time
+    - calculate
+  custom:
+    - name: "save_note"
+      description: "Save research notes to a local file"
+      parameters:
+        title: { type: "string", description: "Note title" }
+        content: { type: "string", description: "Note content" }
+
+### L6: Memory & Knowledge Layer
+memory:
+  type: "buffer"               # buffer | vector | both
+  max_messages: 50
+  knowledge:
+    enabled: false
+    vector_store: "chroma"
+
+### L7: Orchestration Layer
+orchestration:
+  mode: "single"               # single | multi
+  max_subtasks: 5
+  timeout: 120
+
+### L8: API Service Layer
+api:
+  auth_enabled: false
+  rate_limit: 60
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+### L9: Frontend UI Layer
+ui:
+  type: "chat"                 # chat | dashboard | minimal
+  title: "Research Assistant"
+  features:
+    - tool_visualization
+    - session_management
+    - markdown_rendering
+
+### L10: Infrastructure Layer
+deployment:
+  type: "docker"               # docker | local
+  log_level: "INFO"
+  debug: false
+```
+
+**AI dialogue example**:
+```
+AI: The configuration has been generated. Here are the key settings:
+- Model: GPT-4o
+- Tools: Search, web fetch, calculate, save notes
+- Architecture: Single Agent
+- UI: Chat window
+- Deployment: Docker
+
+Please confirm whether to generate code based on this configuration, or do you need to adjust anything?
+```
+
+---
+
+
+### Step 4: Code Generation
+
+**Goal**: Based on the `agent.yaml` configuration, generate the complete code layer by layer.
+
+**AI behavior**:
+1. Run the `scripts/generate.py` script to generate the code
+2. Or manually generate the code layer by layer (in L1 → L10 order)
+3. After generating each layer, verify the correctness of that layer's code
+4. Finally produce a complete project directory
+
+#### Using the Generation Script (Recommended)
+
+```bash
+### Syntax: python scripts/generate.py <config.yaml> <output_dir>
+python scripts/generate.py agent.yaml ./generated_agent
+```
+
+#### Manual Generation Strategy
+
+If the auto-generation script is unavailable, generate layer by layer in L1 → L10 order. Generation rules per layer:
+
+| Layer | Config Source | Generation Target | Key Operations |
+|-------|---------------|-------------------|----------------|
+| L1 | `llm.*` | `app/l1_llm/factory.py` | Keep only the configured provider adapter |
+| L2 | `interface.*` | `app/l2_interface/chat_interface.py` | Configure retry and fallback strategies |
+| L3 | `prompt.*` | `app/l3_prompt/system_prompts.py` | Inject system prompts and role templates |
+| L4 | `agent_framework.*` | `app/l4_agent/graph.py` | Single Agent or multi-Agent graph |
+| L5 | `tools.*` | `app/l5_tools/` | Register only enabled tools |
+| L6 | `memory.*` | `app/l6_memory/` | Configure memory type |
+| L7 | `orchestration.*` | `app/l7_orchestrator/` | Single/multi-Agent orchestration |
+| L8 | `api.*` | `app/l8_api/routes/` | Generate API routes |
+| L9 | `ui.*` | `frontend/src/` | Dynamically render UI components |
+| L10 | `deployment.*` | `docker-compose.yml`, `.env` | Deployment configuration |
+
+#### Generated Project Structure
+
+```
+generated_agent/
+├── agent.yaml                    # Configuration file (single source of truth)
+├── agent_requirements.md         # Requirements document
+├── architecture.md               # Architecture document
+├── .env.example                  # Environment variable template
+├── docker-compose.yml            # Docker orchestration
+├── Dockerfile                    # Backend image
+├── requirements.txt              # Python dependencies
+├── app/
+│   ├── main.py                   # Application entry (L8+L10)
+│   ├── l1_llm/                   # LLM Layer
+│   │   ├── __init__.py
+│   │   ├── base.py               # Abstract base class
+│   │   ├── openai_adapter.py     # Only keep the configured provider
+│   │   └── factory.py            # Factory method
+│   ├── l2_interface/             # Model Interface Layer
+│   │   ├── __init__.py
+│   │   ├── chat_interface.py     # Unified chat interface
+│   │   ├── streaming.py          # Streaming handling
+│   │   └── retry.py              # Retry strategy
+│   ├── l3_prompt/                # Prompt Engineering Layer
+│   │   ├── __init__.py
+│   │   ├── system_prompts.py     # System prompts (injected from config)
+│   │   ├── prompt_builder.py     # Prompt builder
+│   │   └── output_parsers.py     # Output parsers
+│   ├── l4_agent/                 # Agent Framework Layer
+│   │   ├── __init__.py
+│   │   ├── state.py              # Agent state definition
+│   │   ├── graph.py              # Graph construction (single/multi-Agent)
+│   │   ├── nodes.py              # Node logic
+│   │   └── router.py             # Routing decisions
+│   ├── l5_tools/                 # Tool Execution Layer
+│   │   ├── __init__.py
+│   │   ├── registry.py           # Tool registry
+│   │   ├── base_tools.py         # Base tool implementations
+│   │   └── custom_tools.py       # Custom tool implementations
+│   ├── l6_memory/                # Memory & Knowledge Layer
+│   │   ├── __init__.py
+│   │   ├── buffer.py             # Conversation buffer
+│   │   ├── session_manager.py    # Session management
+│   │   └── vector_store.py       # Vector store (optional)
+│   ├── l7_orchestrator/          # Orchestration Layer
+│   │   ├── __init__.py
+│   │   ├── base.py               # Orchestrator base class
+│   │   ├── orchestrator.py       # Orchestrator
+│   │   └── aggregator.py         # Result aggregation
+│   └── l8_api/                   # API Service Layer
+│       ├── __init__.py
+│       ├── schemas.py            # Data models
+│       ├── routes/
+│       │   ├── chat.py           # Chat endpoint
+│       │   └── health.py         # Health check
+│       └── middleware/
+│           └── auth.py           # Authentication (optional)
+├── frontend/
+│   ├── package.json
+│   ├── vite.config.ts
+│   ├── index.html
+│   └── src/
+│       ├── main.tsx
+│       ├── App.tsx               # Root component (dynamic rendering)
+│       ├── l8_api/
+│       │   └── api.ts            # API client
+│       ├── l9_ui/
+│       │   ├── chat/
+│       │   │   ├── ChatWindow.tsx
+│       │   │   ├── ChatInput.tsx
+│       │   │   ├── MessageBubble.tsx
+│       │   │   └── ToolCall.tsx
+│       │   └── layout/
+│       │       ├── Header.tsx
+│       │       └── Sidebar.tsx
+│       ├── types/
+│       │   └── index.ts
+│       └── styles/
+│           └── index.css
+└── scripts/
+    ├── start.sh                  # Start script
+    └── run.sh                    # One-click run
+```
+
+#### Verification Checklist
+
+After generating each layer, check:
+
+- [ ] L1: Adapter code is correct; the factory method supports the configured provider
+- [ ] L2: Interface layer has the correct retry and fallback strategies configured
+- [ ] L3: System prompt injected; role template set
+- [ ] L4: Graph structure is correct (single-Agent / multi-Agent)
+- [ ] L5: Tools registered per config; custom tools implemented
+- [ ] L6: Memory type configured
+- [ ] L7: Orchestration mode configured
+- [ ] L8: API routes registered; authentication configured
+- [ ] L9: Frontend components rendered per feature config
+- [ ] L10: Deployment config complete; environment variables correct
+
+---
+
+
+### Step 5: Deployment & Verification
+
+**Goal**: Ensure the generated code runs correctly.
+
+**AI behavior**:
+1. Guide the user to configure environment variables
+2. Start the backend and frontend
+3. Verify basic functionality
+4. If using Docker, verify the Docker deployment
+
+#### 5.1 Environment Configuration
+
+```bash
+cd generated_agent
+
+### Copy the environment variable template
+cp .env.example .env
+
+### Edit .env and fill in the LLM API Key
+### OPENAI_API_KEY=sk-...
+```
+
+**AI dialogue example**:
+```
+AI: The code has been generated! Now let's deploy. First, please fill in your API Key in the .env file.
+If you're using OpenAI, you need to set OPENAI_API_KEY.
+```
+
+#### 5.2 Start the Backend
+
+```bash
+### Install dependencies
+cd generated_agent
+pip install -r requirements.txt
+
+### Start the backend
+uvicorn app.main:app --reload --port 8000
+```
+
+Verify: `curl http://localhost:8000/api/health`
+
+#### 5.3 Start the Frontend
+
+```bash
+cd generated_agent/frontend
+npm install
+npm run dev
+```
+
+Verify: Open `http://localhost:5173` in the browser
+
+#### 5.4 Docker Deployment
+
+```bash
+cd generated_agent
+docker-compose up --build
+```
+
+Verify: `http://localhost:5173` + `http://localhost:8000/docs`
+
+#### 5.5 Functional Testing
+
+- [ ] Sending a message returns a reply
+- [ ] Streaming output works correctly
+- [ ] Tool calls execute correctly
+- [ ] Multi-session switching works
+- [ ] Error handling shows friendly messages
+
+---
+
+
+### Usage Examples
 
 ### Example 1: Research Assistant
 
@@ -2109,3 +1842,304 @@ User description: Build a customer service Agent that first classifies the quest
 **Step 4 - Code generation**: Generate code for each layer; L4 uses a multi-Agent graph
 
 **Step 5 - Deployment verification**: docker-compose up
+
+## Part 5 · 协议与技术（A2A / MCP / 调用链 / 技术栈 / 生成映射）
+
+### A2A Protocol (Agent-to-Agent)
+
+The A2A (Agent-to-Agent) protocol proposed by Google (Apr 2025) has become an industry standard alongside MCP. The relationship between the two:
+
+> **MCP gives your Agent hands; A2A gives your Agent colleagues.**
+
+- **MCP** = Agent-to-Tool communication (vertical layer: Agent calls tools)
+- **A2A** = Agent-to-Agent communication (horizontal layer: Agents collaborate with each other)
+
+A2A has received support from 150+ organizations, with 22,000+ GitHub stars.
+
+### Three Core Primitives
+
+| Primitive | Description | Key Fields |
+|-----------|-------------|------------|
+| **Agent Card** | Agent capability declaration, located at `/.well-known/agent.json` | `name`, `description`, `capabilities`, `skills`, `endpoints` |
+| **Task** | Task lifecycle management | `id`, `status` (submitted→working→input-required→completed/failed/canceled), `input`, `output` |
+| **Artifact** | Task products (files, text, structured data) | `id`, `type`, `content`, `metadata` |
+
+### Communication Methods
+
+- **Short tasks**: JSON-RPC 2.0 over HTTPS, synchronous request-response
+- **Long tasks**: SSE streaming push, real-time task status updates
+- **Multi-turn interaction**: The `input-required` status allows an Agent to ask the requester for more information
+
+### Agent Card Example
+
+```json
+{
+  "name": "ResearchAssistant",
+  "description": "Web search research assistant",
+  "capabilities": ["web_search", "summarization", "note_taking"],
+  "skills": [
+    {
+      "id": "research",
+      "name": "Information Research",
+      "description": "Search and summarize web information",
+      "input": { "type": "text", "description": "Research topic" },
+      "output": { "type": "markdown", "description": "Research report" }
+    }
+  ],
+  "endpoints": {
+    "base_url": "https://assistant.example.com",
+    "task_submit": "/a2a/task",
+    "task_stream": "/a2a/task/stream"
+  }
+}
+```
+
+### Relationship to the Architecture
+
+In the 10-layer architecture, A2A spans the **L7 Orchestration Layer** and the **L8 API Service Layer**:
+
+- An Agent exposes its own capabilities via `/.well-known/agent.json` (L8)
+- The orchestrator delegates subtasks to other Agents via the A2A Task protocol (L7)
+- Supports cross-framework communication: LangGraph Agent ↔ Claude Agent SDK Agent ↔ OpenAI Agents SDK Agent
+
+---
+
+
+### MCP Protocol Update (2026-07-28 Stateless Spec)
+
+MCP (Model Context Protocol) was upgraded to a **stateless protocol** on 2026-07-28, no longer using bidirectional handshakes and stateful sessions.
+
+### Key Changes
+
+| Old Protocol (Stateful) | New Protocol (Stateless 2026-07-28) |
+|-------------------------|-------------------------------------|
+| `initialize` / `initialized` handshake | No handshake needed; each request is self-describing |
+| `Mcp-Session-Id` header | Removed |
+| Duplex connection, server push | Pure request-response, Header routing |
+| Implicit session state | `_meta` passed explicitly in requests (protocol version, identity, capabilities) |
+| Not cacheable | List results cacheable (with `cache_hint`) |
+
+### New Protocol Characteristics
+
+- **Self-describing requests**: Each request carries `protocol_version`, `client_id`, and `capabilities` in `_meta`
+- **Header routing**: `Mcp-Method` and `Mcp-Name` HTTP headers replace method name encoding
+- **Cacheable lists**: List responses include `cache_hint` (TTL suggestion), and clients can cache them
+- **server/discover**: New RPC for optional capability discovery
+- **MRTR** (Multi Round-Trip Requests): Supports multi-round communication from server to client
+
+### Server Code Example (FastMCP)
+
+```python
+from mcp.server.fastmcp import FastMCP
+
+### Create MCP server (stateless, no handshake needed)
+mcp = FastMCP("ResearchAssistant", version="1.0.0")
+
+@mcp.tool()
+async def web_search(query: str) -> str:
+    """Search web information"""
+    # Tool implementation...
+    return f"Search results: {query}"
+
+@mcp.tool()
+async def save_note(title: str, content: str) -> str:
+    """Save a note"""
+    with open(f"notes/{title}.md", "w", encoding="utf-8") as f:
+        f.write(content)
+    return f"Note saved: {title}.md"
+
+### Start MCP service (stdio or HTTP)
+if __name__ == "__main__":
+    mcp.run(transport="stdio")
+    # Or HTTP mode:
+    # mcp.run(transport="http", host="0.0.0.0", port=8001)
+```
+
+---
+
+
+### Complete Call Chain
+
+The complete call chain from user input to final output, running through all 10 layers and supporting A2A cross-Agent communication:
+
+```
+User Input
+    │
+    ▼
+[L9 Frontend] User enters message → calls API
+    │
+    ▼
+[L8 API] /api/chat endpoint → parameter validation → create SSE stream
+    │                                  │
+    │                                  └→ [A2A endpoint] Expose Agent Card capabilities
+    │
+    ▼
+[L7 Orchestration] Determine whether multi-Agent is needed → task decomposition → forward
+    │                                  │
+    │                                  ├→ [A2A client] Delegate to external Agent
+    │                                  └→ [Hierarchical subagent] Internal sub-Agent execution
+    │
+    ▼
+[L6 Memory] Load conversation history → retrieve relevant knowledge → inject context
+    │
+    ▼
+[L4 Agent] Enter Agent node → prepare messages
+    │
+    ▼
+[L3 Prompt] Build system prompt → inject role template → assemble complete prompt
+    │
+    ▼
+[L2 Interface] Call LLM → stream → handle callbacks
+    │
+    ▼
+[L1 LLM] GPT-4o / Claude / DeepSeek actual reasoning
+    │
+    ▼
+[L2 Interface] Receive streaming tokens → return piece by piece
+    │
+    ▼
+[L4 Agent] Parse response → determine whether a tool call is needed
+    │
+    ├── Needs tool → [L5 Tool Execution] → call tool (incl. MCP remote tools)
+    │                              │
+    │                              └→ Call external tool service via MCP protocol
+    │
+    └── Direct answer → [L8 SSE] → stream push to frontend
+                            │
+                            ▼
+                        [L9 Frontend] Render tokens in real time
+                            │
+                            ▼
+                        [L6 Memory] Save conversation history
+                            │
+                            ▼
+                        User sees the final answer
+```
+
+---
+
+
+### Technology Stack
+
+| Layer | Technology | Version | Description |
+|-------|------------|---------|-------------|
+| **L1 LLM** | GPT-4o / Claude / DeepSeek / Ollama | - | Multiple model support |
+| **L2 Model Interface** | Provider factory (8 vendor adapters) + langchain_core messages | - | Unified LLM call abstraction (openai/anthropic/deepseek/ollama/gemini/qwen/glm/kimi) |
+| **L3 Prompt Engineering** | Native prompt_builder / role_templates | - | Prompt templates, few-shot, output parsers, sanitizer |
+| **L4 Agent Framework** | AgentRuntime + 6 adapters | - | bare / LangGraph / OpenAI Agents / Claude SDK / ADK / AutoGen (framework-agnostic) |
+| **L5 Tool Execution** | Native registry/executor + MCP | 2026-07-28 | Tool registration & execution + MCP client/server (stateless) |
+| **L6 Memory & Knowledge** | VectorStore (stdlib) / ChromaDB | 0.6+ | Memory and vector retrieval (stdlib-first, optional backends) |
+| **L7 Orchestration** | Supervisor/Router/Workflow + A2A | 1.0 | Multi-Agent collaboration + cross-Agent communication protocol |
+| **L8 API Service** | FastAPI + SSE | 0.115+ | High-performance async API |
+| **L9 Frontend UI** | React 19 + TypeScript | 19+ / 5.7+ | Modern frontend |
+| **L10 Infrastructure** | Docker + Docker Compose | 27+ / 2.27+ | Deployment and operations |
+| **Cross-layer** | Pydantic | 2.10+ | Data models and validation |
+
+---
+
+
+### Code Generation Reference
+
+### Key Patterns for Generating from Config
+
+When generating code, always follow these principles:
+
+1. **Config-driven**: All variable behavior is read from `agent.yaml`; do not hardcode
+2. **Generate on demand**: Only generate the code that is needed; do not keep unused modules
+3. **Template substitution**: Use template strings to substitute config values rather than complex AST operations
+4. **Stay readable**: Generated code should be readable and manually modifiable
+
+### Config → Code Mapping Table
+
+```python
+### agent.yaml config items → code generation rules per layer
+
+config = {
+    "llm": {"provider": "openai", "model": "gpt-4o"},
+    "tools": {"enabled": ["web_search", "web_fetch"]},
+    "prompt": {"system_prompt": "You are a research assistant..."},
+}
+
+### L1 → app/l1_llm/factory.py
+def create_llm():
+    provider = config["llm"]["provider"]  # "openai"
+    model = config["llm"]["model"]        # "gpt-4o"
+    return OpenAIAdapter(model=model)
+
+### L3 → app/l3_prompt/system_prompts.py
+SYSTEM_PROMPT = """{config['prompt']['system_prompt']}"""
+
+### L5 → app/l5_tools/registry.py
+def register_tools():
+    for tool_name in config["tools"]["enabled"]:
+        ToolRegistry.register(tool_name)
+```
+
+---
+
+
+## Part 6 · 最佳实践与输出要求
+
+### Best Practices
+
+### 1. Discovery Principles
+- Ask open-ended questions first, then multiple-choice questions
+- Ask about only one dimension per question
+- Record the user's answers — don't omit anything
+- **AI behavior**: Don't throw all questions at the user at once; guide gradually
+
+### 2. Architecture Design Principles
+- Start simple: prefer a single Agent
+- Only introduce multi-Agent orchestration when needed
+- Enable tools on demand; don't over-engineer
+- **AI behavior**: When confirming each layer, explain the layer's role to the user
+
+### 3. Config Generation Principles
+- The config is the single source of truth
+- All code generation is based on the config; do not manually modify generated code
+- Regenerate code when the config changes
+- **AI behavior**: After generating the config, show the key items to the user for confirmation
+
+### 4. Code Generation Principles
+- Each layer focuses only on its own responsibilities
+- Lower layers don't depend on upper layers; upper layers depend on lower layers
+- Layers communicate through well-defined interfaces
+- Any layer can be replaced without modifying the others
+- **AI behavior**: Prefer the `generate.py` script; manual generation as a fallback
+
+### 5. Tool Design Principles
+- Each tool does one thing, and does it well
+- Define tool parameters strictly with Pydantic models
+- Include detailed docstrings in tool functions
+
+### 6. Error Handling
+- Every tool node has try-catch
+- Routing nodes have fallback logic
+- The frontend shows friendly error messages
+- **AI behavior**: During deployment testing, if errors occur, analyze the cause and fix them
+
+### 7. Security
+- Read API Keys from environment variables
+- Apply length limits to user input
+- Tools have timeout mechanisms
+
+---
+
+
+### Output Requirements
+
+After each build is complete, you must ensure:
+
+1. **agent_requirements.md**: Requirements document is complete
+2. **architecture.md**: Architecture design document is complete
+3. **agent.yaml**: Configuration file is complete
+4. **L1–L10 each layer's code is complete**: No layer is missing
+5. **Backend is runnable**: `pip install -r requirements.txt && uvicorn app.main:app --reload`
+6. **Frontend is runnable**: `npm install && npm run dev`
+7. **Full stack is runnable**: `docker-compose up`
+8. **Streaming response**: SSE streaming works correctly
+9. **Error handling**: API errors return reasonable error messages
+10. **Type safety**: TypeScript and Python type definitions are complete
+
+---
+
