@@ -72,19 +72,90 @@ python scripts/generate.py <agent.yaml> <output_dir> --framework=langgraph|bare
 
 ---
 
+## 通用智能体基础能力全栈（内置，直接按此构建）
+
+> **本节把"一个通用智能体该有的全部基础能力"预装载在这里**，并给出每个能力的**实现方式**与**决策默认值**。构建时**无需向用户追问**——用户一句话或一段描述即可，未指定的项一律采用默认值（见"决策默认值表"），直接产出可运行 Agent。
+
+### 0. 决策默认值表（未指定即用此默认，绝不反复问）
+
+| 维度 | 默认值 | 说明 |
+|---|---|---|
+| 框架 | `langgraph` | 生产级；要零依赖用 `bare` |
+| 图类型 | `single` | 需多智能体才改 `supervisor` |
+| LLM 提供商/模型 | `openai` / `gpt-4o` | 可按成本/能力改 deepseek/claude 等 |
+| 温度 / max_tokens | `0.7` / `4096` | — |
+| 工具（enabled） | `web_search, web_fetch, current_time, calculate` | 按用途加 `code_execute/run_code/file_read/file_write/read_csv/analyze_data/generate_chart` |
+| 记忆 | `buffer`（会话内） | 需要知识库加 RAG |
+| 编排 | `single` | 客服/协作类改 `supervisor` |
+| 安全强制 | `SECURITY_ENABLED=true` | 注入防御 + PII 脱敏 |
+| 规划 / 反思 | `off` | 需要思考链开启 `agent_framework.plan/reflect` |
+| 流式 | 开 | `/api/chat` SSE |
+| 前端 | chat + admin + workspace | 完整三视图 |
+| 部署 | uvicorn + 前端 dev | 可选 Docker |
+
+### 1. 能力全景（A–H 全都要有，缺一不交付）
+
+**A. 模型与推理层**
+- 多提供商适配：openai / anthropic / deepseek / gemini / glm / kimi / ollama / qwen（L1 `factory.py` 工厂）。
+- 自动重试（指数退避，L2 `retry.py`）；结构化输出 + JSON Schema 校验（L3 `output_parsers` / `output_validator`）。
+- 流式（L2 `streaming.py` + SSE）。
+- 可选：`agent_framework.plan` 加规划节点、`agent_framework.reflect` 加反思节点（`planner_node` / `reflect_node`）。
+- 深化（按需）：模型回退链 `chat_with_fallback`（主模型失败自动降级）；长会话上下文自动压缩/摘要注入。
+
+**B. 工具与执行层**
+- 函数调用；通用工具集：web_search / web_fetch / current_time / calculate。
+- 代码执行 `code_execute` / `run_code`（沙箱子进程，python/python3/sh/bash）；文件读写 `file_read` / `file_write`；数据分析 `read_csv` / `analyze_data` / `generate_chart`（CSV 读取 / 描述统计 / ASCII 柱状图）。
+- MCP 客户端 + 服务端（L5 `mcp_client` / `mcp_server`）。
+- 自定义工具 `tools.custom` 自动生成 `custom_tools.py`，随 `BASE_TOOLS` 一并注册。
+- 深化（按需）：代码执行加高危命令检测（rm -rf / 等强制确认）、受限 PATH/工作目录、docker 隔离沙箱。
+
+**C. 记忆与知识层**
+- 会话记忆 buffer；向量记忆 / RAG（多路召回 + 引用溯源，L6 `vector_store` / `rag_engine` / `retrieval`）。
+- 知识库 / 文档摄入（路由 + 可选 pypdf）；摘要 / 压缩（`summary`）；跨会话持久化（`session_manager`）。
+
+**D. 编排与多智能体层**
+- 单 Agent ReAct；Supervisor 多 Agent（`customer_service` 模式）；结果聚合（`aggregator`）；A2A 协议（L7）。
+- 深化（按需）：Handoff 节点、GroupChat（autogen 适配器）。
+
+**E. 安全与治理层**
+- 提示词注入防御 + PII 输入/输出双向脱敏：`SECURITY_ENABLED=true` 时由 `ChatInterface` 统一执行，高风险注入直接拦截。
+- 限流中间件；API Key 认证中间件；内容过滤（`content_filter`）。
+
+**F. 可观测性与评估层**
+- 结构化日志；指标 / Prometheus（`/metrics`）；评估（`scripts/evaluate.py` + 路由）；成本计费（`usage`）；告警。
+
+**G. 交互与前端层**
+- 会话 / 分组 / 分享 / 附件；流式 ChatWindow；管理台（Admin）；工作台（任务 / 画布 / 能力库 / 通知 / 命令 / 记忆）；语音 TTS/STT。
+
+**H. 平台与部署层**
+- Docker；配置管理（`.env` + pydantic-settings）；定时任务（`scheduler`）；插件 / 技能加载（`plugin_manager` / `skill_loader`）。
+
+### 2. 生成步骤（不询问，直接按默认值执行）
+
+```
+1) 写 agent.yaml（用默认值表；tools.enabled 每个名字必须在本 Skill 通用工具集或 tools.custom 中）
+2) python scripts/generate.py <agent.yaml> <out> --framework=langgraph   # 零依赖则 --framework=bare
+3) 验证：import app.main + pytest + 前端 build
+4) 交付运行说明（填 .env → 起后端 → 起前端）
+```
+
+### 3. 验证即交付（对照"生成产物完整性清单"逐项勾选，全部 ✅ 才算完成）
+
+---
+
 ## AI Behavior Guidelines
 
 > When you use this skill, you play a triple role: **AI Product Manager + Architect + Full-Stack Engineer**. You must:
-> 1. **Guide proactively**: Do not wait for the user to spell out every requirement; ask step by step.
+> 1. **Direct-produce first (default)**: This Skill pre-loads every universal capability and its defaults. Given a one-line requirement, **produce the agent directly using the "决策默认值表"** — do NOT fall back to interrogating the user. Only ask (min 1 question) when the requirement is genuinely missing enough to block a choice (e.g. 客服 vs 通用助手 → 是否多智能体；对成本敏感 → 模型).
 > 2. **Record decisions**: Write every decision from each step into a file.
-> 3. **Explain choices**: Help the user understand the pros and cons of each option.
-> 4. **Deliver runnable code**: The final product must be a complete, launchable application.
+> 3. **Explain choices**: Briefly state the defaults you chose and why (one line each).
+> 4. **Deliver runnable code**: The final product must be a complete, launchable application, verified against the "生成产物完整性清单".
 
 **Keep in mind**:
-- You are not writing documentation; you are **guiding the user through the building process**.
-- At the end of each conversation, the user should be clearer about what they want than before.
-- Do not generate all the code at once; proceed step by step.
-- At every step, get the user's confirmation before continuing.
+- You are not writing documentation; you are **producing a runnable agent**.
+- **Fill every unspecified decision with the default** from "通用智能体基础能力全栈·决策默认值表" — do not leave blanks and do not ask.
+- If the user later wants to change a choice, regenerate the `agent.yaml` field and re-run `generate.py`.
+- **Proceed in one pass** unless the user explicitly wants to review an intermediate step.
 
 ---
 
