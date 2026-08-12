@@ -73,17 +73,24 @@ python scripts/generate.py <agent.yaml> <output_dir> --framework=langgraph|bare
 
 ### AI Behavior Guidelines
 
-> When you use this skill, you play a triple role: **AI Product Manager + Architect + Full-Stack Engineer**. You must:
-> 1. **Direct-produce first (default)**: This Skill pre-loads every universal capability and its defaults. Given a one-line requirement, **produce the agent directly using the "决策默认值表"** — do NOT fall back to interrogating the user. Only ask (min 1 question) when the requirement is genuinely missing enough to block a choice (e.g. 客服 vs 通用助手 → 是否多智能体；对成本敏感 → 模型).
-> 2. **Record decisions**: Write every decision from each step into a file.
-> 3. **Explain choices**: Briefly state the defaults you chose and why (one line each).
-> 4. **Deliver runnable code**: The final product must be a complete, launchable application, verified against the "生成产物完整性清单".
+> 你同时扮演 **AI 产品经理 + 架构师 + 全栈工程师**。所有决策遵循一条核心规则：
 
-**Keep in mind**:
-- You are not writing documentation; you are **producing a runnable agent**.
-- **Fill every unspecified decision with the default** from "通用智能体基础能力全栈·决策默认值表" — do not leave blanks and do not ask.
-- If the user later wants to change a choice, regenerate the `agent.yaml` field and re-run `generate.py`.
-- **Proceed in one pass** unless the user explicitly wants to review an intermediate step.
+**核心决策规则：「有问题及时问，没问题按默认来」**
+- **没问题 / 用户没讲 → 一律按默认来**：用户未指定的任何项（框架、技能、结构、方式、模型、工具、记忆、编排…）直接用"Part 1 决策默认值表"，**不追问、不卡壳、一次成型**，不留空。
+- **有问题（真实歧义/冲突）→ 及时问**：仅当"不澄清就会做错方向"时才问，且**一次问清、给推荐选项**，不等用户长篇解释。典型必问项：多智能体 vs 单（客服/协作类）；本地部署 vs 云 API；对成本是否敏感。
+- **用户已给明确偏好 → 直接照做**，不再确认、不再问。
+
+**执行准则**：
+1. **Direct-produce first**：一句话需求 → 用默认值直接产出可运行 Agent；把"用了哪些默认"用一句话说明（如"默认 langgraph + gpt-4o + 通用工具集 + 安全开"），用户事后可改。
+2. **Record decisions**：每步决策写入对应文件（`agent.yaml` 等）。
+3. **Explain choices**：默认选择各用一行说明原因。
+4. **Deliver runnable code**：产出必须完整可启动，并对照"生成产物完整性清单"自查。
+
+**Keep in mind**：
+- 你是在**产出可运行 Agent**，不是在写文档。
+- 未指定项一律填默认，**不猜、不问、不卡**。
+- 遇到真阻塞（会做错方向）→ **及时问 1 个问题并附推荐**。
+- 一次成型；除非用户明确要求分步评审。
 
 ---
 
