@@ -4,26 +4,19 @@
 
 ## [Unreleased]
 
-### 待办（Planned）
-- deep-spec 16-19/21 企业级 / 生态 / 布局 / 文档体系 ⬜ 子域深度实现
-- 模型回退接线（chat_with_fallback）；代码执行受限沙箱/高危命令检测；Handoff 节点；长会话上下文自动压缩
+### Changed
+- **改名与定位：SkillHub** —— 仓库/品牌由 `agent-builder-skill` 更名为 **SkillHub**，定位调整为**一个精选"好用、特别"的 AI Skill 集合**；`agent-builder`（Universal Agent Builder）为旗舰 Skill。
+- **仓库英语化**：README 改为英文主（`README.md`）+ 中文（`README.zh.md`）+ 日文（`README.ja.md`）；frontmatter 描述与三平台仓库描述、标签改为英文，利于检索。
+- **Skill 注册入口**：新增 `SKILLS.md`（集合索引 + 新增 Skill 约定）。
+- **深度工程规格 D1-D12 各加「实现要点」**（关键函数/数据结构/边界条件）。
+- **agent.yaml 字段字典**（Part 4）+ **全量 API 端点一览**（Part 5）。
+- **补漏 M0.5 对话模式开关 / M3.5 沙箱管理 / M17-M22 生产级细节**。
 
 ### Added
-- **SKILL 架构重排（Part 0-6 三级层级）**：把全部内容按"实际构建场景"重组为 `# 主标题 → ## Part → ### 章节`，合并同级、理顺上下级与先后：
-  - Part 0 定位与总纲（Overview/Quick-Start/When to Use/AI Behavior）
-  - Part 1 决策与标准（默认值表/完整性清单/验收原则）
-  - Part 2 能力与架构（能力全景 A-H / 10 层架构 / 模板库）
-  - Part 3 详细规格（模块 M0-M16 × 深度 D1-D12）
-  - Part 4 构建实施（生成步骤 / Step 1-5 / Agent Requirements / 用法示例）
-  - Part 5 协议与技术（A2A / MCP / 调用链 / 技术栈 / 生成映射）
-  - Part 6 最佳实践与输出要求
-- **SKILL 功能深化规格 M0–M16**：统一模板（用途/位置/调用/界面/操作/AI生成/验收），M0 技能管理作完整范例。
-- **SKILL 深度工程规格 D1–D12**：上下文/工具调用/记忆分层/规划/反思自愈/多智能体/安全纵深/可靠性/可观测性/评估/部署运维/性能扩展。
-- **市场调研**：`docs/universal-agent-capability-map.md`。
-- **安全强制 + 规划/反思节点 + 工作台 7 组件 + 5 后端路由 + 生成产物完整化 + 框架适配器/流式测试**（模板 pytest 43 passed）。
+- 通用智能体能力全景（docs/universal-agent-capability-map.md）；安全强制；规划/反思节点；工作台 7 组件 + 5 后端路由；生成产物完整化；框架适配器/流式测试（43 passed）。
 
 ### Fixed
-- **P0** 生成器工具注册 / supervisor 图 / bare 运行时（LLM 惰性构建、启动免 key）/ CI 强化 / 卫生项。
+- P0 生成器工具注册 / supervisor 图 / bare 运行时 / CI 强化 / 卫生项。
 
 ## [0.5.0] - 2026-08-11
 

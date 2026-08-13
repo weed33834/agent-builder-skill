@@ -1,6 +1,6 @@
 ---
-name: "agent-builder"
-description: "Builds production-ready AI agents from natural-language requirements. Invoke when user wants to create, build, or generate an AI agent or assistant application."
+name: "skillhub"
+description: "SkillHub — a curated hub of practical, pre-loaded AI Skill workflows. Its flagship skill, Universal Agent Builder, builds production-grade AI agents from a one-line requirement. Invoke when the user wants to build/generate an AI agent, or to use/collect a reusable AI skill."
 ---
 
 # Universal Agent Builder
