@@ -1,22 +1,22 @@
-# SkillHub
+# Agent-Builder-Skill
 
 > **一个精选"好用、特别"的 AI Skill 集合** —— 每个 Skill 都是**自包含、预装载的提示词工作流**，让智能体读一遍就能一次做对，不用多轮澄清。
 
 [English](./README.md) | **简体中文** | [日本語](./README.ja.md) · [文档中心](./docs/README.md) · [功能清单](./docs/feature-checklist.md)
 
-[![Release](https://img.shields.io/badge/release-v0.1.0-blue.svg)](https://github.com/weed33834/skillhub/releases/latest)
-[![CI](https://img.shields.io/github/actions/workflow/status/weed33834/skillhub/ci.yml?branch=main&label=CI&logo=github)](https://github.com/weed33834/skillhub/actions)
+[![Release](https://img.shields.io/badge/release-v0.1.0-blue.svg)](https://github.com/weed33834/agent-builder-skill/releases/latest)
+[![CI](https://img.shields.io/github/actions/workflow/status/weed33834/agent-builder-skill/ci.yml?branch=main&label=CI&logo=github)](https://github.com/weed33834/agent-builder-skill/actions)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Deep Specs](https://img.shields.io/badge/deep--specs-37-green.svg)](docs/deep-spec/00-template.md)
 [![Features](https://img.shields.io/badge/features-1465%2B-brightgreen.svg)](docs/feature-checklist.md)
 
 ---
 
-## SkillHub 是什么？
+## Agent-Builder-Skill 是什么？
 
 **Skill 不是文档，而是一套预装载的提示词工作流**。它把"做某件事"的完整流程（步骤、提示词、默认值、界面规格、验收标准）固化进一个文件，智能体读一遍就能**一次做对、无需来回澄清**。
 
-SkillHub 收集那些我们觉得**真正好用、比较特别**的 Skill，经过真实使用打磨沉淀。
+Agent-Builder-Skill 收集那些我们觉得**真正好用、比较特别**的 Skill，经过真实使用打磨沉淀。
 
 ### 旗舰 Skill：Universal Agent Builder（`agent-builder`）
 
@@ -44,21 +44,9 @@ SkillHub 收集那些我们觉得**真正好用、比较特别**的 Skill，经�
 
 ---
 
-## Skill 索引
+## 定位
 
-| Skill | 状态 | 作用 |
-|---|---|---|
-| `agent-builder`（Universal Agent Builder） | ✅ 旗舰 | 一句话需求构建完整生产级 AI Agent |
-| *（新增在此）* | 🆕 | 见[如何新增 Skill](#如何新增-skill) |
-
-### 如何新增 Skill
-
-1. 建 `skills/<名称>/SKILL.md`（或顶层 `SKILL_<名称>.md`），按统一深度模板：**用途/位置/调用/界面/操作/AI 生成/验收**
-2. 填 frontmatter（`name` + 英文 `description`，便于检索）
-3. 在 [SKILLS.md](./SKILLS.md) 登记，并加进上表
-4. 冒烟：一句话输入 → 期望输出
-
----
+本 Skill 的定位是**创建一个智能体**：给一句话需求，按默认值直接产出完整、可运行、生产级的 AI Agent（后端 + 前端 + 测试），无需多轮澄清。
 
 ## 快速开始（agent-builder）
 
@@ -80,7 +68,6 @@ cd my_agent/frontend && npm install && npm run dev
 
 ```
 SKILL.md                 旗舰 Skill：Universal Agent Builder（完整规格/工作流）
-SKILLS.md                本集合所有 Skill 的注册清单
 scripts/generate.py      Agent 生成器（配置 → 完整工程）
 templates/               生成器产出的后端 + 前端模板
 docs/                    深度规格、功能清单、验收测试

@@ -5,12 +5,9 @@
 ## [Unreleased]
 
 ### Changed
-- **改名与定位：SkillHub** —— 仓库/品牌由 `agent-builder-skill` 更名为 **SkillHub**，定位调整为**一个精选"好用、特别"的 AI Skill 集合**；`agent-builder`（Universal Agent Builder）为旗舰 Skill。
-- **仓库英语化**：README 改为英文主（`README.md`）+ 中文（`README.zh.md`）+ 日文（`README.ja.md`）；frontmatter 描述与三平台仓库描述、标签改为英文，利于检索。
-- **Skill 注册入口**：新增 `SKILLS.md`（集合索引 + 新增 Skill 约定）。
-- **深度工程规格 D1-D12 各加「实现要点」**（关键函数/数据结构/边界条件）。
-- **agent.yaml 字段字典**（Part 4）+ **全量 API 端点一览**（Part 5）。
-- **补漏 M0.5 对话模式开关 / M3.5 沙箱管理 / M17-M22 生产级细节**。
+- **定名：Agent-Builder-Skill** —— 仓库/品牌/项目名统一为 **Agent-Builder-Skill**（之前尝试的 SkillHub 集合定位已撤销）。定位明确为：**一个用来创建智能体的 Skill** —— 预装载提示词工作流，给一句话需求即按默认值直接产出完整、可运行、生产级的 AI Agent。
+- **仓库英语化**：README 英文主（`README.md`）+ 中文（`README.zh.md`）+ 日文（`README.ja.md`）；frontmatter 描述与三平台仓库描述为英文，利于检索。
+- **深度工程规格 D1-D12 各加「实现要点」**；**agent.yaml 字段字典**；**全量 API 端点一览**；**补漏 M0.5 对话模式开关 / M3.5 沙箱管理 / M17-M22 生产级细节**。
 
 ### Added
 - **对话模式开关真实生效（建议#1落地）**：`POST /api/chat` 新增 `mode`（web_search/deep_think/kb_id/sandbox），路由在流式前真实注入上下文——联网调 `web_search`、知识库走 `RAGEngine.retrieve` 带引用、深度思考注入"先规划再推理"、沙箱关闭提示不执行代码；前后端均已接线（ChatInput 开关 + streamChat 传 mode）。测试 `test_chat_mode.py` → 46 passed。

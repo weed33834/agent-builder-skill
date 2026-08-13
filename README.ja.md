@@ -1,22 +1,22 @@
-# SkillHub
+# Agent-Builder-Skill
 
-> **実用的で特別な AI スキルを厳選したハブ** —— 各スキルは**自己完結型・プリロード済みのプロンプトワークフロー**で、エージェントは一度読めば正しく実行でき、往復のやり取りが不要になります。
+> **エージェントを作成するためのスキル（プリロード済みプロンプトワークフロー）** —— 各スキルは**自己完結型・プリロード済みのプロンプトワークフロー**で、エージェントは一度読めば正しく実行でき、往復のやり取りが不要になります。
 
 [English](./README.md) | [简体中文](./README.zh.md) | **日本語** · [ドキュメント](./docs/README.md) · [機能リスト](./docs/feature-checklist.md)
 
-[![Release](https://img.shields.io/badge/release-v0.1.0-blue.svg)](https://github.com/weed33834/skillhub/releases/latest)
-[![CI](https://img.shields.io/github/actions/workflow/status/weed33834/skillhub/ci.yml?branch=main&label=CI&logo=github)](https://github.com/weed33834/skillhub/actions)
+[![Release](https://img.shields.io/badge/release-v0.1.0-blue.svg)](https://github.com/weed33834/agent-builder-skill/releases/latest)
+[![CI](https://img.shields.io/github/actions/workflow/status/weed33834/agent-builder-skill/ci.yml?branch=main&label=CI&logo=github)](https://github.com/weed33834/agent-builder-skill/actions)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Deep Specs](https://img.shields.io/badge/deep--specs-37-green.svg)](docs/deep-spec/00-template.md)
 [![Features](https://img.shields.io/badge/features-1465%2B-brightgreen.svg)](docs/feature-checklist.md)
 
 ---
 
-## SkillHub とは
+## Agent-Builder-Skill とは
 
 **スキル（Skill）はドキュメントではなく、プリロードされたプロンプトワークフローです。** ある仕事を完了するための工程全体（手順・プロンプト・デフォルト値・UI仕様・受入条件）を1ファイルにまとめ、エージェントはそれを読むだけで**最初から正しく、余計な往復なしで**実行できます。
 
-SkillHub は、実際に使って磨き上げた**実用的で特別なスキル**を収集します。
+Agent-Builder-Skill は、実際に使って磨き上げた**実用的で特別なスキル**を収集します。
 
 ### フラッグシップスキル：Universal Agent Builder（`agent-builder`）
 
@@ -44,21 +44,9 @@ SkillHub は、実際に使って磨き上げた**実用的で特別なスキル
 
 ---
 
-## スキル一覧
+## 位置づけ
 
-| スキル | 状態 | 内容 |
-|---|---|---|
-| `agent-builder`（Universal Agent Builder） | ✅ フラッグシップ | 1行要件から本番AIエージェントを構築 |
-| *（ここに追加）* | 🆕 | [スキル追加方法](#スキル追加方法) を参照 |
-
-### スキル追加方法
-
-1. `skills/<名称>/SKILL.md`（または `SKILL_<名称>.md`）を作成し、統一テンプレートに従う：**目的/場所/呼び出し/UI/操作/AI生成/受入条件**
-2. frontmatter に `name` と英語の `description` を記入（検索性向上）
-3. [SKILLS.md](./SKILLS.md) に登録し、上表に追加
-4. スモークテスト：1行入力 → 期待出力
-
----
+本スキルの位置づけは**エージェントを作成すること**：1行の要件から、デフォルト値を適用して本番運用可能な AI エージェント（バックエンド+フロントエンド+テスト）を直接生成します。
 
 ## クイックスタート（agent-builder）
 
@@ -80,7 +68,6 @@ cd my_agent/frontend && npm install && npm run dev
 
 ```
 SKILL.md                 フラッグシップスキル（Universal Agent Builder）
-SKILLS.md                全スキルの登録リスト
 scripts/generate.py      Agent 生成器（設定 → フルプロジェクト）
 templates/               生成器が出力するバックエンド + フロントエンドのテンプレート
 docs/                    深度仕様・機能リスト・受入テスト

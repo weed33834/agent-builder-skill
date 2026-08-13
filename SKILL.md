@@ -1,17 +1,17 @@
 ---
-name: "skillhub"
-description: "SkillHub — a curated hub of practical, pre-loaded AI Skill workflows. Its flagship skill, Universal Agent Builder, builds production-grade AI agents from a one-line requirement. Invoke when the user wants to build/generate an AI agent, or to use/collect a reusable AI skill."
+name: "agent-builder-skill"
+description: "Agent-Builder-Skill — a skill that creates/builds production-grade AI agents from a one-line requirement. A pre-loaded prompt workflow: reads the requirement, applies defaults, and generates a complete runnable agent (backend + frontend + tests) without multi-round clarification. Invoke when the user wants to create, build, or generate an AI agent."
 ---
 
-# Universal Agent Builder
+# Agent-Builder-Skill
 
 ## Part 0 · 定位与总纲（这个 Skill 是什么、何时用、怎么思考）
 
 ### Overview
 
-**Universal Agent Builder** is a **meta-skill** — it does not directly provide a ready-made Agent. Instead, through a series of structured guidance steps, it **automatically generates** a complete, runnable AI Agent application that meets user requirements.
+**Agent-Builder-Skill** 的定位是**一个用来创建智能体的 Skill**（对应能力：Universal Agent Builder）。它是 **meta-skill** —— 不直接提供现成 Agent，而是通过一整套**预装载的提示词工作流**（步骤/提示词/默认值/规格/验收），从自然语言需求**自动生成一个完整、可运行、生产级的 AI Agent 应用**，无需多轮澄清。
 
-**Core capability**: You (the AI developer) guide the user (the requirements provider) from a natural-language description all the way to a fully delivered, runnable Agent, using this skill.
+**Core capability**: AI 开发者拿到一句话需求，按本 Skill 的默认值与规格直接产出并交付可运行的 Agent。
 
 ---
 
