@@ -1201,72 +1201,84 @@ async def generate_chart(data: str, chart_type: str = "bar") -> str:
 - **用途**：长对话不爆 token、不丢关键信息，让 Agent 始终在预算内运转。
 - **机制**：① Token 预算计费（`token_manager`，按模型计价）；② 超预算自动**压缩**（`l6_memory/summary` 摘要旧消息）+ **滑动窗口**（丢弃最旧非关键消息）；③ 关键信息抽取（user 目标/约束/结论单独沉淀到 state）；④ 上下文注入顺序（system → 计划 → 记忆 → 历史 → 当前输入）。
 - **落地**：`ChatInterface` 在组消息时先估 token，超阈值触发 `summary.compress()` 并标记压缩点；`/api/chat` 返回 `usage` 与 `compressed` 标记；管理台「上下文」面板可视化 token 占用与压缩日志。
+- **实现要点**：`estimate_tokens(text, model)` 按模型计价；`compress(history, budget)` 返回(压缩后消息, 摘要, 丢弃数)；state 增 `context_budget/compressed_rounds/key_facts[]`；阈值 `CONTEXT_BUDGET_RATIO=0.8`；边界——系统提示与刚发消息不压缩、摘要递归合并、关键约束入 `key_facts` 不丢。
 - **验收**：连续对话 50 轮后 API 仍不超预算；能看到压缩历史；关键约束不被压缩丢失。
 
 ### D2. 工具调用工程（Tool-calling Engineering）
 - **用途**：工具调用可靠、可并行、可恢复，而不是"调一次失败就崩"。
 - **机制**：① 并行工具调用（一条消息多个 tool_call 同时执行）；② 参数校验（JSON Schema，`l5_tools/schemas`）；③ 失败分级（可重试 / 终态失败）+ 自动重试；④ 超时（`TOOL_TIMEOUT`）与熔断；⑤ 工具结果入 state 并回填给 LLM；⑥ 工具白名单/敏感工具需审批。
 - **落地**：`tool_node` 并行执行 + `executor.py` 校验/超时/重试；`ToolRegistry` 支持并发注册与调用计数；管理台「工具试跑」返回 latency/error。
+- **实现要点**：`execute_tool(name,args)` 用 `asyncio.gather` 并行；入参用 `jsonschema` 校验；异常分 `ToolRetryableError`/`ToolFatalError`；`asyncio.wait_for(..., TOOL_TIMEOUT)`；`SENSITIVE_TOOLS` 命中→`interrupt()` 审批；边界——结果超长截断 `MAX_TOOL_RESULT=8k`、单条失败不影响其余并行调用。
 - **验收**：一条含 3 个并行 tool_call 的消息能并行执行并全部回填；参数错能给出可读错误；敏感工具触发审批。
 
 ### D3. 记忆工程（Memory Engineering）
 - **用途**：把记忆做成**分层**（工作/情景/语义/程序），能检索、能合并、能遗忘，支撑跨会话连续性。
 - **机制**：① 工作记忆 = 当前会话 buffer；② 情景记忆 = 已结束会话的可检索记录（`session_manager`）；③ 语义记忆 = 向量知识库（`vector_store`/`rag_engine`）；④ 程序记忆 = 学到的工作流/偏好（可写 `data/preferences.json`）；⑤ 检索路由：先语义召回 Top-K 再按相关性过滤；⑥ 遗忘策略：超期/低价值记录降权或清理。
 - **落地**：`l6_memory` 分层类 + 统一 `MemoryRouter.retrieve(query)`；检索命中带 `source`（会话/知识库/偏好）与 `score`；管理台「记忆」按层查看与清理。
+- **实现要点**：四层类 `WorkingMemory/EpisodicMemory/SemanticMemory/ProceduralMemory`；`MemoryRouter.retrieve(query)` = 语义召回 Top-K → `score>阈值` 过滤 → 注入 system；遗忘=TTL 超期或访问频率降权；边界——检索空回退关键词、注入过多按分裁剪、程序记忆写 `data/preferences.json`。
 - **验收**：能按层查看记忆；跨会话能想起之前结论；能手动/自动清理过期记忆。
 
 ### D4. 规划工程（Planning Engineering）
 - **用途**：复杂任务先拆解成可执行步骤，动态重规划，失败可恢复。
 - **机制**：① 任务分解（`orchestrator/decomposer`：目标→子任务 DAG）；② 优先级排序与依赖；③ 顺序执行或并行（无依赖子任务并发）；④ 动态重规划（某步失败→重新拆解）；⑤ 计划进度状态机（pending/running/done/failed，落 `tasks`）。
 - **落地**：`planner_node`（已内置）+ `decomposer` 拆 DAG；执行进度写 `/api/tasks`；管理台「任务」可视化 DAG 与进度。
+- **实现要点**：`Decomposer.decompose(goal)->[Task]`（id/依赖/preconditions）；拓扑排序调度、无依赖子任务并发；`replan(failed_task)` 重新拆解；进度状态机落 `tasks`；边界——环依赖检测、拆解失败回退单步直跑。
 - **验收**：复杂任务能自动拆解出有序步骤；某步失败能重规划；进度实时可查。
 
 ### D5. 反思与自愈（Reflection & Self-healing）
 - **用途**：Agent 出错能自评、自修复、自收敛，而不是一次失败就结束。
 - **机制**：① 反思（`reflect_node` 已内置：评价+修正）；② 错误分类（LLM/工具/输入/超时）→ 对应策略；③ 自动修复重试（修复后重跑，限 N 次）；④ 收敛判定（连续 M 次无改进则停，防死循环）。
 - **落地**：agent 循环内接 reflect + 重试上限（`max_iterations`）；错误与修复轨迹写 `error`/`reflection` 到 state 并暴露给监控。
+- **实现要点**：错误分类 `classify(err)->LLM|TOOL|INPUT|TIMEOUT`；`reflect(answer)` 返回(评价,修正)；修复循环 `for _ in range(max_fix): try run except: fix`；收敛判定 `no_improve_count>=M` 停；边界——修复不改 plan 的死循环保护、重试成本上限。
 - **验收**：能识别并自动修复一类可修复错误；有重试上限不会死循环；修复轨迹可查。
 
 ### D6. 多智能体协作（Multi-Agent Collaboration）
 - **用途**：多 Agent 分工、交接、结果合并，形成"团队"而非"多个单 Agent 堆叠"。
 - **机制**：① 角色分工（supervisor 路由到 specialist，已实现）；② 交接（handoff：A 把上下文交给 B，返回控制权）；③ 共享状态（`state` 全局可见，各 Agent 增量更新）；④ 冲突处理（结果矛盾→协调 Agent 裁决）；⑤ 结果合并（`aggregator` 汇总各 specialist 输出）。
 - **落地**：`supervisor` 图 + `aggregator`（已实现）；新增 handoff 节点；管理台「编排」可视化多 Agent 协作关系。
+- **实现要点**：supervisor 路由（已实现）+ `handoff(target, ctx)` 交接节点；共享 state 用 reducer 合并冲突字段；`coordinator` 对矛盾结果裁决；`aggregator` 合并输出；边界——协作环/死锁检测、子任务整体超时。
 - **验收**：多 Agent 能分工完成一个总任务；能交接上下文；最终输出是合并后的结果。
 
 ### D7. 安全与治理纵深（Security & Governance Depth）
 - **用途**：纵深防御 + 可审计 + 可隔离，满足生产合规。
 - **机制**：① 输入侧：注入检测（已接入）+ PII 脱敏（已接入）+ 内容过滤；② 工具侧：白名单/敏感命令审批（`code_execute` 高危检测）；③ 数据侧：落库脱敏、数据保留策略；④ 控制侧：限流、认证（API Key）、RBAC 角色；⑤ 审计：关键操作（建/删/发布/改权限）写审计日志；⑥ 熔断与降级。
 - **落地**：`ai_security` + 中间件（认证/限流/日志）+ `/api/security/audit`；敏感工具调用需 `agent_node_with_human` 审批。
+- **实现要点**：`detect_injection/redact_pii/content_filter`（已接入 ChatInterface）；`SENSITIVE_TOOLS` + `interrupt()` 审批；落库前对敏感字段脱敏；`audit(action,user,ts,detail)` 写审计、不可篡改；RBAC 角色→权限映射；边界——脱敏不可逆需提示、审计保留策略。
 - **验收**：注入/PII 在管线自动生效；敏感工具可触发审批；关键操作有审计记录；能按角色限权。
 
 ### D8. 可靠性与容错（Reliability & Fault-tolerance）
 - **用途**：网络抖动、模型抽风、超时不至于让整个 Agent 挂掉。
 - **机制**：① 重试（指数退避，`retry.py`）；② 熔断（`circuit_breaker`：连续失败→开闸→半开）；③ 超时（LLM/工具/HTTP 全链超时）；④ 降级（主模型失败→回退链/缓存兜底）；⑤ 幂等（任务/工具调用去重）；⑥ 并发控制（限制并发会话/工具数）。
 - **落地**：`retry` + `circuit_breaker` + `TOOL_TIMEOUT` + 回退链；管理台「监控」展示熔断/降级状态。
+- **实现要点**：`RetryHandler` 指数退避（已实现）；熔断状态机 `CLOSED→OPEN(连续N失败)→HALF_OPEN(放行探测)`；全链 `timeout`；主模型失败走 `FallbackChain`/缓存兜底；`idempotency_key` 幂等；并发用 `Semaphore`；边界——熔断期间快速失败不阻塞调用方。
 - **验收**：断网重试能恢复；连续失败能熔断；超时能优雅失败而非卡死。
 
 ### D9. 可观测性纵深（Observability Depth）
 - **用途**：一次请求从头到尾可追踪、可定位、可复盘。
 - **机制**：① 请求 ID 贯穿（`request_id`）；② 端到端 Trace（请求→节点→工具→LLM，含耗时/输入输出摘要）；③ 指标（延迟/错误率/token/成本，Prometheus）；④ 结构化日志（`StructuredLogger`）；⑤ 告警规则与历史；⑥ 漂移检测（输入分布/表现变化）。
 - **落地**：中间件生成 request_id；`/api/admin/traces|logs|metrics|drift`；监控面板可视化。
+- **实现要点**：中间件生成 `request_id` 注入每个 span；Trace 结构 `{request_id,parent,node,tool,llm,start,end,duration}`；指标经 Prometheus；`StructuredLogger` 结构化日志；告警规则 CRUD + 历史；`drift_detect` 比较输入分布/表现；边界——trace 采样率、日志自动脱敏。
 - **验收**：能按 request_id 查一次完整链路；能看指标曲线；能配告警并查历史。
 
 ### D10. 评估与质量（Evaluation & Quality）
 - **用途**：改一处不回归，用数据说话，而非"感觉变好了"。
 - **机制**：① 数据集管理（用例：输入/期望/标签）；② 批量跑分（`scripts/evaluate.py`）；③ 回归对比（基线 vs 新版本，`pass_rate` 差异）；④ 分维度评分（准确/安全/延迟）；⑤ A/B 与阈值判定；⑥ 红队用例（注入/越狱）。
 - **落地**：`eval/` + `/api/admin/evaluations*`；管理台「评估」出报告并可对比历史。
+- **实现要点**：数据集 CRUD（case={input,expected,labels}）；`evaluate(dataset, agent_version)` 批量跑分；回归 `diff_pass_rate(base,new)`；分维度（准确/安全/延迟）评分；A/B 流量对照；内置红队用例集（注入/越狱）；边界——无 key 时离线 mock、失败用例出明细。
 - **验收**：能跑数据集出报告；能对比两版本通过率；红队用例能防住注入。
 
 ### D11. 部署与运维（Deployment & Ops）
 - **用途**：一键部署、可配置、可备份恢复、可平滑升级。
 - **机制**：① Docker 化（`Dockerfile`/`docker-compose`）；② 配置管理（`.env` + pydantic-settings）；③ 密钥管理（不落代码，从 env/secret 读）；④ 健康检查（`/api/health`）；⑤ 优雅关闭（lifespan）；⑥ 备份/恢复（`/api/admin/backup`）；⑦ 多环境（dev/prod 配置覆盖）。
 - **落地**：`docker-compose up --build` 一键起；`/api/health` 就绪探针；备份导出/恢复。
+- **实现要点**：`Dockerfile` 多阶段构建；配置 env 覆盖默认；密钥仅从 env/secret 读、不入库不落代码；`/api/health` 返回 ready + 各依赖状态；lifespan 优雅关闭等进行中请求；`/api/admin/backup` 导出全量 JSON、restore 前校验；边界——备份带版本、恢复先回滚点。
 - **验收**：能一键起服务；健康检查通过；能导出备份并恢复。
 
 ### D12. 性能与扩展（Performance & Extensibility）
 - **用途**：并发高、检索快、能插拔扩展。
 - **机制**：① 缓存（LLM 响应/向量索引/结果去重）；② 异步/并发（asyncio + 限制并发）；③ 向量索引优化（索引类型/分片，`vector_store`）；④ 插件/SDK（`plugin_manager`/`skill_loader` 动态加载）；⑤ 模板市场（`/api/admin/agents/templates`）；⑥ 技能市场（导入导出共享）。
 - **落地**：`mcp_client`/`plugin_manager` 动态加载；`cache` 可选；管理台「工具/技能」导入导出。
+- **实现要点**：缓存 key=(model+messages哈希) 带 TTL；`asyncio` 并发 + `Semaphore` 限流；向量索引 HNSW/分片；`plugin_manager/skill_loader` 用 `importlib` 动态加载；模板/技能市场 CRUD；边界——缓存一致性、索引内存上限、插件版本隔离。
 - **验收**：能并发处理多个会话不崩；能动态加载插件/技能；检索在大知识库下延迟可接受。
 
 ---
@@ -1644,6 +1656,29 @@ AI: The configuration has been generated. Here are the key settings:
 Please confirm whether to generate code based on this configuration, or do you need to adjust anything?
 ```
 
+**agent.yaml 字段字典（AI 写配置用，避免靠猜）**：
+| 字段 | 含义 | 默认值 | 示例 / 说明 |
+|---|---|---|---|
+| `agent.name` | 应用名 | `Agent` | 用于标题/日志 |
+| `agent.type` | 用途类型 | `chat` | `chat/coding/research/customer_service/data_analysis/...` |
+| `llm.provider` | 提供商 | `openai` | `openai/anthropic/deepseek/gemini/glm/kimi/ollama/qwen` |
+| `llm.model` | 模型名 | `gpt-4o` | `claude-sonnet-4-.../deepseek-chat/qwen-max` |
+| `llm.temperature / max_tokens` | 采样温度 / 上限 | `0.7 / 4096` | — |
+| `interface.stream_mode` | 流式模式 | `messages` | 对话默认流式 |
+| `interface.retry.max_retries` | 重试次数 | `3` | 指数退避 |
+| `prompt.system_prompt` | 系统提示词 | 通用助手 | 决定人设 |
+| `agent_framework.name` | 运行时框架 | `langgraph` | 零依赖用 `bare` |
+| `agent_framework.graph_type` | 图类型 | `single` | 多智能体用 `supervisor` |
+| `agent_framework.plan / reflect` | 规划 / 反思 | `false` | 需要思考链置 `true` |
+| `tools.enabled` | 启用工具 | 4 个通用工具 | 名字必须在通用工具集或 custom 中（否则 NameError） |
+| `tools.custom` | 自定义工具 | `[]` | `{name,description,parameters}` |
+| `memory.type / max_messages` | 记忆类型 / 条数 | `buffer / 50` | 知识库用 `rag` |
+| `orchestration.mode` | 编排 | `single` | 客服/协作用 `supervisor` + `agents[]` |
+| `api.auth_enabled` | API 认证 | `false` | 开则需 API Key |
+| `api.cors_origins` | 跨域白名单 | `[http://localhost:5173]` | 前端地址 |
+| `deployment.*` | 部署 | Docker/uvicorn | `.env` 配密钥 |
+| `security.SECURITY_ENABLED` | 安全强制 | `true` | 注入防御 + PII 脱敏 |
+
 ---
 
 
@@ -1931,6 +1966,30 @@ User description: Build a customer service Agent that first classifies the quest
 **Step 5 - Deployment verification**: docker-compose up
 
 ## Part 5 · 协议与技术（A2A / MCP / 调用链 / 技术栈 / 生成映射）
+
+### API 端点一览（按模块汇总，后端 `app/l8_api/routes/`）
+| 模块 | 端点 |
+|---|---|
+| 健康/配置 | `GET /api/health` · `GET/PUT /api/config` |
+| 对话 | `POST /api/chat`(流式/non，`mode`开关) · `POST /api/chat/reset` |
+| 会话 | `GET/POST /api/sessions` · `PUT/DELETE /api/sessions/{id}` · `groups/share/export/files` |
+| 工具/MCP | `GET /api/tools*` · `POST /api/tools/mcp/connect|disconnect` · `GET /api/mcp/tools|status` |
+| 沙箱 | `GET/POST/PUT/DELETE /api/sandbox/envs` · `POST /api/sandbox/run` · `envs/{id}/enable` |
+| 任务 | `GET/POST /api/tasks` · `{id}/start|progress|complete|fail|retry|cancel|DELETE` |
+| 工作区 | `GET/POST /api/workspaces` · `PUT/DELETE {id}` · `{id}/members` |
+| 能力库 | `GET /api/skills` · `GET/POST /api/skills` · `PUT/DELETE /api/skills/{kind}/{id}` |
+| 通知 | `GET /api/notifications` · `unread_count/read/read_all/DELETE` · `WS /api/notifications/ws` |
+| 画布 | `GET/POST /api/canvas` · `GET/PUT/DELETE {id}` |
+| 记忆/知识库 | `GET/POST /api/admin/memory*` · `kbs/documents/query` |
+| 编排 | `GET/POST /api/admin/workflows*` |
+| A2A | `GET/POST /api/a2a*` · `/a2a/rpc` · `/.well-known/agent.json` |
+| 语音 | `POST /api/voice/transcribe` · `GET /api/voice/speak` |
+| NLP | `POST /api/nlp/keywords|analyze|summary|validate|retrieve` |
+| 安全 | `POST /api/security/scan|redact` · `GET /api/security/breakers|audit` |
+| 管理(admin) | `prompts/models/tools/agents/memory/workflows/evaluations/metrics/alerts/settings/usage/backup/tasks/security/users|api_keys|audit/a2a/logs/traces/drift` |
+| 指标 | `GET /metrics`(Prometheus) |
+| 定时 | `/api/admin/tasks`(cron) |
+
 
 ### A2A Protocol (Agent-to-Agent)
 
