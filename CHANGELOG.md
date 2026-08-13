@@ -13,7 +13,8 @@
 - **补漏 M0.5 对话模式开关 / M3.5 沙箱管理 / M17-M22 生产级细节**。
 
 ### Added
-- 通用智能体能力全景（docs/universal-agent-capability-map.md）；安全强制；规划/反思节点；工作台 7 组件 + 5 后端路由；生成产物完整化；框架适配器/流式测试（43 passed）。
+- **对话模式开关真实生效（建议#1落地）**：`POST /api/chat` 新增 `mode`（web_search/deep_think/kb_id/sandbox），路由在流式前真实注入上下文——联网调 `web_search`、知识库走 `RAGEngine.retrieve` 带引用、深度思考注入"先规划再推理"、沙箱关闭提示不执行代码；前后端均已接线（ChatInput 开关 + streamChat 传 mode）。测试 `test_chat_mode.py` → 46 passed。
+- 通用智能体能力全景（docs/universal-agent-capability-map.md）；安全强制；规划/反思节点；工作台 7 组件 + 5 后端路由；生成产物完整化；框架适配器/流式测试。
 
 ### Fixed
 - P0 生成器工具注册 / supervisor 图 / bare 运行时 / CI 强化 / 卫生项。

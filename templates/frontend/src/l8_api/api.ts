@@ -38,10 +38,17 @@ export interface ChatOptions {
  *   subagent_call → sub-agent call tree
  *   done → stream end
  */
+export interface ChatModePayload {
+  web_search?: boolean
+  deep_think?: boolean
+  kb_id?: string | null
+  sandbox?: boolean
+}
+
 export async function* streamChat(
   message: string,
   threadId?: string,
-  options?: { contentBlockMode?: boolean; signal?: AbortSignal }
+  options?: { contentBlockMode?: boolean; signal?: AbortSignal; mode?: ChatModePayload }
 ): AsyncGenerator<SSEEvent> {
   const response = await fetch(`${API_BASE}/chat`, {
     method: 'POST',
@@ -53,6 +60,7 @@ export async function* streamChat(
       thread_id: threadId,
       stream: true,
       content_block_mode: options?.contentBlockMode ?? true,
+      mode: options?.mode,
     }),
     signal: options?.signal,
   })

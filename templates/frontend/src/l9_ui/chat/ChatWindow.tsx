@@ -14,7 +14,7 @@
 
 import { useState, useRef, useEffect, useCallback, useOptimistic, useTransition } from 'react'
 import { MessageBubble } from './MessageBubble'
-import { ChatInput } from './ChatInput'
+import { ChatInput, type ChatMode } from './ChatInput'
 import { ToolCall } from './ToolCall'
 import { streamChat } from '../../l8_api/api'
 import type { Message, ToolCallInfo, A2ATaskInfo, SubagentCallInfo } from '../../types'
@@ -91,7 +91,7 @@ export function ChatWindow({
     }
   }, [])
 
-  const handleSend = async (content: string) => {
+  const handleSend = async (content: string, mode?: ChatMode) => {
     // Cancel the previous request
     cancelRequest()
 
@@ -137,6 +137,7 @@ export function ChatWindow({
       for await (const event of streamChat(content, threadId, {
         contentBlockMode: true,
         signal: abortController.signal,
+        mode,
       })) {
         // Check if cancelled
         if (abortController.signal.aborted) break

@@ -23,6 +23,13 @@ class ChatRequest(BaseModel):
         True,
         description="Whether to use streaming response",
     )
+    mode: dict = Field(
+        default_factory=dict,
+        description="Chat mode toggles (like GPT/Doubao): "
+                    "{web_search: bool, deep_think: bool, kb_id: str|None, sandbox: bool}. "
+                    "web_search injects live web results; kb_id runs RAG retrieval; "
+                    "deep_think instructs plan-then-answer.",
+    )
 
 
 class ChatResponse(BaseModel):

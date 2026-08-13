@@ -1373,3 +1373,9 @@ body {
 @media (max-width: 768px) {
   .header-status-indicators { display: none; }
 }
+
+/* Chat mode toggles (联网/深度思考/知识库/沙箱) */
+.chat-mode-bar { display: flex; gap: 6px; padding: 0 4px 6px; flex-wrap: wrap; }
+.chat-mode-btn { border: 1px solid var(--border-color, #d6dae0); background: transparent; color: var(--text-secondary, #5b6472); border-radius: 999px; padding: 3px 12px; font-size: 12px; cursor: pointer; transition: all .15s; }
+.chat-mode-btn:hover { background: var(--hover, #f4f6f8); }
+.chat-mode-btn.active { background: #eaf2fb; border-color: #1f7bc8; color: #1f7bc8; font-weight: 600; }

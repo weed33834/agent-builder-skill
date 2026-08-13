@@ -2411,6 +2411,33 @@ router = APIRouter()
 @router.post("/chat")
 async def chat(request: ChatRequest):
     """Streaming chat (bare runtime: AgentEvent stream over SSE)"""
+    # Chat-mode context injection (web / RAG / deep-think / sandbox)
+    message = request.message
+    mode = request.mode or {}
+    ctx_parts = []
+    if mode.get("web_search"):
+        try:
+            from ...l5_tools.base_tools import web_search
+            ctx_parts.append(f"[联网搜索结果]\\n{await web_search(request.message)}")
+        except Exception as e:
+            ctx_parts.append(f"[联网搜索失败: {e}]")
+    if mode.get("kb_id"):
+        try:
+            from ...l6_memory.rag_engine import RAGEngine
+            chunks = await RAGEngine().retrieve(request.message, k=5)
+            if chunks:
+                ctx_parts.append("[知识库引用]\\n" + "\\n".join(f"- {c.text[:300]} (来源: {c.source})" for c in chunks))
+            else:
+                ctx_parts.append("[知识库] 未检索到相关内容")
+        except Exception as e:
+            ctx_parts.append(f"[知识库检索失败: {e}]")
+    if mode.get("deep_think"):
+        ctx_parts.append("[深度思考] 请先给出简要思路与计划，再逐步推理，最后给出明确结论。")
+    if mode.get("sandbox") is False:
+        ctx_parts.append("[沙箱已关闭] 请勿执行代码，仅给出代码建议。")
+    if ctx_parts:
+        message = "\\n\\n".join(ctx_parts) + "\\n\\n" + message
+
     try:
         graph = get_graph()
         session_mgr = get_session_manager()
@@ -2420,7 +2447,7 @@ async def chat(request: ChatRequest):
             thread_id = session_mgr.create_session()
 
         config = get_graph_config(thread_id)
-        await session_mgr.add_message(thread_id, "user", request.message)
+        await session_mgr.add_message(thread_id, "user", message)
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
 
@@ -2429,7 +2456,7 @@ async def chat(request: ChatRequest):
         full_response = ""
 
         async for ev in graph.stream(
-            [{"role": "user", "content": request.message}], config
+            [{"role": "user", "content": message}], config
         ):
             kind = ev.type
             try:

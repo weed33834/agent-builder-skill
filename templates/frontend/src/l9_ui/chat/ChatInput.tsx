@@ -14,10 +14,17 @@ import type { FileUploadInfo } from '../../types'
 import { uploadAttachment } from '../../l8_api/api'
 
 interface ChatInputProps {
-  onSend: (message: string) => void
+  onSend: (message: string, mode: ChatMode) => void
   disabled: boolean
   showFileUpload?: boolean
   sessionId?: string
+}
+
+export interface ChatMode {
+  web_search: boolean
+  deep_think: boolean
+  kb_id: string | null
+  sandbox: boolean
 }
 
 /**
@@ -39,6 +46,7 @@ export function ChatInput({ onSend, disabled, showFileUpload = false, sessionId 
   const [files, setFiles] = useState<FileUploadInfo[]>([])
   const [isDragOver, setIsDragOver] = useState(false)
   const [showShortcuts, setShowShortcuts] = useState(false)
+  const [mode, setMode] = useState<ChatMode>({ web_search: false, deep_think: false, kb_id: null, sandbox: true })
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const tokenCount = estimateTokens(input)
@@ -52,10 +60,17 @@ export function ChatInput({ onSend, disabled, showFileUpload = false, sessionId 
     }
   }, [input])
 
+  const toggle = (k: keyof ChatMode) => {
+    setMode(m => {
+      if (k === 'kb_id') return m.kb_id ? { ...m, kb_id: null } : { ...m, kb_id: 'default' }
+      return { ...m, [k]: !m[k] }
+    })
+  }
+
   const handleSend = () => {
     const trimmed = input.trim()
     if (!trimmed || disabled) return
-    onSend(trimmed)
+    onSend(trimmed, mode)
     setInput('')
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
@@ -215,6 +230,41 @@ export function ChatInput({ onSend, disabled, showFileUpload = false, sessionId 
           type="button"
         >
           ⌨
+        </button>
+      </div>
+
+      <div className="chat-mode-bar">
+        <button
+          type="button"
+          className={`chat-mode-btn ${mode.web_search ? 'active' : ''}`}
+          onClick={() => toggle('web_search')}
+          title="联网搜索：注入实时搜索结果"
+        >
+          🌐 联网
+        </button>
+        <button
+          type="button"
+          className={`chat-mode-btn ${mode.deep_think ? 'active' : ''}`}
+          onClick={() => toggle('deep_think')}
+          title="深度思考：先规划再逐步推理"
+        >
+          🧠 深度思考
+        </button>
+        <button
+          type="button"
+          className={`chat-mode-btn ${mode.kb_id ? 'active' : ''}`}
+          onClick={() => toggle('kb_id')}
+          title="知识库：基于知识库回答（带引用）"
+        >
+          📚 知识库{mode.kb_id ? ' ✓' : ''}
+        </button>
+        <button
+          type="button"
+          className={`chat-mode-btn ${mode.sandbox ? 'active' : ''}`}
+          onClick={() => toggle('sandbox')}
+          title="沙箱：允许执行代码"
+        >
+          ⚙️ 沙箱
         </button>
       </div>
 

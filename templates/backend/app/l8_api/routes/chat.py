@@ -15,6 +15,50 @@ from ...l10_infra.config import settings
 router = APIRouter()
 
 
+async def _build_context(request: ChatRequest) -> str:
+    """Gather live context for chat mode toggles (GPT/Doubao-like).
+
+    mode = {web_search, deep_think, kb_id, sandbox}. Each enabled flag
+    prepends genuinely-fetched context to the user message, so it really
+    changes the answer (not a decorative toggle).
+    """
+    mode = request.mode or {}
+    parts: list[str] = []
+
+    if mode.get("web_search"):
+        try:
+            from ...l5_tools.base_tools import web_search
+            res = await web_search(request.message)
+            parts.append(f"[联网搜索结果]\n{res}")
+        except Exception as e:  # noqa: BLE001
+            parts.append(f"[联网搜索失败: {e}]")
+
+    kb_id = mode.get("kb_id")
+    if kb_id:
+        try:
+            from ...l6_memory.rag_engine import RAGEngine
+            engine = RAGEngine()
+            chunks = await engine.retrieve(request.message, k=5)
+            if chunks:
+                cites = "\n".join(
+                    f"- {c.text[:300]} (来源: {c.source}, 相似度 {round(c.score, 3)})"
+                    for c in chunks
+                )
+                parts.append(f"[知识库引用 ({kb_id})]\n{cites}")
+            else:
+                parts.append("[知识库] 未检索到相关内容")
+        except Exception as e:  # noqa: BLE001
+            parts.append(f"[知识库检索失败: {e}]")
+
+    if mode.get("deep_think"):
+        parts.append("[深度思考] 请先给出简要思路与计划，再逐步推理，最后给出明确结论。")
+
+    if mode.get("sandbox") is False:
+        parts.append("[沙箱已关闭] 请勿执行代码，仅给出代码建议。")
+
+    return "\n\n".join(parts)
+
+
 @router.post("/chat")
 async def chat(request: ChatRequest):
     """Streaming chat
@@ -22,6 +66,12 @@ async def chat(request: ChatRequest):
     Returns the Agent's response in real time using SSE.
     Supports streaming tokens, tool call status, completion events, etc.
     """
+    # Chat-mode context injection (web / RAG / deep-think / sandbox)
+    message = request.message
+    ctx = await _build_context(request)
+    if ctx:
+        message = f"{ctx}\n\n{message}"
+
     try:
         graph = get_graph()
         session_mgr = get_session_manager()
@@ -34,7 +84,7 @@ async def chat(request: ChatRequest):
         config = get_graph_config(thread_id)
         
         # Save the user message
-        await session_mgr.add_message(thread_id, "user", request.message)
+        await session_mgr.add_message(thread_id, "user", message)
         
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
@@ -45,7 +95,7 @@ async def chat(request: ChatRequest):
         full_response = ""
         
         async for event in graph.astream_events(
-            {"messages": [("human", request.message)]},
+            {"messages": [("human", message)]},
             config,
             version="v1",
         ):
