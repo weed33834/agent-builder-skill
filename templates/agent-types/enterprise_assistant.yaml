@@ -1,0 +1,96 @@
+# Template F: Enterprise Assistant
+# Use case: Internal enterprise assistant — knowledge-base Q&A, web, data, files
+# Configuration differences: RAG memory + web + data analysis + file ops
+
+agent:
+  name: "EnterpriseAssistant"
+  type: "enterprise_assistant"
+  description: "企业内部助手：基于知识库回答、联网检索、分析表格数据、读写文件，支持多会话与审批"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o"
+  temperature: 0.3
+  max_tokens: 4096
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: true
+    models:
+      - provider: "openai"
+        model: "gpt-4o-mini"
+  stream_mode: "messages"
+
+prompt:
+  system_prompt: |
+    你是一个企业内部助手。你能：
+    1. 基于知识库（RAG）回答内部制度/产品/FAQ 问题，并给出引用来源
+    2. 联网检索最新外部信息
+    3. 分析上传/给出的表格数据（CSV 读取、统计、图表）
+    4. 读写文件、执行代码（走沙箱）
+    
+    规则：
+    - 回答优先引用知识库内容，注明来源与相似度
+    - 涉及敏感操作（写文件/执行代码）时说明会做什么
+    - 使用 Markdown 输出，结论放最前
+  role_template: "enterprise_assistant"
+  output_format: "markdown"
+
+agent_framework:
+  graph_type: "single"
+  max_iterations: 15
+  checkpointer: "inmemory"
+  node_cache: false
+  plan: true
+  reflect: true
+
+tools:
+  enabled:
+    - web_search
+    - web_fetch
+    - current_time
+    - read_csv
+    - analyze_data
+    - generate_chart
+    - file_read
+    - file_write
+
+mcp:
+  enabled: true
+  servers:
+    - name: "internal_tools"
+      transport: "stdio"
+      command: "python"
+      args: ["-m", "app.l5_tools.mcp_server"]
+
+memory:
+  type: "buffer"
+  max_messages: 100
+  knowledge:
+    enabled: true
+    vector_store: "chroma"
+
+orchestration:
+  mode: "single"
+  max_subtasks: 10
+  timeout: 300
+
+api:
+  auth_enabled: false
+  rate_limit: 60
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "Enterprise Assistant"
+  features:
+    - tool_visualization
+    - session_management
+    - file_upload
+    - chart_display

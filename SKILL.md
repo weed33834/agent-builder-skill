@@ -727,6 +727,8 @@ Deployment, runtime, and operations-related configuration.
 
 ### Architecture Template Library
 
+> 现成模板：**A 聊天助手 · B 研究助手 · C 编码助手 · D 多 Agent 客服 · E 数据分析 · F 企业内助手**。每个对应 `templates/agent-types/*.yaml`，可直接复制改造。
+
 ### Template A: Chat Assistant
 
 **Applicable scenario**: General conversational assistant, the simplest Agent
