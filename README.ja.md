@@ -60,6 +60,7 @@ cd my_agent && pip install -r requirements.txt && uvicorn app.main:app --reload 
 cd my_agent/frontend && npm install && npm run dev
 ```
 
+> **クイックスタート：** [`DEMO.md`](./DEMO.md)
 > 深いドキュメント・機能リスト・受入テスト： [`docs/`](./docs/README.md)
 
 ---

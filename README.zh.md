@@ -60,6 +60,7 @@ cd my_agent && pip install -r requirements.txt && uvicorn app.main:app --reload 
 cd my_agent/frontend && npm install && npm run dev
 ```
 
+> **快速开始：** [`DEMO.md`](./DEMO.md)
 > 深度文档、功能清单、验收测试：见 [`docs/`](./docs/README.md)。
 
 ---

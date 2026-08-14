@@ -60,6 +60,7 @@ cd my_agent && pip install -r requirements.txt && uvicorn app.main:app --reload 
 cd my_agent/frontend && npm install && npm run dev
 ```
 
+> **Quickstart:** [`DEMO.md`](./DEMO.md)
 > Deep docs, feature checklist, acceptance tests: see [`docs/`](./docs/README.md).
 > Universal-agent capability map & market research: [`docs/universal-agent-capability-map.md`](./docs/universal-agent-capability-map.md).
 
