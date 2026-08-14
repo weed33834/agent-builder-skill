@@ -1704,6 +1704,25 @@ Please confirm whether to generate code based on this configuration, or do you n
 3. After generating each layer, verify the correctness of that layer's code
 4. Finally produce a complete project directory
 
+#### L1–L10 代码落地地图（构建者照着写）
+
+> 每一层要产出哪些文件、关键函数、怎么验证。**templates/backend/app/** 是参考答案（照着/参考写都行）。按 L1→L10 顺序产出。
+
+| 层 | 产出文件（`app/` 下） | 关键函数/类 | 怎么验证 |
+|---|---|---|---|
+| L1 LLM | `l1_llm/factory.py` + `l1_llm/*_adapter.py` | `create_llm(provider,model,...)`；每提供商一个 adapter 实现 `LLMAdapter` | `from app.l1_llm.factory import create_llm` 可导入 |
+| L2 接口 | `l2_interface/chat_interface.py` + `retry.py` + `streaming.py` | `ChatInterface.chat/chat_stream`；`RetryHandler`（注入防御+PII 脱敏已内嵌） | pytest 覆盖 chat/stream |
+| L3 提示词 | `l3_prompt/system_prompts.py` + `prompt_builder.py` + `output_parsers.py` | `DEFAULT_SYSTEM_PROMPT`；`PromptBuilder.build()` | 生成物含 system prompt |
+| L4 Agent | `l4_agent/graph.py` + `state.py` + `nodes.py` + `adapters/` | `get_graph()/get_graph_config()`；`agent_node/tool_node`；可选 `planner/reflect_node` | `import app.main` + 图可编译 |
+| L5 工具 | `l5_tools/base_tools.py` + `custom_tools.py` + `registry.py` + `executor.py` + `mcp_*.py` | `BASE_TOOLS/CUSTOM_TOOLS`；`ToolRegistry.execute` | `BASE_TOOLS` 无未定义符号；工具可试跑 |
+| L6 记忆 | `l6_memory/buffer.py` + `vector_store.py` + `rag_engine.py` + `retrieval.py` + `session_manager.py` | `RAGEngine.retrieve`；`MemoryRouter`；`session_manager` | RAG 检索返回带引用 |
+| L7 编排 | `l7_orchestrator/supervisor.py` + `decomposer.py` + `workflow.py` + `a2a_*.py` | `build_supervisor_graph`；`aggregator` | supervisor 图可编译 |
+| L8 API | `l8_api/routes/*.py` + `schemas.py` + `main.py` | 全量路由（见 Part 5 API 一览）；`POST /api/chat` 支持 `mode` | 每个 `/api/*` 可达 |
+| L9 前端 | `frontend/src/**` | Chat / Admin / Workspace 三视图 + 对话模式开关 | `npm run build` 通过 |
+| L10 基建 | `l10_infra/config.py` + `logging.py` + `monitoring.py` + `ai_security.py` + `usage.py` + `docker-compose.yml` | `Settings`；`SECURITY_ENABLED`；`/metrics` | 服务能启动、健康检查通过 |
+
+**产出顺序与自检**：每完成一层跑一次对应验证（import / 单测 / build），不要全部写完再一起查——否则出错难定位。
+
 #### Using the Generation Script (Recommended)
 
 ```bash
