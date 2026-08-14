@@ -10,6 +10,7 @@ export type AdminSection =
   | 'prompts'
   | 'models'
   | 'tools'
+  | 'sandbox'
   | 'agents'
   | 'memory'
   | 'workflows'
@@ -53,6 +54,7 @@ const NAV_GROUPS: NavGroup[] = [
       { id: 'prompts', label: '提示词', icon: '📝', badgeKey: 'prompts' },
       { id: 'models', label: '模型', icon: '🧠', badgeKey: 'models' },
       { id: 'tools', label: '工具', icon: '🔧', badgeKey: 'tools' },
+      { id: 'sandbox', label: '沙箱', icon: '🛡️' },
       { id: 'agents', label: 'Agent', icon: '🤖', badgeKey: 'agents' },
       { id: 'memory', label: '记忆', icon: '🧩', badgeKey: 'memory' },
     ],

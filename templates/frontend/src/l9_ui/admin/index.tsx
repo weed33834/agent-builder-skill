@@ -14,6 +14,7 @@ import { AdminSidebar, type AdminSection, type SidebarBadges } from './AdminSide
 import { PromptEditor } from './PromptEditor'
 import { ModelConfig } from './ModelConfig'
 import { ToolRegistry } from './ToolRegistry'
+import { SandboxPanel } from './SandboxPanel'
 import { AgentGraph } from './AgentGraph'
 import { MemoryManager } from './MemoryManager'
 import { OrchestrationWorkflow } from './OrchestrationWorkflow'
@@ -29,6 +30,7 @@ const SECTION_META: Record<AdminSection, { title: string; crumb: string }> = {
   prompts: { title: '提示词管理', crumb: '资产 / 提示词' },
   models: { title: '模型管理', crumb: '资产 / 模型' },
   tools: { title: '工具管理', crumb: '资产 / 工具' },
+  sandbox: { title: '沙箱管理', crumb: '资产 / 沙箱' },
   agents: { title: 'Agent 管理', crumb: '资产 / Agent' },
   memory: { title: '记忆管理', crumb: '资产 / 记忆' },
   workflows: { title: '编排管理', crumb: '协同 / 编排' },
@@ -203,6 +205,7 @@ export function AdminConsole() {
           {active === 'prompts' && <PromptEditor />}
           {active === 'models' && <ModelConfig />}
           {active === 'tools' && <ToolRegistry />}
+          {active === 'sandbox' && <SandboxPanel />}
           {active === 'agents' && <AgentGraph />}
           {active === 'memory' && <MemoryManager />}
           {active === 'workflows' && <OrchestrationWorkflow />}

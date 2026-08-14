@@ -23,6 +23,7 @@ from .l8_api.routes.workspaces import router as workspaces_router
 from .l8_api.routes.skills import router as skills_router
 from .l8_api.routes.notifications import router as notifications_router
 from .l8_api.routes.canvas import router as canvas_router
+from .l8_api.routes.sandbox import router as sandbox_router
 from .l8_api.middleware.auth import AuthMiddleware
 from .l8_api.middleware.logging import RequestLoggingMiddleware
 from .l8_api.middleware.rate_limit import RateLimitMiddleware
@@ -136,6 +137,7 @@ def create_app() -> FastAPI:
     app.include_router(skills_router, prefix="/api", tags=["skills"])
     app.include_router(notifications_router, prefix="/api", tags=["notifications"])
     app.include_router(canvas_router, prefix="/api", tags=["canvas"])
+    app.include_router(sandbox_router, prefix="/api", tags=["sandbox"])
 
     # ===== L10: Metrics endpoint (M13.2) =====
     @app.get("/metrics")
