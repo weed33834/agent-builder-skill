@@ -90,3 +90,27 @@ asyncio.run(_r())
 print('${name}: langgraph startup OK')
 ")
           done
+      - name: Build generated frontend (chat.yaml)
+        run: |
+          set -e
+          python scripts/generate.py templates/agent-types/chat.yaml /tmp/fe_gen --framework=bare
+          cd /tmp/fe_gen/frontend
+          npm install --no-audit --no-fund
+          npm run build
+          echo "generated frontend build OK"
+      - name: End-to-end reachability (generated product)
+        run: |
+          set -e
+          python scripts/generate.py templates/agent-types/chat.yaml /tmp/e2e_gen --framework=bare
+          cd /tmp/e2e_gen
+          python -m uvicorn app.main:app --port 8077 > /tmp/uvicorn.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8077/api/health >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8077/api/health | grep -q . && echo "health OK"
+          curl -sf http://127.0.0.1:8077/api/sandbox/envs | grep -q items && echo "sandbox OK"
+          curl -sf http://127.0.0.1:8077/api/tasks | grep -q items && echo "tasks OK"
+          curl -sf http://127.0.0.1:8077/api/workspaces | grep -q items && echo "workspaces OK"
+          kill %1 2>/dev/null || true
+          echo "end-to-end reachability OK"
