@@ -11,7 +11,7 @@ langchain-core>=0.3.0
 # L1: LLM providers
 langchain-openai>=0.2.0
 langchain-anthropic>=1.5.4
-langchain-ollama>=0.2.0
+langchain-ollama>=1.1.0
 
 # L4: Agent framework (LangGraph v1.0 API)
 langgraph>=1.2.11
