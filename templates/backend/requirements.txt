@@ -14,7 +14,7 @@ langchain-anthropic>=1.5.4
 langchain-ollama>=0.2.0
 
 # L4: Agent framework (LangGraph v1.0 API)
-langgraph>=1.2.10
+langgraph>=1.2.11
 langgraph-checkpoint-sqlite>=2.0.0
 # langgraph-checkpoint-postgres>=2.0.0  # optional production persistence (M3.12)
 
