@@ -19,7 +19,7 @@ langgraph-checkpoint-sqlite>=2.0.0
 # langgraph-checkpoint-postgres>=2.0.0  # optional production persistence (M3.12)
 
 # L5: Tool dependencies (incl. MCP client, M4.16)
-httpx>=0.28.0
+httpx>=0.28.1
 
 # L2: Token management
 tiktoken>=0.13.0
