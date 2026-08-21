@@ -488,6 +488,8 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command
 from langgraph.checkpoint.memory import MemorySaver
 
+from app.l10_infra.config import settings
+
 from .state import AgentState
 from .nodes import agent_node, tool_node{extra_nodes}
 
@@ -548,7 +550,7 @@ def get_graph_config(thread_id: Optional[str] = None) -> dict:
     return {{
         "configurable": {{
             "thread_id": thread_id or 'default',
-            "max_tool_calls": 10,
+            "max_tool_calls": settings.MAX_TOOL_CALLS,
         }},
     }}
 '''.strip()
@@ -606,6 +608,8 @@ from typing import Optional
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command
 from langgraph.checkpoint.memory import MemorySaver
+
+from app.l10_infra.config import settings
 
 from .state import AgentState
 from .nodes import agent_node, tool_node, supervisor_node
@@ -700,7 +704,7 @@ def get_graph_config(thread_id: Optional[str] = None) -> dict:
     return {{
         "configurable": {{
             "thread_id": thread_id or 'default',
-            "max_tool_calls": 10,
+            "max_tool_calls": settings.MAX_TOOL_CALLS,
         }},
     }}
 '''.strip()
@@ -2671,7 +2675,9 @@ def copy_static_templates(output_dir: str, framework: Optional[str] = None):
     for root, dirs, files in os.walk(str(app_src)):
         rel_root = os.path.relpath(root, str(app_src))
         for name in files:
-            rel = os.path.normpath(os.path.join(rel_root, name))
+            # POSIX-normalize so the GENERATED exclusion works on Windows too
+            # (os.path.normpath yields backslashes there, which never matched).
+            rel = (Path(rel_root) / name).as_posix()
             if rel in GENERATED:
                 continue
             src = os.path.join(root, name)
@@ -2710,7 +2716,7 @@ def copy_static_templates(output_dir: str, framework: Optional[str] = None):
         for name in files:
             if name in ("node_modules", "dist"):
                 continue
-            rel = os.path.normpath(os.path.join(rel_root, name))
+            rel = (Path(rel_root) / name).as_posix()
             src = os.path.join(root, name)
             dst = os.path.join(str(fe_dst), rel)
             ensure_dir(os.path.dirname(dst))
@@ -2730,6 +2736,13 @@ def copy_static_templates(output_dir: str, framework: Optional[str] = None):
 # ============================================================
 
 def main():
+    # Windows consoles default to legacy codepages (e.g. GBK/cp936) that cannot
+    # encode the ✓/→ glyphs used in progress output — reconfigure to UTF-8 so
+    # generation never dies mid-run on encoding errors.
+    for _stream in (sys.stdout, sys.stderr):
+        if hasattr(_stream, "reconfigure"):
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+
     # Optional --framework flag: choose the agent runtime framework (M0.21)
     # Default: None -> interactive selection prompt (framework-agnostic, not defaulting to LangChain)
     framework = None
