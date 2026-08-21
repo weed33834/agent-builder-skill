@@ -15,7 +15,7 @@ class Settings(BaseSettings):
 
     # Application info
     APP_NAME: str = "Agent Builder"
-    APP_VERSION: str = "1.0.0"
+    APP_VERSION: str = "0.5.2"
     DEBUG: bool = False
 
     # CORS

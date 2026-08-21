@@ -1,10 +1,10 @@
-# Agent-Builder-Skill
+﻿# Agent-Builder-Skill
 
 > **エージェントを作成するためのスキル（プリロード済みプロンプトワークフロー）** —— 各スキルは**自己完結型・プリロード済みのプロンプトワークフロー**で、エージェントは一度読めば正しく実行でき、往復のやり取りが不要になります。
 
 [English](./README.md) | [简体中文](./README.zh.md) | **日本語** · [ドキュメント](./docs/README.md) · [機能リスト](./docs/feature-checklist.md)
 
-[![Release](https://img.shields.io/badge/release-v0.1.0-blue.svg)](https://github.com/weed33834/agent-builder-skill/releases/latest)
+[![Release](https://img.shields.io/badge/release-v0.5.2-blue.svg)](https://github.com/weed33834/agent-builder-skill/releases/latest)
 [![CI](https://img.shields.io/github/actions/workflow/status/weed33834/agent-builder-skill/ci.yml?branch=main&label=CI&logo=github)](https://github.com/weed33834/agent-builder-skill/actions)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Deep Specs](https://img.shields.io/badge/deep--specs-37-green.svg)](docs/deep-spec/00-template.md)
@@ -29,7 +29,7 @@ Agent-Builder-Skill は、実際に使って磨き上げた**実用的で特別�
 - 🖥️ **完全なUI**：チャット + 管理コンソール + ワークスペース
 - 🔒 **セキュリティ内蔵**：プロンプトインジェクション防御 + PII マスキングをパイプラインで強制
 - 🧠 **思考層**：オプションのプランニング + リフレクションノード
-- ✅ **テスト済み**：43 pytest、11 テンプレートが `bare` / `langgraph` 両方で起動
+- ✅ **テスト済み**：CI ゲート scripts/verify_all.py が全テンプレートを生成→インポート→pytest で検証（24/24 グリーン）
 
 ---
 

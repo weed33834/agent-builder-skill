@@ -25,14 +25,15 @@ jobs:
           steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
           steps.metadata.outputs.update-type == 'version-update:semver-minor'
         run: |
-          sleep 15  # let CI workflows register their checks
+          sleep 90  # let CI workflows register their checks (15s raced CI startup)
           for i in $(seq 1 80); do
             STATES=$(gh pr checks "$PR_URL" --json name,state --jq 'map(select(.name | test("auto-merge") | not)) | [.[].state]' 2>/dev/null || echo '[]')
             TOTAL=$(echo "$STATES" | jq 'length')
             if [ "$TOTAL" -eq 0 ]; then
-              echo "No other checks — merging directly."
-              gh pr merge --squash "$PR_URL"
-              exit 0
+              # Checks not registered yet - keep waiting instead of merging blind.
+              echo "No checks registered yet... ($i/80)"
+              sleep 30
+              continue
             fi
             if echo "$STATES" | grep -qE "FAILURE|CANCELLED|TIMED_OUT|ACTION_REQUIRED"; then
               echo "A check failed — not merging."

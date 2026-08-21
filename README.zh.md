@@ -1,10 +1,10 @@
-# Agent-Builder-Skill
+﻿# Agent-Builder-Skill
 
 > **一个精选"好用、特别"的 AI Skill 集合** —— 每个 Skill 都是**自包含、预装载的提示词工作流**，让智能体读一遍就能一次做对，不用多轮澄清。
 
 [English](./README.md) | **简体中文** | [日本語](./README.ja.md) · [文档中心](./docs/README.md) · [功能清单](./docs/feature-checklist.md)
 
-[![Release](https://img.shields.io/badge/release-v0.1.0-blue.svg)](https://github.com/weed33834/agent-builder-skill/releases/latest)
+[![Release](https://img.shields.io/badge/release-v0.5.2-blue.svg)](https://github.com/weed33834/agent-builder-skill/releases/latest)
 [![CI](https://img.shields.io/github/actions/workflow/status/weed33834/agent-builder-skill/ci.yml?branch=main&label=CI&logo=github)](https://github.com/weed33834/agent-builder-skill/actions)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Deep Specs](https://img.shields.io/badge/deep--specs-37-green.svg)](docs/deep-spec/00-template.md)
@@ -29,7 +29,7 @@ Agent-Builder-Skill 收集那些我们觉得**真正好用、比较特别**的 S
 - 🖥️ **完整前端**：对话 + 管理台 + 工作台（任务/画布/技能/通知/命令面板/记忆）
 - 🔒 **安全内置**：提示词注入防御 + PII 脱敏强制入管线；沙箱化代码执行
 - 🧠 **思考层**：可选规划 + 反思节点
-- ✅ **有测试**：43 条 pytest；11 个 Agent 模板在 `bare` / `langgraph` 双框架下均可生成并启动
+- ✅ **有测试**：CI 门禁 `scripts/verify_all.py` 对全部 Agent 模板做 生成→导入→pytest 矩阵验证（24/24 全绿）；模板测试 46 条
 
 ---
 

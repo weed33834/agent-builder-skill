@@ -1,10 +1,10 @@
-# Agent-Builder-Skill
+﻿# Agent-Builder-Skill
 
 > **A skill that creates AI agents.** A self-contained, pre-loaded prompt workflow: given a one-line requirement, it builds a **complete, production-grade AI agent** (backend + frontend + tests) — no multi-round clarification.
 
 **中文** | [日本語](./README.ja.md) | [简体中文](./README.zh.md) · [Deep Docs](./docs/README.md) · [Feature Checklist](./docs/feature-checklist.md)
 
-[![Release](https://img.shields.io/badge/release-v0.1.0-blue.svg)](https://github.com/weed33834/agent-builder-skill/releases/latest)
+[![Release](https://img.shields.io/badge/release-v0.5.2-blue.svg)](https://github.com/weed33834/agent-builder-skill/releases/latest)
 [![CI](https://img.shields.io/github/actions/workflow/status/weed33834/agent-builder-skill/ci.yml?branch=main&label=CI&logo=github)](https://github.com/weed33834/agent-builder-skill/actions)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Deep Specs](https://img.shields.io/badge/deep--specs-37-green.svg)](docs/deep-spec/00-template.md)
@@ -33,7 +33,7 @@ Given a one-line requirement, this skill produces a full agent with:
 - 🔒 **Safety built-in**: prompt-injection defense + PII redaction enforced in the pipeline; sandboxed code execution
 - 🧠 **Thinking layer**: optional planning + reflection nodes
 - ✨ **Chat mode toggles that actually work**: 🌐 web search / 🧠 deep think / 📚 knowledge base / ⚙️ sandbox
-- ✅ **Tested**: 46 pytest cases; all 11 agent templates generate & boot in both `bare` and `langgraph` frameworks
+- ✅ **Tested**: CI-gated: scripts/verify_all.py generates, imports and pytest-runs every agent template in both bare and langgraph frameworks (24/24 matrix green); template suite 46 cases
 
 ---
 
