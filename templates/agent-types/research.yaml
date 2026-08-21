@@ -1,0 +1,96 @@
+# Template B: Research Assistant
+# Use case: Search, analyze, and summarize information
+# Configuration differences: Strong reasoning model + search tools + long memory
+
+agent:
+  name: "ResearchAssistant"
+  type: "research"
+  description: "Web search research assistant that can search the web, summarize content, and save notes"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o"
+  temperature: 0.7
+  max_tokens: 4096
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: false
+    models: []
+  stream_mode: "messages"
+
+prompt:
+  system_prompt: |
+    你是一个专业的研究助手。你的任务是：
+    1. 理解用户的问题
+    2. 搜索相关信息
+    3. 总结和分析结果
+    4. 给出有深度、有来源的回答
+    
+    使用工具时，优先搜索权威来源。
+    回答时注明信息来源，使用 Markdown 格式。
+  role_template: "research_assistant"
+  output_format: "markdown"
+
+agent_framework:
+  graph_type: "single"
+  max_iterations: 15
+  checkpointer: "inmemory"
+  node_cache: false
+
+tools:
+  enabled:
+    - web_search
+    - web_fetch
+    - current_time
+    - calculate
+  custom:
+    - name: "save_note"
+      description: "Save research notes to a local file"
+      parameters:
+        title: { type: "string", description: "Note title" }
+        content: { type: "string", description: "Note content" }
+
+mcp:
+  enabled: true
+  servers:
+    - name: "research_tools"
+      transport: "stdio"
+      command: "python"
+      args: ["-m", "app.l5_tools.mcp_server"]
+
+memory:
+  type: "buffer"
+  max_messages: 100
+  knowledge:
+    enabled: false
+    vector_store: "chroma"
+
+orchestration:
+  mode: "single"
+  max_subtasks: 5
+  timeout: 180
+
+api:
+  auth_enabled: false
+  rate_limit: 60
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "Research Assistant"
+  features:
+    - tool_visualization
+    - session_management
+    - markdown_rendering
+
+deployment:
+  type: "docker"
+  log_level: "INFO"
+  debug: false

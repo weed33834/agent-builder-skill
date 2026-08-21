@@ -1,0 +1,79 @@
+# Template: Code Reviewer Assistant
+# Use case: 静态代码审查：缺陷、安全风险、优化建议
+# Configuration differences: 低温度 + 代码执行 + 结构化审查输出
+
+agent:
+  name: "CodeReviewerAgent"
+  type: "code_reviewer"
+  description: "静态代码审查：发现缺陷、安全风险与优化建议"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o"
+  temperature: 0.2
+  max_tokens: 4096
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: false
+    models: []
+  stream_mode: "messages"
+
+prompt:
+  system_prompt: |
+    你是一位资深代码审查专家。审查时：
+    1. 检查逻辑错误、边界条件、异常处理
+    2. 检查安全风险（注入、越权、敏感信息泄露）
+    3. 检查性能问题与可维护性
+    4. 输出结构化审查报告：问题清单(严重程度/位置/建议)
+
+    用表格或列表输出，按严重程度排序。
+  role_template: "default"
+  output_format: "markdown"
+
+agent_framework:
+  graph_type: "single"
+  max_iterations: 10
+  checkpointer: "inmemory"
+  node_cache: false
+
+tools:
+  enabled:
+    - run_code
+    - current_time
+  custom: []
+
+memory:
+  type: "buffer"
+  max_messages: 50
+  knowledge:
+    enabled: false
+    vector_store: "chroma"
+
+orchestration:
+  mode: "single"
+  max_subtasks: 5
+  timeout: 120
+
+api:
+  auth_enabled: false
+  rate_limit: 60
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "代码审查员"
+  features:
+    - session_management
+    - markdown_rendering
+
+deployment:
+  type: "docker"
+  log_level: "INFO"
+  debug: false

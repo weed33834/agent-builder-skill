@@ -1,0 +1,145 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  plugin-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Plugin manifest validity (plugin.json / mcp.json / SKILL frontmatter)
+        run: |
+          python - <<'EOF'
+          import json, re, sys
+          from pathlib import Path
+          plugin = json.loads(Path("plugin.json").read_text(encoding="utf-8"))
+          assert plugin["name"] == "agent-builder", "plugin name"
+          mcp = json.loads(Path("mcp.json").read_text(encoding="utf-8"))
+          srv = mcp["mcpServers"]["agent-builder"]
+          assert srv["command"] and Path(srv["args"][0]).exists(), "mcp server script missing"
+          skill = Path("skills/build-agent/SKILL.md").read_text(encoding="utf-8")
+          fm = skill.split("---")[1]
+          assert re.search(r"^name:\s*build-agent", fm, re.M), "skill name"
+          assert re.search(r"^description:\s*\S", fm, re.M), "skill description"
+          lines = len(skill.splitlines())
+          print(f"plugin.json OK | mcp.json OK | SKILL.md {lines} lines")
+          assert lines < 400, f"SKILL.md grew to {lines} lines - keep it under 400"
+          EOF
+      - name: Install test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pyyaml httpx fastapi uvicorn pydantic pydantic-settings
+      - name: MCP server tests (gates)
+        run: python -m pytest server/test_builder_server.py -v
+
+  test-backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        working-directory: templates/backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest pytest-asyncio
+      - name: Lint (compile check)
+        working-directory: templates/backend
+        run: |
+          python -m compileall app -q
+      - name: Run tests
+        working-directory: templates/backend
+        run: |
+          python -m pytest tests -v
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: templates/frontend/package-lock.json
+      - name: Install
+        working-directory: templates/frontend
+        run: npm ci || npm install
+      - name: Type check + build
+        working-directory: templates/frontend
+        run: |
+          npx tsc --noEmit
+          npm run build
+
+  validate-generator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r templates/backend/requirements.txt -r templates/backend/requirements-dev.txt pyyaml
+      - name: Matrix verify bare (generate + import + pytest)
+        run: python scripts/verify_all.py --framework bare
+      - name: Matrix verify langgraph (generate + import + pytest)
+        run: python scripts/verify_all.py --framework langgraph
+      - name: Build generated frontend (chat.yaml)
+        run: |
+          set -e
+          python scripts/generate.py templates/agent-types/chat.yaml /tmp/fe_gen --framework=bare
+          cd /tmp/fe_gen/frontend
+          npm install --no-audit --no-fund
+          npm run build
+          echo "generated frontend build OK"
+      - name: End-to-end reachability (generated product)
+        run: |
+          set -e
+          python scripts/generate.py templates/agent-types/chat.yaml /tmp/e2e_gen --framework=bare
+          cd /tmp/e2e_gen
+          python -m uvicorn app.main:app --port 8077 > /tmp/uvicorn.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8077/api/health >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8077/api/health | grep -q . && echo "health OK"
+          curl -sf http://127.0.0.1:8077/api/sandbox/envs | grep -q items && echo "sandbox OK"
+          curl -sf http://127.0.0.1:8077/api/tasks | grep -q items && echo "tasks OK"
+          curl -sf http://127.0.0.1:8077/api/workspaces | grep -q items && echo "workspaces OK"
+          kill %1 2>/dev/null || true
+          echo "end-to-end reachability OK"
+
+  # Windows gate: generation previously crashed on GBK consoles and static
+  # templates silently overwrote generated files due to path-separator
+  # mismatch. Keep a smaller matrix (3 configs x 2 frameworks) to catch
+  # platform regressions without doubling CI time.
+  validate-generator-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r templates/backend/requirements.txt -r templates/backend/requirements-dev.txt pyyaml
+      - name: Matrix verify on Windows (chat/research/customer_service)
+        run: python scripts/verify_all.py --only chat --only research --only customer_service

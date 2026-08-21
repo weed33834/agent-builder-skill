@@ -1,0 +1,26 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "agent-builder",
+  "version": "0.0.1",
+  "description": "Build a complete, runnable full-stack AI agent (FastAPI + React + tests) from a one-line requirement, gated by MCP validation tools.",
+  "author": {
+    "name": "badhope",
+    "url": "https://github.com/weed33834"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "agent",
+    "builder",
+    "scaffold",
+    "generator",
+    "mcp",
+    "agent-plugins",
+    "fastapi",
+    "langgraph"
+  ],
+  "homepage": "https://github.com/weed33834/agent-builder-skill",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/weed33834/agent-builder-skill.git"
+  }
+}

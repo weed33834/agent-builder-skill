@@ -1,0 +1,97 @@
+# Template E: Data Analysis
+# Use case: Data upload, analysis, and visualization
+# Configuration differences: File upload + chart generation + vector storage
+
+agent:
+  name: "DataAnalyzer"
+  type: "data_analysis"
+  description: "Data analysis assistant that can upload CSV files, analyze data, and generate charts"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o"
+  temperature: 0.5
+  max_tokens: 8192
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: false
+    models: []
+  stream_mode: "messages"
+
+prompt:
+  system_prompt: |
+    你是一个数据分析专家。你可以：
+    1. 读取 CSV 等数据文件
+    2. 进行数据清洗和分析
+    3. 生成可视化图表
+    4. 给出数据洞察和建议
+    
+    分析时注重：
+    - 数据质量检查
+    - 统计摘要
+    - 趋势分析
+    - 可视化呈现
+    
+    用通俗易懂的语言解释分析结果。
+  role_template: "data_analyst"
+  output_format: "markdown"
+
+agent_framework:
+  graph_type: "single"
+  max_iterations: 20
+  checkpointer: "inmemory"
+  node_cache: false
+
+tools:
+  enabled:
+    - read_csv
+    - analyze_data
+    - generate_chart
+    - current_time
+  custom: []
+
+mcp:
+  enabled: true
+  servers:
+    - name: "data_processing"
+      transport: "stdio"
+      command: "python"
+      args: ["-m", "app.data_analysis.mcp_server"]
+
+memory:
+  type: "buffer"
+  max_messages: 100
+  knowledge:
+    enabled: true
+    vector_store: "chroma"
+
+orchestration:
+  mode: "single"
+  max_subtasks: 5
+  timeout: 300
+
+api:
+  auth_enabled: false
+  rate_limit: 60
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "Data Analysis"
+  features:
+    - tool_visualization
+    - session_management
+    - file_upload
+    - chart_display
+
+deployment:
+  type: "docker"
+  log_level: "INFO"
+  debug: false

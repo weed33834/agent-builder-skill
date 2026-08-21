@@ -1,0 +1,76 @@
+# Template A: Chat Assistant
+# Use case: General conversational assistant, the simplest Agent
+# Configuration differences: Low-cost model + minimal tools + single Agent
+
+agent:
+  name: "ChatAssistant"
+  type: "chat"
+  description: "General conversational assistant that can answer a variety of user questions"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o-mini"
+  temperature: 0.7
+  max_tokens: 4096
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: false
+    models: []
+  stream_mode: "messages"
+
+prompt:
+  system_prompt: |
+    你是一个智能助手。你可以：
+    1. 回答用户的各种问题
+    2. 提供信息和建议
+    3. 进行日常对话
+    
+    请用简洁、准确、友好的语言回答用户。
+  role_template: "default"
+  output_format: "text"
+
+agent_framework:
+  graph_type: "single"
+  max_iterations: 10
+  checkpointer: "inmemory"
+  node_cache: false
+
+tools:
+  enabled:
+    - current_time
+  custom: []
+
+memory:
+  type: "buffer"
+  max_messages: 50
+  knowledge:
+    enabled: false
+    vector_store: "chroma"
+
+orchestration:
+  mode: "single"
+  max_subtasks: 5
+  timeout: 120
+
+api:
+  auth_enabled: false
+  rate_limit: 60
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "Chat Assistant"
+  features:
+    - session_management
+
+deployment:
+  type: "docker"
+  log_level: "INFO"
+  debug: false

@@ -1,0 +1,100 @@
+/* Workspace & productivity domain (deep-spec 15/16) */
+.workspace-console { display: flex; height: 100%; background: var(--bg, #f6f7f9); }
+.workspace-main { flex: 1; display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+.workspace-toolbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #fff; border-bottom: 1px solid #e6e8eb; }
+.workspace-toolbar-title { font-weight: 600; font-size: 15px; }
+.workspace-toolbar-sub { color: #8a919c; font-size: 12px; }
+.workspace-grid { flex: 1; display: grid; grid-template-columns: 280px 1fr 260px; gap: 12px; padding: 12px 16px; overflow: hidden; }
+.workspace-pane { background: #fff; border: 1px solid #e6e8eb; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+.workspace-pane-head { padding: 10px 14px; border-bottom: 1px solid #f0f1f3; display: flex; align-items: center; justify-content: space-between; }
+.workspace-pane-title { font-weight: 600; font-size: 13px; }
+.workspace-pane-body { flex: 1; overflow: auto; padding: 10px; }
+
+/* Task card */
+.task-card { border: 1px solid #e6e8eb; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; background: #fff; }
+.task-card-head { display: flex; align-items: center; gap: 8px; }
+.task-status-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.task-status-dot.running { background: #2f9e5f; }
+.task-status-dot.pending { background: #d0a62f; }
+.task-status-dot.done { background: #1f7bc8; }
+.task-status-dot.failed { background: #d64545; }
+.task-status-dot.cancelled { background: #8a919c; }
+.task-title { font-size: 13px; font-weight: 600; flex: 1; }
+.task-progress { height: 6px; background: #eef0f3; border-radius: 4px; margin: 8px 0; overflow: hidden; }
+.task-progress-fill { height: 100%; background: linear-gradient(90deg, #1f7bc8, #2f9e5f); border-radius: 4px; transition: width .3s; }
+.task-steps { list-style: none; margin: 0; padding: 0; font-size: 11.5px; color: #4a515c; }
+.task-steps li { display: flex; gap: 6px; padding: 2px 0; align-items: baseline; }
+.task-steps .done::before { content: '✓'; color: #2f9e5f; }
+.task-steps .running::before { content: '●'; color: #1f7bc8; }
+.task-steps .failed::before { content: '✕'; color: #d64545; }
+.task-actions { display: flex; gap: 6px; margin-top: 6px; }
+.task-btn { border: 1px solid #d6dae0; background: #fff; border-radius: 6px; padding: 2px 8px; font-size: 11.5px; cursor: pointer; }
+.task-btn:hover { background: #f4f6f8; }
+.task-btn.primary { background: #1f7bc8; color: #fff; border-color: #1f7bc8; }
+
+/* Workspace panel */
+.ws-item { border: 1px solid #e6e8eb; border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+.ws-item-head { display: flex; align-items: center; gap: 8px; }
+.ws-type { font-size: 10.5px; padding: 1px 7px; border-radius: 10px; color: #fff; }
+.ws-type.dept { background: #7c5cd6; }
+.ws-type.project { background: #1f7bc8; }
+.ws-type.personal { background: #2f9e5f; }
+.ws-meta { font-size: 11.5px; color: #8a919c; margin-top: 4px; }
+.ws-resources { display: flex; gap: 12px; font-size: 11.5px; color: #4a515c; margin-top: 6px; }
+
+/* Skill sidebar */
+.skill-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+.skill-tab { flex: 1; text-align: center; padding: 5px 0; font-size: 12px; border: 1px solid #e6e8eb; border-radius: 8px; cursor: pointer; background: #fff; }
+.skill-tab.active { background: #eaf2fb; border-color: #1f7bc8; color: #1f7bc8; font-weight: 600; }
+.skill-item { border: 1px solid #eef0f3; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; }
+.skill-item-name { font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.skill-item-desc { font-size: 11.5px; color: #8a919c; margin-top: 2px; }
+.skill-tag { font-size: 10px; background: #f0f2f5; border-radius: 6px; padding: 1px 6px; color: #5b6472; }
+
+/* Notification bell */
+.notif-bell { position: relative; }
+.notif-badge { position: absolute; top: -6px; right: -6px; background: #d64545; color: #fff; border-radius: 9px; font-size: 10px; min-width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+.notif-panel { position: absolute; top: 100%; right: 0; margin-top: 6px; width: 300px; background: #fff; border: 1px solid #e6e8eb; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 50; overflow: hidden; }
+.notif-item { display: flex; gap: 8px; padding: 9px 12px; border-bottom: 1px solid #f4f5f7; cursor: pointer; }
+.notif-item:hover { background: #f8fafc; }
+.notif-item.unread { background: #f0f6ff; }
+.notif-level { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex: none; }
+.notif-level.info { background: #1f7bc8; }
+.notif-level.success { background: #2f9e5f; }
+.notif-level.warning { background: #d0a62f; }
+.notif-level.error { background: #d64545; }
+
+/* Command palette */
+.cmd-overlay { position: fixed; inset: 0; background: rgba(15,20,30,.4); z-index: 100; display: flex; align-items: flex-start; justify-content: center; padding-top: 12vh; }
+.cmd-box { width: 560px; max-width: 90vw; background: #fff; border-radius: 14px; box-shadow: 0 12px 40px rgba(0,0,0,.25); overflow: hidden; }
+.cmd-input { width: 100%; padding: 14px 16px; border: none; outline: none; font-size: 15px; border-bottom: 1px solid #eef0f3; }
+.cmd-list { max-height: 320px; overflow: auto; }
+.cmd-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; cursor: pointer; }
+.cmd-item:hover, .cmd-item.active { background: #f0f6ff; }
+.cmd-item .cmd-icon { width: 26px; height: 26px; border-radius: 6px; background: #eaf2fb; display: flex; align-items: center; justify-content: center; }
+.cmd-hint { padding: 8px 16px; font-size: 11px; color: #8a919c; border-top: 1px solid #f0f1f3; }
+
+/* Canvas */
+.canvas-toolbar { display: flex; gap: 8px; padding: 8px; border-bottom: 1px solid #f0f1f3; }
+.canvas-viewport { flex: 1; overflow: auto; background: #fafbfc; position: relative; }
+.canvas-node { position: absolute; background: #fff; border: 1px solid #c9d4e0; border-radius: 10px; padding: 8px 12px; font-size: 12px; min-width: 110px; box-shadow: 0 2px 6px rgba(0,0,0,.05); }
+.canvas-node.trigger { border-color: #d0a62f; }
+.canvas-node.agent { border-color: #1f7bc8; }
+.canvas-node.tool { border-color: #7c5cd6; }
+.canvas-node.memory { border-color: #2f9e5f; }
+.canvas-node.output { border-color: #d64545; }
+.canvas-edge-label { position: absolute; font-size: 10px; color: #8a919c; transform: translate(-50%, -50%); background: #fff; padding: 0 4px; border-radius: 4px; }
+
+/* Memory panel */
+.mem-item { border: 1px solid #eef0f3; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; }
+.mem-item-name { font-size: 12.5px; font-weight: 600; }
+.mem-item-meta { font-size: 11px; color: #8a919c; margin-top: 2px; }
+.mem-query { display: flex; gap: 6px; margin-bottom: 10px; }
+.mem-query input { flex: 1; border: 1px solid #d6dae0; border-radius: 8px; padding: 6px 10px; font-size: 12.5px; outline: none; }
+.mem-hit { font-size: 11.5px; color: #4a515c; border-top: 1px dashed #e6e8eb; padding: 6px 0; }
+.mem-hit b { color: #1f7bc8; }
+
+.btn { border: 1px solid #d6dae0; background: #fff; border-radius: 8px; padding: 5px 12px; font-size: 12.5px; cursor: pointer; }
+.btn:hover { background: #f4f6f8; }
+.btn.primary { background: #1f7bc8; color: #fff; border-color: #1f7bc8; }
+.btn.sm { padding: 3px 9px; font-size: 11.5px; }

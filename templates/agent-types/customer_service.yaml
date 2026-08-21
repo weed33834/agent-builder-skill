@@ -1,0 +1,140 @@
+# Template D: Customer Service System
+# Use case: Multi-Agent collaborative customer service system
+# Configuration differences: Multi-Agent graph + supervisor/routing/aggregation
+
+agent:
+  name: "CustomerService"
+  type: "customer_service"
+  description: "Intelligent customer service system that can classify questions, route to specialized Agents, and aggregate answers"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o"
+  temperature: 0.5
+  max_tokens: 4096
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: false
+    models: []
+  stream_mode: "messages"
+
+prompt:
+  system_prompt: |
+    你是一个智能客服助手。你的任务是：
+    1. 友好地接待用户
+    2. 理解用户的问题
+    3. 提供准确、有用的回答
+    4. 如果问题复杂，转交给更专业的 Agent
+    
+    始终保持专业、耐心、友好的态度。
+  role_template: "customer_service"
+  output_format: "text"
+
+agent_framework:
+  graph_type: "supervisor"
+  max_iterations: 30
+  checkpointer: "inmemory"
+  node_cache: false
+
+tools:
+  enabled:
+    - web_search
+    - current_time
+  custom:
+    - name: "query_order"
+      description: "Query order information"
+      parameters:
+        order_id: { type: "string", description: "Order ID" }
+    - name: "cancel_order"
+      description: "Cancel an order"
+      parameters:
+        order_id: { type: "string", description: "Order ID" }
+        reason: { type: "string", description: "Cancellation reason" }
+    - name: "process_refund"
+      description: "Process a refund"
+      parameters:
+        order_id: { type: "string", description: "Order ID" }
+        amount: { type: "number", description: "Refund amount" }
+    - name: "check_refund_status"
+      description: "Check refund status"
+      parameters:
+        order_id: { type: "string", description: "Order ID" }
+    - name: "search_products"
+      description: "Search product information"
+      parameters:
+        keyword: { type: "string", description: "Search keyword" }
+    - name: "get_product_info"
+      description: "Get product details"
+      parameters:
+        product_id: { type: "string", description: "Product ID" }
+
+memory:
+  type: "buffer"
+  max_messages: 200
+  knowledge:
+    enabled: true
+    vector_store: "chroma"
+
+orchestration:
+  mode: "supervisor"
+  graph_type: "supervisor"
+  max_subtasks: 10
+  timeout: 300
+  a2a:
+    enabled: true
+    agent_card:
+      name: "CustomerService"
+      description: "Intelligent customer service system supporting multi-Agent collaboration"
+      skills: [order_management, refund_processing, product_inquiry]
+      auth_type: "none"
+    discovery:
+      endpoint: "/.well-known/agent.json"
+    rpc:
+      endpoint: "/a2a/rpc"
+      protocol: "json-rpc-2.0"
+  agents:
+    - name: "classifier"
+      role: "Question classification"
+      system_prompt: "你负责将用户问题分类到：订单、退款、产品咨询。返回分类结果。"
+      tools: []
+    - name: "order_agent"
+      role: "Order processing"
+      system_prompt: "你负责处理订单相关查询，包括查询订单状态、取消订单等。"
+      tools: [query_order, cancel_order]
+    - name: "refund_agent"
+      role: "Refund processing"
+      system_prompt: "你负责处理退款请求，包括查询退款状态、处理退款等。"
+      tools: [process_refund, check_refund_status]
+    - name: "product_agent"
+      role: "Product inquiry"
+      system_prompt: "你负责回答产品相关问题，包括产品信息、规格、价格等。"
+      tools: [search_products, get_product_info]
+    - name: "aggregator"
+      role: "Result aggregation"
+      system_prompt: "你负责汇总所有子 Agent 的结果，生成给用户的最终回复。"
+      tools: []
+
+api:
+  auth_enabled: true
+  rate_limit: 120
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "Customer Service"
+  features:
+    - tool_visualization
+    - session_management
+    - ticket_system
+
+deployment:
+  type: "docker"
+  log_level: "INFO"
+  debug: false

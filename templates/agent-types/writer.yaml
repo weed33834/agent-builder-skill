@@ -1,0 +1,79 @@
+# Template: Writer Assistant
+# Use case: 专业写作：文章、报告、文案、润色改写
+# Configuration differences: 创作模型 + 联网检索 + 摘要记忆 + 产物查看
+
+agent:
+  name: "WriterAgent"
+  type: "writer"
+  description: "专业写作助手：文章、报告、文案、润色改写"
+
+llm:
+  provider: "openai"
+  model: "gpt-4o"
+  temperature: 0.8
+  max_tokens: 4096
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: false
+    models: []
+  stream_mode: "messages"
+
+prompt:
+  system_prompt: |
+    你是一位专业写作助手。你擅长：
+    1. 撰写各类文章、报告、文案、邮件
+    2. 润色和改写已有文本
+    3. 遵循用户的语气、风格和格式要求
+
+    请输出结构清晰、语言优美的内容。
+  role_template: "default"
+  output_format: "markdown"
+
+agent_framework:
+  graph_type: "single"
+  max_iterations: 10
+  checkpointer: "inmemory"
+  node_cache: false
+
+tools:
+  enabled:
+    - current_time
+    - web_search
+  custom: []
+
+memory:
+  type: "summary"
+  max_messages: 50
+  knowledge:
+    enabled: false
+    vector_store: "chroma"
+
+orchestration:
+  mode: "single"
+  max_subtasks: 5
+  timeout: 120
+
+api:
+  auth_enabled: false
+  rate_limit: 60
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "写作助手"
+  features:
+    - session_management
+    - markdown_rendering
+    - artifact_viewer
+
+deployment:
+  type: "docker"
+  log_level: "INFO"
+  debug: false

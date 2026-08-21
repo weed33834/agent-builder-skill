@@ -1,0 +1,112 @@
+# Template C: Coding Assistant
+# Use case: Programming assistance, code review, debugging
+# Configuration differences: Claude model + code execution + file operations
+
+agent:
+  name: "CodeAssistant"
+  type: "coding"
+  description: "Professional coding assistant that can write code, review code, and debug issues"
+
+llm:
+  provider: "anthropic"
+  model: "claude-sonnet-4-20250514"
+  temperature: 0.3
+  max_tokens: 8192
+
+interface:
+  retry:
+    enabled: true
+    max_retries: 3
+    delay: 1.0
+  fallback:
+    enabled: true
+    models:
+      - provider: "openai"
+        model: "gpt-4o"
+  stream_mode: "messages"
+
+prompt:
+  system_prompt: |
+    你是一个专业编程助手。你擅长：
+    1. 编写高质量、可维护的代码
+    2. 代码审查和优化
+    3. 调试和修复 Bug
+    4. 架构设计建议
+    
+    代码规范：
+    - 遵循语言标准规范
+    - 添加必要的类型注解
+    - 包含错误处理
+    - 注重可读性和可维护性
+    
+    回答时包含代码示例和解释。
+  role_template: "code_reviewer"
+  output_format: "markdown"
+
+agent_framework:
+  graph_type: "single"
+  max_iterations: 20
+  checkpointer: "inmemory"
+  node_cache: false
+
+tools:
+  enabled:
+    - web_search
+    - web_fetch
+    - code_execute
+    - file_read
+    - file_write
+    - current_time
+  custom:
+    - name: "code_execute"
+      description: "Execute code in a secure sandbox and return the result"
+      parameters:
+        language: { type: "string", description: "Programming language (python/javascript/typescript/go/rust)" }
+        code: { type: "string", description: "Code to execute" }
+        timeout: { type: "number", description: "Timeout in seconds", default: 30 }
+      sandbox:
+        enabled: true
+        type: "gvisor"
+        network: false
+        timeout: 60
+
+mcp:
+  enabled: true
+  servers:
+    - name: "code_executor"
+      transport: "stdio"
+      command: "python"
+      args: ["-m", "app.code_executor.mcp_server"]
+
+memory:
+  type: "buffer"
+  max_messages: 100
+  knowledge:
+    enabled: false
+    vector_store: "chroma"
+
+orchestration:
+  mode: "single"
+  max_subtasks: 5
+  timeout: 300
+
+api:
+  auth_enabled: false
+  rate_limit: 60
+  cors_origins:
+    - "http://localhost:5173"
+    - "http://localhost:3000"
+
+ui:
+  type: "chat"
+  title: "Coding Assistant"
+  features:
+    - tool_visualization
+    - session_management
+    - markdown_rendering
+    - code_highlighting
+
+deployment:
+  type: "docker"
+  log_level: "INFO"
+  debug: false
