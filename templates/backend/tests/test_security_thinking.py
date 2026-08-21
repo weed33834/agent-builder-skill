@@ -35,9 +35,13 @@ class _FakeLLM:
 
 @pytest.fixture
 def chat_interface(monkeypatch):
-    from app import l2_interface as l2
-    monkeypatch.setattr(l2.chat_interface, "create_llm", lambda **kw: _FakeLLM())
-    return l2.chat_interface.ChatInterface(provider="openai", model="fake")
+    # Import the submodule explicitly: binding `chat_interface` as an attribute
+    # of the package depends on import order elsewhere, which made this fixture
+    # fail in generated products with a different test-collection order.
+    import app.l2_interface.chat_interface as chat_interface_mod
+
+    monkeypatch.setattr(chat_interface_mod, "create_llm", lambda **kw: _FakeLLM())
+    return chat_interface_mod.ChatInterface(provider="openai", model="fake")
 
 
 @pytest.mark.asyncio

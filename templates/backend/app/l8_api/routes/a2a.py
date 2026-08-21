@@ -10,7 +10,7 @@ The task handler runs the local agent graph on incoming messages.
 
 from typing import Optional
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 
 from ...l7_orchestrator.a2a_server import A2AServer
 from ...l7_orchestrator.base import AgentCard
@@ -120,12 +120,10 @@ async def poll_a2a_tasks(payload: dict):
 async def get_a2a_task(task_id: str):
     """Get one A2A task by id (frontend pollA2ATask)"""
     if a2a_server is None:
-        from ...l10_infra.errors import A2AServerError
-        raise A2AServerError("A2A server not initialized")
+        init_a2a_server()
     t = a2a_server.get_task(task_id)
     if t is None:
-        from ...l10_infra.errors import A2AServerError
-        raise A2AServerError(f"Task {task_id} not found")
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
     return t
 
 
@@ -133,10 +131,8 @@ async def get_a2a_task(task_id: str):
 async def cancel_a2a_task(task_id: str):
     """Cancel one A2A task (frontend cancelA2ATask)"""
     if a2a_server is None:
-        from ...l10_infra.errors import A2AServerError
-        raise A2AServerError("A2A server not initialized")
+        init_a2a_server()
     t = a2a_server.cancel_task(task_id)
     if t is None:
-        from ...l10_infra.errors import A2AServerError
-        raise A2AServerError(f"Task {task_id} not found")
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
     return t

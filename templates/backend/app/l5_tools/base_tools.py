@@ -118,6 +118,11 @@ BASE_TOOLS = [
     calculate,
 ]
 
+# Subset the agent is allowed to call. In generated products generate.py
+# writes the explicit list from agent.yaml `tools.enabled`; in the template
+# dev environment everything is enabled.
+ENABLED_TOOL_NAMES = [t.name for t in BASE_TOOLS]
+
 # MCP tools list (tools discovered and registered from MCP servers)
 # Type: list[langchain_core.tools.BaseTool]
 # These tools are auto-populated via ToolRegistry.register_from_mcp()

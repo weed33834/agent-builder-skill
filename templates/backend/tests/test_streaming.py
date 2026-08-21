@@ -9,6 +9,7 @@ A fake runtime is injected so the test runs without an LLM API key.
 """
 
 import json
+from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
@@ -24,11 +25,26 @@ def _install_fake_runtime():
             return None
 
     class _FakeGraph:
+        """Dual-contract fake: satisfies the langgraph astream_events route AND
+        the bare AgentRuntime.stream route, so the shared suite is
+        framework-agnostic (M0.21)."""
+
         async def astream_events(self, *args, **kwargs):
             yield {"event": "on_chat_model_stream", "data": {"chunk": {"content": "Hel"}}}
             yield {"event": "on_chat_model_stream", "data": {"chunk": {"content": "lo"}}}
             yield {"event": "on_tool_start", "data": {"name": "web_search", "input": ""}}
             yield {"event": "on_tool_end", "data": {"name": "web_search", "output": "ok"}}
+
+        async def stream(self, messages, config=None):
+            yield SimpleNamespace(type="agent_message", content="Hello")
+            yield SimpleNamespace(
+                type="tool_call",
+                content={"name": "web_search", "input": ""},
+            )
+            yield SimpleNamespace(
+                type="tool_result",
+                content={"name": "web_search", "output": "ok"},
+            )
 
     chat_mod.get_graph = lambda: _FakeGraph()
     chat_mod.get_graph_config = lambda *a, **k: {}

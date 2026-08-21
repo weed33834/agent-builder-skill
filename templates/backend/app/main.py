@@ -50,10 +50,17 @@ async def lifespan(app: FastAPI):
     """
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}...")
 
-    # L5: Register base tools
+    # L5: Register base tools - only the ENABLED subset is exposed to the
+    # agent (BASE_TOOLS defines everything so route imports stay valid).
+    try:
+        from .l5_tools.base_tools import ENABLED_TOOL_NAMES as _enabled_names
+        _enabled = set(_enabled_names)
+    except ImportError:  # template default: everything enabled
+        _enabled = {t.name for t in BASE_TOOLS}
     for tool in BASE_TOOLS:
-        ToolRegistry.register(tool, category="general")
-        logger.info(f"  Registered tool: {tool.name}")
+        if tool.name in _enabled:
+            ToolRegistry.register(tool, category="general")
+            logger.info(f"  Registered tool: {tool.name}")
     for tool in CUSTOM_TOOLS:
         ToolRegistry.register(tool, category="custom")
         logger.info(f"  Registered custom tool: {tool.name}")
