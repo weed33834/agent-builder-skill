@@ -62,34 +62,11 @@ jobs:
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install -r templates/backend/requirements.txt pytest pytest-asyncio pyyaml
-      - name: Generate + import + test every agent type (bare)
-        run: |
-          set -e
-          for cfg in templates/agent-types/*.yaml; do
-            name=$(basename "$cfg" .yaml)
-            python scripts/generate.py "$cfg" "/tmp/gen_${name}" --framework=bare
-            (cd "/tmp/gen_${name}" && python -c "import app.main; print('${name}: bare import OK')")
-            (cd "/tmp/gen_${name}" && python -m pytest -q)
-          done
-      - name: Generate + startup every agent type (langgraph)
-        run: |
-          set -e
-          for cfg in templates/agent-types/*.yaml; do
-            name=$(basename "$cfg" .yaml)
-            python scripts/generate.py "$cfg" "/tmp/lg_${name}" --framework=langgraph
-            (cd "/tmp/lg_${name}" && python -c "
-import asyncio
-from app.main import app
-from app.l4_agent.graph import get_graph
-async def _r():
-    get_graph()
-    async with app.router.lifespan_context(app):
-        pass
-asyncio.run(_r())
-print('${name}: langgraph startup OK')
-")
-          done
+          pip install -r templates/backend/requirements.txt -r templates/backend/requirements-dev.txt pyyaml
+      - name: Matrix verify bare (generate + import + pytest)
+        run: python scripts/verify_all.py --framework bare
+      - name: Matrix verify langgraph (generate + import + pytest)
+        run: python scripts/verify_all.py --framework langgraph
       - name: Build generated frontend (chat.yaml)
         run: |
           set -e
@@ -114,3 +91,22 @@ print('${name}: langgraph startup OK')
           curl -sf http://127.0.0.1:8077/api/workspaces | grep -q items && echo "workspaces OK"
           kill %1 2>/dev/null || true
           echo "end-to-end reachability OK"
+
+  # Windows gate: generation previously crashed on GBK consoles and static
+  # templates silently overwrote generated files due to path-separator
+  # mismatch. Keep a smaller matrix (3 configs x 2 frameworks) to catch
+  # platform regressions without doubling CI time.
+  validate-generator-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r templates/backend/requirements.txt -r templates/backend/requirements-dev.txt pyyaml
+      - name: Matrix verify on Windows (chat/research/customer_service)
+        run: python scripts/verify_all.py --only chat --only research --only customer_service
