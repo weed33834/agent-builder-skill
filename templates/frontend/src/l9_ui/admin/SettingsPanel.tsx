@@ -6,7 +6,7 @@
  * - PUT /api/admin/settings → 保存配置（热加载）
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { adminGetSettings, adminUpdateSettings, adminExportBackup, adminRestoreBackup } from '../../l8_api/api'
 
 export function SettingsPanel() {
@@ -19,6 +19,14 @@ export function SettingsPanel() {
   })
   const [notice, setNotice] = useState('')
   const [backupJson, setBackupJson] = useState('')
+
+
+  // Mount-only data load. Calling loaders inline re-rendered ->
+  // setState -> render -> request again: an infinite fetch loop.
+  useEffect(() => {
+      void refresh()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const refresh = async () => {
     try {
@@ -34,7 +42,6 @@ export function SettingsPanel() {
       /* 后端未就绪 */
     }
   }
-  void refresh()
 
   const save = async () => {
     try {

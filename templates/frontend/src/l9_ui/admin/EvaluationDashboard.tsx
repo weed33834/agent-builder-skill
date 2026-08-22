@@ -8,7 +8,7 @@
  * 接口：/api/admin/evaluations*（adminListEvaluations / adminSaveEvaluation / adminRunEvaluation）
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { adminListEvaluations, adminRunEvaluation, adminSaveEvaluation } from '../../l8_api/api'
 
 interface EvalCase {
@@ -42,6 +42,14 @@ export function EvaluationDashboard() {
   const [report, setReport] = useState<Report | null>(null)
   const [notice, setNotice] = useState('')
 
+
+  // Mount-only data load. Calling loaders inline re-rendered ->
+  // setState -> render -> request again: an infinite fetch loop.
+  useEffect(() => {
+      void refresh()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const refresh = async () => {
     try {
       const res = await adminListEvaluations()
@@ -50,7 +58,6 @@ export function EvaluationDashboard() {
       setEvals([])
     }
   }
-  void refresh()
 
   const addCase = async () => {
     if (!form.name || !form.input) return

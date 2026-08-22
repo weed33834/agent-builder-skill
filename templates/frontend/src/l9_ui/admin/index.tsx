@@ -1,15 +1,12 @@
 /**
- * Admin Console 主入口（M8.16 管理控制台骨架）
+ * Admin Console 主入口（M8.16 管理控制台）
  *
  * 布局：左侧导航 + 顶部栏 + 内容区。
- * 覆盖全部管理模块：
- *   P0：提示词 / 模型 / 工具 / Agent
- *   P1：记忆 / 编排 / 系统设置
- *   P2：评估 / 监控
- * 仪表盘：资产统计卡片 + 系统健康 + 最近动态。
+ * 仪表盘数据全部来自真实后端端点；拿不到的数据显示"—"空态，
+ * 不再使用任何硬编码的假统计/假动态/假健康灯。
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AdminSidebar, type AdminSection, type SidebarBadges } from './AdminSidebar'
 import { PromptEditor } from './PromptEditor'
 import { ModelConfig } from './ModelConfig'
@@ -23,6 +20,11 @@ import { MonitoringPanel } from './MonitoringPanel'
 import { SettingsPanel } from './SettingsPanel'
 import { SecurityPanel } from './SecurityPanel'
 import { SchedulePanel } from './SchedulePanel'
+import {
+  adminListPrompts, adminListModels, adminListTools, adminListAgents,
+  adminListEvaluations, adminListAlerts, adminGetMetrics,
+  adminGetAuditLog, adminListWorkflows,
+} from '../../l8_api/api'
 import './Styles.css'
 
 const SECTION_META: Record<AdminSection, { title: string; crumb: string }> = {
@@ -41,92 +43,125 @@ const SECTION_META: Record<AdminSection, { title: string; crumb: string }> = {
   settings: { title: '系统设置', crumb: '系统 / 设置' },
 }
 
-/* ---------- 仪表盘（概览） ---------- */
-const STATS = [
-  { label: '启用提示词', value: '8 / 12', icon: '📝', delta: '+2 本周', tone: 'up' },
-  { label: '可用模型', value: '6', icon: '🧠', delta: '3 provider', tone: 'flat' },
-  { label: '启用的工具', value: '18', icon: '🔧', delta: '+3 本周', tone: 'up' },
-  { label: '在线 Agent', value: '4 / 5', icon: '🤖', delta: '1 异常', tone: 'down' },
-  { label: '评估通过率', value: '94.2%', icon: '🎯', delta: '+1.8% vs 上周', tone: 'up' },
-  { label: '错误率', value: '0.42%', icon: '📈', delta: '-0.13% vs 上周', tone: 'up' },
-  { label: '今日 Tokens', value: '4.8M', icon: '⛽', delta: '≈ ¥36.4', tone: 'flat' },
-  { label: '告警', value: '2', icon: '🚨', delta: '1 待处理', tone: 'down' },
-]
+interface AuditEntry { ts: number; action: string; subject: string; detail?: string }
 
-const ACTIVITIES = [
-  { time: '21:12', icon: '📝', text: '提示词 <b>客服引导 v4</b> 已发布并接入线上流量 30%' },
-  { time: '20:47', icon: '🤖', text: 'Agent <b>周报助手</b> 通过评估（pass_rate 96.1%）' },
-  { time: '20:21', icon: '🔧', text: '工具 <b>sales_query</b> 被调用 1,204 次，失败率 0.8%' },
-  { time: '19:58', icon: '🚨', text: '告警触发：<b>gpt-4o 延迟 P95 &gt; 3.5s</b> 持续 5 分钟' },
-  { time: '19:30', icon: '🧩', text: '知识库 <b>产品文档库</b> 完成增量索引（+126 chunks）' },
-  { time: '18:44', icon: '⚙️', text: '管理员修改了 <b>环境变量 LLM_MAX_TOKENS</b>（热加载生效）' },
-  { time: '17:52', icon: '🎯', text: '评估任务 <b>ev_20260810_01</b> 完成：12 条用例通过 11 条' },
-]
+/* ---------- 仪表盘（概览）——全部真实数据 ---------- */
+function DashboardOverview({ onNavigate, reloadKey }: { onNavigate: (s: AdminSection) => void; reloadKey: number }) {
+  const [stats, setStats] = useState<Record<string, string>>({})
+  const [activities, setActivities] = useState<AuditEntry[]>([])
+  const [health, setHealth] = useState<{ name: string; status: string; detail: string }[]>([])
 
-const HEALTH = [
-  { name: 'API Gateway', status: 'green', detail: '99.98% 可用' },
-  { name: 'LLM 模型服务', status: 'amber', detail: 'gpt-4o P95 偏高' },
-  { name: '向量数据库', status: 'green', detail: '3/3 分片正常' },
-  { name: 'MCP Servers', status: 'green', detail: '4/4 已连接' },
-  { name: '任务队列', status: 'green', detail: '0 积压' },
-  { name: '评估 Runner', status: 'green', detail: '空闲' },
-]
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const [prompts, models, tools, agents, evals, alertsRes, metricsRes] = await Promise.allSettled([
+        adminListPrompts(), adminListModels(), adminListTools(),
+        adminListAgents(), adminListEvaluations(), adminListAlerts(),
+        adminGetMetrics(),
+      ])
+      if (cancelled) return
+      const val = (x: PromiseSettledResult<unknown>) => (x.status === 'fulfilled' ? x.value : null)
+      const summary = (val(metricsRes) as { summary?: Record<string, number> } | null)?.summary
+      setStats({
+        prompts: String(val(prompts) ? (val(prompts) as { total: number }).total : '—'),
+        models: String(val(models) ? (val(models) as { total: number }).total : '—'),
+        tools: String(val(tools) ? (val(tools) as { total: number }).total : '—'),
+        agents: String(val(agents) ? (val(agents) as { total: number }).total : '—'),
+        evaluations: String(val(evals) ? (val(evals) as { total: number }).total : '—'),
+        alerts: String(val(alertsRes) ? (val(alertsRes) as { total: number }).total : '—'),
+        requests: summary ? String(summary.requests ?? '—') : '—',
+        tokens: summary ? String(summary.tokens ?? '—') : '—',
+      })
+    })()
 
-function DashboardOverview({ onNavigate }: { onNavigate: (s: AdminSection) => void }) {
+    adminGetAuditLog()
+      .then(r => { if (!cancelled) setActivities((r.items as unknown as AuditEntry[]).slice(0, 6)) })
+      .catch(() => { if (!cancelled) setActivities([]) })
+
+    fetch('/api/health')
+      .then(r => r.json())
+      .then(h => {
+        if (cancelled) return
+        setHealth([
+          { name: 'API 服务', status: h.status === 'ok' ? 'green' : 'amber', detail: `v${h.version}` },
+          { name: 'LLM 连接', status: h.llm_connected ? 'green' : 'amber', detail: h.llm_connected ? '已配置' : '未配置 API Key' },
+        ])
+      })
+      .catch(() => { if (!cancelled) setHealth([{ name: 'API 服务', status: 'amber', detail: '无法连接' }]) })
+
+    return () => { cancelled = true }
+  }, [reloadKey])
+
+  const statCards = [
+    { label: '提示词', value: stats.prompts ?? '—', icon: '📝' },
+    { label: '模型', value: stats.models ?? '—', icon: '🧠' },
+    { label: '工具', value: stats.tools ?? '—', icon: '🔧' },
+    { label: 'Agent', value: stats.agents ?? '—', icon: '🤖' },
+    { label: '评估任务', value: stats.evaluations ?? '—', icon: '🎯' },
+    { label: '告警规则', value: stats.alerts ?? '—', icon: '🚨' },
+    { label: '累计请求', value: stats.requests ?? '—', icon: '📈' },
+    { label: '累计 Tokens', value: stats.tokens ?? '—', icon: '⛽' },
+  ]
+
   return (
     <div className="admin-grid" style={{ gap: 16 }}>
       {/* 统计卡片 */}
       <div className="admin-grid cols-4">
-        {STATS.map(s => (
+        {statCards.map(s => (
           <div className="admin-stat-card" key={s.label}>
             <div className="admin-stat-label">
               <span>{s.icon}</span>
               <span>{s.label}</span>
             </div>
             <div className="admin-stat-value">{s.value}</div>
-            <div className={`admin-stat-delta ${s.tone}`}>
-              {s.tone === 'up' ? '▲' : s.tone === 'down' ? '▼' : '•'} {s.delta}
-            </div>
           </div>
         ))}
       </div>
 
       <div className="admin-split left-2">
-        {/* 最近动态 */}
+        {/* 最近动态——真实审计日志 */}
         <div className="admin-card">
           <div className="admin-card-header">
             <span className="admin-card-title">最近动态</span>
-            <span className="admin-card-sub">跨模块操作流水</span>
-            <div className="admin-card-header-actions">
-              <button className="admin-btn ghost sm">查看全部</button>
-            </div>
+            <span className="admin-card-sub">审计日志</span>
           </div>
           <div className="admin-card-body tight" style={{ padding: '4px 12px' }}>
-            {ACTIVITIES.map((a, i) => (
-              <div key={i} style={{ display: 'flex', gap: 10, padding: '8px 0', borderBottom: i < ACTIVITIES.length - 1 ? '1px solid var(--admin-border)' : 'none' }}>
-                <span style={{ fontSize: 14 }}>{a.icon}</span>
-                <span style={{ flex: 1, fontSize: 12.5, lineHeight: 1.55 }} dangerouslySetInnerHTML={{ __html: a.text }} />
-                <span style={{ color: 'var(--admin-text-3)', fontSize: 11, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{a.time}</span>
+            {activities.length === 0 && (
+              <div style={{ padding: '10px 0', color: 'var(--admin-text-3)', fontSize: 12.5 }}>
+                暂无操作记录
+              </div>
+            )}
+            {activities.map((a, i) => (
+              <div key={i} style={{ display: 'flex', gap: 10, padding: '8px 0', borderBottom: i < activities.length - 1 ? '1px solid var(--admin-border)' : 'none' }}>
+                <span style={{ flex: 1, fontSize: 12.5, lineHeight: 1.55 }}>
+                  {a.action} · {a.subject}{a.detail ? ` — ${a.detail}` : ''}
+                </span>
+                <span style={{ color: 'var(--admin-text-3)', fontSize: 11, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+                  {new Date(a.ts * 1000).toLocaleTimeString()}
+                </span>
               </div>
             ))}
           </div>
         </div>
 
         <div className="admin-grid" style={{ gap: 14 }}>
-          {/* 系统健康 */}
+          {/* 系统健康——真实探活 */}
           <div className="admin-card">
             <div className="admin-card-header">
               <span className="admin-card-title">系统健康</span>
               <span className="admin-card-sub">实时</span>
             </div>
             <div className="admin-card-body tight" style={{ padding: '6px 12px' }}>
-              {HEALTH.map(h => (
+              {health.map(h => (
                 <div key={h.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
                   <span className={`admin-lamp ${h.status}`} />
                   <span style={{ flex: 1, fontSize: 12.5, fontWeight: 500 }}>{h.name}</span>
                   <span style={{ color: 'var(--admin-text-3)', fontSize: 11.5 }}>{h.detail}</span>
                 </div>
               ))}
+              {health.length === 0 && (
+                <div style={{ padding: '8px 0', color: 'var(--admin-text-3)', fontSize: 12.5 }}>加载中…</div>
+              )}
             </div>
           </div>
 
@@ -154,17 +189,32 @@ function DashboardOverview({ onNavigate }: { onNavigate: (s: AdminSection) => vo
 export function AdminConsole() {
   const [active, setActive] = useState<AdminSection>('dashboard')
   const [collapsed, setCollapsed] = useState(false)
-  const [badges] = useState<SidebarBadges>({
-    prompts: 12,
-    models: 8,
-    tools: 23,
-    agents: 5,
-    memory: 4,
-    workflows: 3,
-    evaluations: 6,
-    alerts: 2,
+  const [reloadKey, setReloadKey] = useState(0)
+  const [badges, setBadges] = useState<SidebarBadges>({
+    prompts: 0, models: 0, tools: 0, agents: 0,
+    memory: 0, workflows: 0, evaluations: 0, alerts: 0,
   })
   const [keyword, setKeyword] = useState('')
+
+  // Sidebar badges computed from real list endpoints.
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const results = await Promise.allSettled([
+        adminListPrompts(), adminListModels(), adminListTools(),
+        adminListAgents(), adminListWorkflows(), adminListEvaluations(),
+        adminListAlerts(),
+      ])
+      if (cancelled) return
+      const t = (i: number) => (results[i].status === 'fulfilled' ? (results[i] as PromiseFulfilledResult<{ total: number }>).value.total : 0)
+      setBadges(b => ({
+        ...b,
+        prompts: t(0), models: t(1), tools: t(2), agents: t(3),
+        workflows: t(4), evaluations: t(5), alerts: t(6),
+      }))
+    })()
+    return () => { cancelled = true }
+  }, [reloadKey])
 
   const meta = SECTION_META[active]
 
@@ -191,17 +241,17 @@ export function AdminConsole() {
                 placeholder="搜索资产（提示词/工具/模型…）"
               />
             </div>
-            <button className="admin-btn ghost" title="刷新数据">
+            <button className="admin-btn ghost" title="刷新数据" onClick={() => setReloadKey(k => k + 1)}>
               ⟳
             </button>
             <button className="admin-btn ghost" title="通知">
-              🔔<span className="admin-nav-badge warning" style={{ transform: 'translate(-16px, -10px)', position: 'absolute' }}>2</span>
+              🔔
             </button>
           </div>
         </div>
 
         <div className="admin-content">
-          {active === 'dashboard' && <DashboardOverview onNavigate={setActive} />}
+          {active === 'dashboard' && <DashboardOverview onNavigate={setActive} reloadKey={reloadKey} />}
           {active === 'prompts' && <PromptEditor />}
           {active === 'models' && <ModelConfig />}
           {active === 'tools' && <ToolRegistry />}

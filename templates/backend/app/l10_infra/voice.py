@@ -9,13 +9,20 @@ TTS / STT 统一接口，对齐生产规范：
 from __future__ import annotations
 
 import asyncio
-import base64
 import logging
 import os
 from abc import ABC, abstractmethod
 from typing import Optional
 
 logger = logging.getLogger(__name__)
+
+
+class VoiceUnavailableError(RuntimeError):
+    """Raised when a voice engine is requested but its dependency is missing.
+
+    Replaces the old behaviour of returning base64(JSON) masquerading as mp3
+    bytes — clients now get a real 503 instead of unplayable garbage.
+    """
 
 
 class TTSEngine(ABC):
@@ -56,10 +63,11 @@ class EdgeTTSEngine(TTSEngine):
                 if chunk["type"] == "audio":
                     chunks.append(chunk["data"])
             return b"".join(chunks)
-        except ImportError:
-            logger.warning("edge_tts not installed; returning placeholder audio marker")
-            payload = f"{{'engine':'edge-tts','voice':{voice!r},'text_len':{len(text)}}}"
-            return base64.b64encode(payload.encode("utf-8"))
+        except ImportError as exc:
+            logger.error("edge_tts not installed; TTS unavailable")
+            raise VoiceUnavailableError(
+                "TTS engine 'edge-tts' is not installed. Install it with: pip install edge-tts"
+            ) from exc
 
 
 class MockSTTEngine(STTEngine):

@@ -162,8 +162,14 @@ def create_app() -> FastAPI:
     # ===== L10: Metrics endpoint (M13.2) =====
     @app.get("/metrics")
     async def metrics_endpoint():
-        """Prometheus-format metrics (M13.2)"""
-        return metrics.export_prometheus()
+        """Prometheus-format metrics (M13.2)
+
+        Prometheus scrapes the plain-text protocol; returning the bare str
+        would be JSON-encoded by FastAPI and break every scraper.
+        """
+        from fastapi.responses import PlainTextResponse
+
+        return PlainTextResponse(metrics.export_prometheus(), media_type="text/plain; version=0.0.4")
 
     return app
 

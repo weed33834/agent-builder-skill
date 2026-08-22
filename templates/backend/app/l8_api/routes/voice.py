@@ -10,12 +10,13 @@ Uses l10_infra/voice.VoiceService:
 """
 
 import logging
+import os
 from typing import Optional
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import Response
 
-from ...l10_infra.voice import VoiceService
+from ...l10_infra.voice import VoiceService, VoiceUnavailableError
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,12 @@ async def transcribe(file: UploadFile = File(...)):
     except Exception as exc:  # noqa: BLE001
         logger.exception("STT failed (fmt=%s, %d bytes)", fmt, len(data))
         raise HTTPException(status_code=500, detail=f"STT failed: {exc}")
-    return {"text": text, "engine": voice_service.stt.__class__.__name__}
+    engine = voice_service.stt.__class__.__name__
+    degraded = engine.startswith("Mock") or (not text and not data)
+    if not text:
+        # Distinguish "no speech detected" from "no real engine configured".
+        logger.warning("STT returned empty text via %s", engine)
+    return {"text": text, "engine": engine, "degraded": degraded}
 
 
 @router.get("/voice/speak")
@@ -46,9 +52,13 @@ async def speak(text: str, voice: str = ""):
         raise HTTPException(status_code=400, detail="empty text")
     try:
         audio = await voice_service.speak(text, voice=voice)
+    except VoiceUnavailableError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
     except Exception as exc:  # noqa: BLE001
         logger.exception("TTS failed (voice=%s)", voice)
         raise HTTPException(status_code=500, detail=f"TTS failed: {exc}")
+    if not audio:
+        raise HTTPException(status_code=503, detail="TTS engine produced no audio")
     return Response(
         content=audio,
         media_type="audio/mpeg",
@@ -62,5 +72,6 @@ async def engines():
     return {
         "tts": voice_service.tts.__class__.__name__,
         "stt": voice_service.stt.__class__.__name__,
-        "stt_engine_env": voice_service.stt.__class__.__name__.lower(),
+        "stt_engine_env": os.getenv("STT_ENGINE", ""),
+        "degraded": voice_service.stt.__class__.__name__.startswith("Mock"),
     }

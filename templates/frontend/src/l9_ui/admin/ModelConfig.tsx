@@ -136,7 +136,6 @@ export function ModelConfig() {
         { provider: p.name, time: new Date().toTimeString().slice(0, 8), latency: 0, ok: false },
         ...prev,
       ])
-      setProviders(prev => prev.map(x => (x.id === p.id ? { ...x, status: ok ? 'healthy' : 'degraded', latency } : x)))
     } finally {
       setTimeout(() => setTesting(prev => ({ ...prev, [p.id]: 'idle' })), 2500)
     }

@@ -7,7 +7,7 @@
  * 接口：/api/admin/metrics*（adminGetMetrics）+ /api/admin/alerts*（adminListAlerts / adminSaveAlert）
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   adminGetMetrics, adminListAlerts, adminSaveAlert, adminDeleteAlert,
   adminGetAlertHistory, adminListTraces, adminGetLogs, adminGetDrift,
@@ -59,6 +59,14 @@ export function MonitoringPanel() {
   })
   const [notice, setNotice] = useState('')
 
+
+  // Mount-only data load. Calling loaders inline re-rendered ->
+  // setState -> render -> request again: an infinite fetch loop.
+  useEffect(() => {
+      void refresh()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const refresh = async () => {
     try {
       const res = await adminGetMetrics()
@@ -75,7 +83,7 @@ export function MonitoringPanel() {
   const loadDrift = () => adminGetDrift().then(setDrift).catch(() => {})
   const loadUsage = () => adminGetUsage(7).then(setUsage).catch(() => {})
   const loadBreakers = () => getCircuitBreakers().then(r => setBreakers((r.items as unknown as { key: string; state: string; failures: number }[]) || [])).catch(() => {})
-  void refresh()
+
   void loadHistory()
   void loadTraces()
   void loadLogs()

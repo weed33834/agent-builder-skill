@@ -158,14 +158,21 @@ async def chat(request: ChatRequest):
         if full_response:
             await session_mgr.add_message(thread_id, "assistant", full_response)
 
-        # 23-cost-billing: record usage (tokens estimated from I/O text length)
+        # 23-cost-billing: prefer the provider-reported token counts carried on
+        # stream events; fall back to a clearly-labeled estimate.
+        import logging as _logging
         try:
             from ...l10_infra.usage import record_usage
-            est_in = max(10, len((request.message or "")) // 2)
-            est_out = max(10, len(full_response) // 2)
-            record_usage(thread_id, settings.LLM_PROVIDER, settings.LLM_MODEL, est_in, est_out)
-        except Exception:  # noqa: BLE001
-            pass
+            usage = event.get("data", {}).get("usage") if isinstance(event, dict) else None
+            if isinstance(usage, dict) and usage.get("total_tokens"):
+                in_toks = int(usage.get("prompt_tokens", 0))
+                out_toks = int(usage.get("completion_tokens", usage["total_tokens"] - in_toks))
+            else:
+                in_toks = max(1, len((request.message or "")) // 4)
+                out_toks = max(1, len(full_response) // 4)
+            record_usage(thread_id, settings.LLM_PROVIDER, settings.LLM_MODEL, in_toks, out_toks)
+        except Exception as exc:  # noqa: BLE001
+            _logging.getLogger(__name__).warning("usage recording failed: %s", exc)
 
         # Stream end
         yield f"data: {json.dumps({'type': 'done', 'thread_id': thread_id, 'tool_calls': tool_call_count})}\n\n"

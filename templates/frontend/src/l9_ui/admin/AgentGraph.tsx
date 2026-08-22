@@ -8,7 +8,7 @@
  * 接口：/api/admin/agents*（adminListAgents / adminSaveAgent / adminSaveAgentGraph）
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   adminListAgents, adminSaveAgent, adminDeleteAgent, adminSaveAgentGraph,
   adminGenerateAgent, adminImportAgent, adminListAgentTemplates, adminPublishAgent,
@@ -64,6 +64,15 @@ export function AgentGraph() {
   const [templates, setTemplates] = useState<{ name: string; desc: string }[]>([])
   const [aiBusy, setAiBusy] = useState(false)
 
+
+  // Mount-only data load. Calling loaders inline re-rendered ->
+  // setState -> render -> request again: an infinite fetch loop.
+  useEffect(() => {
+      void loadTemplates()
+      void refresh()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const loadTemplates = async () => {
     try {
       const res = await adminListAgentTemplates()
@@ -72,7 +81,6 @@ export function AgentGraph() {
       setTemplates([])
     }
   }
-  void loadTemplates()
 
   const refresh = async () => {
     try {
@@ -82,7 +90,6 @@ export function AgentGraph() {
       setAgents([])
     }
   }
-  void refresh()
 
   const selected = agents.find((a) => a.id === selectedId)
 

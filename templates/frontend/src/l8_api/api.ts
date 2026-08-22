@@ -156,6 +156,21 @@ export async function chat(
 /**
  * Reset the session
  */
+/** Fetch persisted message history for a session (G5 会话续聊). */
+export async function getSessionMessages(
+  sessionId: string,
+  limit = 100
+): Promise<{ role: string; content: string }[]> {
+  try {
+    const data = await apiRequest<{ messages: { role: string; content: string }[] }>(
+      `/sessions/${sessionId}/messages?limit=${limit}`
+    )
+    return data.messages ?? []
+  } catch {
+    return []
+  }
+}
+
 export async function resetChat(threadId?: string): Promise<string> {
   const data = await apiRequest<{ thread_id: string }>('/chat/reset', {
     method: 'POST',
@@ -273,9 +288,12 @@ interface AdminRequestOptions {
   body?: unknown
 }
 
-/** 通用管理接口请求封装（委托统一 apiRequest，保留 Admin API 前缀语义） */
+/** 通用管理接口请求封装（委托统一 apiRequest）。
+ *  兼容两种 path 写法：调用方历史上传 '/api/admin/...'（完整路径），若在此处
+ *  再拼 API_BASE 会产生 /api/api/... 的 404 —— 这里做一次归一化。 */
 async function adminRequest<T>(path: string, options?: AdminRequestOptions): Promise<T> {
-  return apiRequest<T>(path, options)
+  const normalized = path.startsWith('/api/') ? path : `${API_BASE}${path}`
+  return apiRequest<T>(normalized, options)
 }
 
 /** 通用资源响应：{ items, total } */
@@ -613,6 +631,9 @@ export function adminRevokeAPIKey(id: string): Promise<{ ok: boolean }> {
 }
 export function adminGetAuditLog(): Promise<AdminListResult> {
   return adminRequest('/api/admin/security/audit')
+}
+export function adminUpdatePermissions(matrix: Record<string, unknown>): Promise<{ ok: boolean }> {
+  return adminRequest('/api/admin/security/permissions', { method: 'PUT', body: { matrix } })
 }
 /** Agent AI 生成 / 导入 / 模板市场 / 发布 (M12) */
 export function adminGenerateAgent(data: { description: string; kind?: string }): Promise<{ draft: Record<string, unknown>; yaml: string }> {

@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 import {
   adminListUsers, adminCreateUser, adminUpdateUser, adminDeleteUser,
   adminListAPIKeys, adminCreateAPIKey, adminRevokeAPIKey, adminGetAuditLog,
+  adminUpdatePermissions,
 } from '../../l8_api/api'
 
 interface User { id: string; username: string; email: string; role: string; status: string; created_at: number }
@@ -37,6 +38,7 @@ export function SecurityPanel() {
   const [newUser, setNewUser] = useState({ username: '', email: '', role: 'viewer' })
   const [newKeyName, setNewKeyName] = useState('')
   const [generatedKey, setGeneratedKey] = useState('')
+  const [notice, setNotice] = useState('')
   const [matrix, setMatrix] = useState<Record<string, string[]>>({})
 
   const loadUsers = () => adminListUsers().then(r => setUsers(r.items as unknown as User[])).catch(() => {})
@@ -181,7 +183,18 @@ export function SecurityPanel() {
               </tbody>
             </table>
             <div className="admin-actions">
-              <button className="admin-btn primary" onClick={() => console.log('saving permission matrix', matrix)}>保存（本地示意）</button>
+              <button
+                className="admin-btn primary"
+                onClick={async () => {
+                  try {
+                    await adminUpdatePermissions(matrix)
+                    setNotice('权限矩阵已保存')
+                  } catch (e) {
+                    setNotice(`保存失败: ${String(e)}`)
+                  }
+                }}
+              >保存权限矩阵</button>
+              {notice && <span className="admin-card-sub">{notice}</span>}
             </div>
           </div>
         </div>

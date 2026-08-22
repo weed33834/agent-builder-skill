@@ -12,11 +12,11 @@
  * 8. AbortController cancellation support
  */
 
-import { useState, useRef, useEffect, useCallback, useOptimistic, useTransition } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { MessageBubble } from './MessageBubble'
 import { ChatInput, type ChatMode } from './ChatInput'
 import { ToolCall } from './ToolCall'
-import { streamChat } from '../../l8_api/api'
+import { streamChat, getSessionMessages } from '../../l8_api/api'
 import type { Message, ToolCallInfo, A2ATaskInfo, SubagentCallInfo } from '../../types'
 
 interface ChatWindowProps {
@@ -28,7 +28,7 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({
-  sessionId: _sessionId,
+  sessionId,
   showToolViz = true,
   showFileUpload = false,
   showChartDisplay: _showChartDisplay = false,
@@ -44,11 +44,6 @@ export function ChatWindow({
   ])
   const [isLoading, setIsLoading] = useState(false)
   const [threadId, setThreadId] = useState<string | undefined>()
-  const [optimisticMessages, addOptimisticMessage] = useOptimistic(
-    messages,
-    (state: Message[], newMessage: Message) => [...state, newMessage]
-  )
-  const [, startTransition] = useTransition()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
   const lastFrameRef = useRef<number>(0)
@@ -61,6 +56,31 @@ export function ChatWindow({
   useEffect(() => {
     scrollToBottom()
   }, [messages, scrollToBottom])
+
+  // Load persisted history when the active session changes. Previously the
+  // sessionId prop was ignored, so switching sessions always showed only the
+  // welcome message even though the backend had full history.
+  useEffect(() => {
+    if (!sessionId) return
+    let cancelled = false
+    getSessionMessages(sessionId)
+      .then(rows => {
+        if (cancelled || rows.length === 0) return
+        setMessages(prev => [
+          ...prev.filter(m => m.id !== 'welcome' && m.role !== 'user'),
+          ...rows
+            .filter(r => (r.content || '').trim())
+            .map(r => ({
+              id: crypto.randomUUID(),
+              role: r.role === 'user' ? ('user' as const) : ('assistant' as const),
+              content: r.content,
+              timestamp: new Date(),
+            })),
+        ])
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [sessionId])
 
   /**
    * requestAnimationFrame throttled message content update
@@ -98,21 +118,17 @@ export function ChatWindow({
     const abortController = new AbortController()
     abortControllerRef.current = abortController
 
-    // Add the user message (optimistic update)
+    // Add the user message (single source of truth: plain setState).
+    // The previous code appended via useOptimistic AND setMessages, which
+    // rendered the same bubble twice with duplicate keys.
     const userMessageId = crypto.randomUUID()
     const userMessage: Message = {
       id: userMessageId,
       role: 'user',
       content,
       timestamp: new Date(),
-      isOptimistic: true,
     }
-    // React 19 useOptimistic
-    startTransition(() => {
-      addOptimisticMessage(userMessage)
-    })
-    // Also update the actual state
-    setMessages(prev => [...prev, { ...userMessage, isOptimistic: false }])
+    setMessages(prev => [...prev, userMessage])
     setIsLoading(true)
 
     // Create the assistant message (streaming)
@@ -350,18 +366,21 @@ export function ChatWindow({
             if (event.thread_id) {
               setThreadId(event.thread_id)
             }
-            // Final content flush
+            // Final content flush: rAF throttling may leave the last tokens
+            // only in pendingContentRef — write them back or the reply ends
+            // mid-sentence.
             setMessages(prev =>
               prev.map(m =>
                 m.id === assistantId
                   ? {
                       ...m,
-                      content: m.content + (pendingContentRef.current ? '' : ''),
+                      content: pendingContentRef.current || m.content,
                       isStreaming: false,
                     }
                   : m
               )
             )
+            pendingContentRef.current = ''
             setIsLoading(false)
             break
 
@@ -409,8 +428,8 @@ export function ChatWindow({
   return (
     <div className="chat-window">
       <div className="messages-container">
-        {optimisticMessages.map(msg => (
-          <div key={msg.id} className={`message-wrapper ${msg.isOptimistic ? 'optimistic' : ''}`}>
+        {messages.map(msg => (
+          <div key={msg.id} className="message-wrapper">
             <MessageBubble message={msg} />
             {/* Tool call visualization */}
             {showToolViz && msg.toolCalls && msg.toolCalls.length > 0 && (
@@ -468,7 +487,7 @@ export function ChatWindow({
           </button>
         </div>
       )}
-      <ChatInput onSend={handleSend} disabled={isLoading} showFileUpload={showFileUpload} sessionId={_sessionId} />
+      <ChatInput onSend={handleSend} disabled={isLoading} showFileUpload={showFileUpload} sessionId={sessionId} />
     </div>
   )
 }

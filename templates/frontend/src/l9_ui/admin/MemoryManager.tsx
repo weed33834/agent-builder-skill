@@ -8,7 +8,7 @@
  * 接口：/api/admin/memory*（adminGetMemory / adminSaveMemory / adminQueryMemory）
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   adminGetMemory, adminQueryMemory, adminSaveMemory,
   adminListKBs, adminCreateKB, adminDeleteKB,
@@ -51,6 +51,15 @@ export function MemoryManager() {
   const [docName, setDocName] = useState('')
   const [docContent, setDocContent] = useState('')
 
+
+  // Mount-only data load. Calling loaders inline re-rendered ->
+  // setState -> render -> request again: an infinite fetch loop.
+  useEffect(() => {
+      void refresh()
+      void loadKBs()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const loadKBs = async () => {
     try {
       const res = await adminListKBs()
@@ -74,9 +83,8 @@ export function MemoryManager() {
     } catch {
       /* 后端未就绪时保持空态 */
     }
-    void loadKBs()
+
   }
-  void refresh()
 
   const addEntry = async () => {
     if (!newEntry) return

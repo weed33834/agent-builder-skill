@@ -703,20 +703,23 @@ async def run_evaluation(payload: dict):
 @router.get("/admin/metrics")
 async def get_metrics():
     """指标序列 (内存缓冲, 生产接 Prometheus/时序库)。"""
-    try:
-        from ...l10_infra import monitoring
+    from ...l10_infra import monitoring
 
-        snap = monitoring.get_snapshot()
-        now = time.strftime("%H:%M:%S")
-        return {
-            "series": {"requests": {"ts": [now], "values": [snap.get("requests", 0)]}},
-            "summary": snap,
-        }
-    except Exception:  # noqa: BLE001
-        return {
-            "series": {"requests": {"ts": [], "values": []}},
-            "summary": {"requests": 0, "errors": 0, "latency_ms": 0, "tokens": 0},
-        }
+    M = monitoring.MetricsRegistry
+    now = time.strftime("%H:%M:%S")
+    summary = {
+        "requests": M.request_total.snapshot(),
+        "errors": M.request_error_total.snapshot(),
+        "latency_ms": round(M.request_latency.snapshot().get("avg_ms", 0.0), 2),
+        "tokens": M.llm_tokens_total.snapshot(),
+        "llm_calls": M.llm_calls_total.snapshot(),
+        "agent_runs": M.agent_runs_total.snapshot(),
+        "tool_calls": M.tool_calls_total.snapshot(),
+    }
+    return {
+        "series": {"requests": {"ts": [now], "values": [summary["requests"]]}},
+        "summary": summary,
+    }
 
 
 _register_list_delete("alerts", "alerts", audit="alert.delete")
@@ -952,29 +955,42 @@ async def run_tool(tool_id: str, payload: dict):
 @router.post("/admin/tools/reload")
 async def reload_tools(payload: dict = None):
     """热加载工具: 从插件目录扫描注册工具。
-    contract: {dir?} -> {ok, registered}"""
+    contract: {dir?} -> {ok, registered, error?, loaded?}
+
+    Failures are surfaced honestly: an invalid directory and a load error are
+    distinct outcomes, not a silent ok:true with zero registrations.
+    """
     tool_dir = (payload or {}).get("dir", "")
+    if not tool_dir:
+        raise HTTPException(status_code=400, detail="dir is required")
+    if not os.path.isdir(tool_dir):
+        raise HTTPException(status_code=404, detail=f"plugin dir not found: {tool_dir}")
+
+    try:
+        from ...l10_infra.plugin_manager import PluginManager
+        pm = PluginManager([tool_dir])
+        pm.load_all()
+        discovered = pm.list_info()
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"plugin load failed: {exc}")
+
     registered = 0
-    if tool_dir:
-        try:
-            from ...l10_infra.plugin_manager import PluginManager
-            pm = PluginManager([tool_dir])
-            pm.load_all()
-            discovered = pm.list_info()
-            data = _load("tools")
-            for d in discovered:
-                if not any(t.get("name") == d.get("name") for t in data["items"]):
-                    data["items"].append({
-                        "id": _new_id("t"), "name": d.get("name", ""),
-                        "description": d.get("description", ""), "schema": d.get("schema", {}),
-                        "endpoint": d.get("endpoint", ""), "enabled": True,
-                        "params": {}, "source": "hot-reload", "created_at": int(time.time()),
-                    })
-                    registered += 1
-            _save("tools", data)
-        except Exception:  # noqa: BLE001
-            registered = 0
-    return {"ok": True, "registered": registered}
+    skipped = 0
+    data = _load("tools")
+    for d in discovered:
+        if any(t.get("name") == d.get("name") for t in data["items"]):
+            skipped += 1
+            continue
+        data["items"].append({
+            "id": _new_id("t"), "name": d.get("name", ""),
+            "description": d.get("description", ""), "schema": d.get("schema", {}),
+            "endpoint": d.get("endpoint", ""), "enabled": True,
+            "params": {}, "source": "hot-reload", "created_at": int(time.time()),
+        })
+        registered += 1
+    _save("tools", data)
+    return {"ok": True, "registered": registered, "skipped_existing": skipped,
+            "loaded_plugins": len(discovered)}
 
 
 # ---------------------------------------------------------------------------

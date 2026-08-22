@@ -36,7 +36,7 @@ export function WorkspacePanel({ onSelect }: { onSelect?: (ws: Workspace) => voi
       {items.map(ws => (
         <div className="ws-item" key={ws.id} onClick={() => onSelect?.(ws)}>
           <div className="ws-item-head">
-            <span className="ws-type {ws.type}">{ws.type === 'project' ? '项目' : ws.type === 'dept' ? '部门' : '个人'}</span>
+            <span className={`ws-type ${ws.type}`}>{ws.type === 'project' ? '项目' : ws.type === 'dept' ? '部门' : '个人'}</span>
             <span style={{ fontWeight: 600, fontSize: 13 }}>{ws.name}</span>
           </div>
           <div className="ws-meta">{ws.description || ''} · 所有者 {ws.owner}</div>

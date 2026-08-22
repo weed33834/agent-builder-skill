@@ -272,7 +272,7 @@ export function App() {
                             <div key={agent.id} className="status-item">
                               <span className="status-item-name">{agent.name}</span>
                               <span className="status-item-desc">{agent.description}</span>
-                              <span className="status-item-badge available">Available</span>
+                              <span className="status-item-badge">Configured</span>
                             </div>
                           ))}
                         </div>
