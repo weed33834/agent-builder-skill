@@ -134,12 +134,53 @@ def _upsert(kind: str, item: Dict[str, Any], match_key: str = "id") -> Dict[str,
     return item
 
 
+def _apply_update(kind: str, item_id: str, payload: Dict[str, Any], *,
+                  protected: tuple = ("id",), label: str | None = None,
+                  audit: str | None = None) -> Dict[str, Any]:
+    """Uniform field-merge update for a simple JSON-backed resource."""
+    data = _load(kind)
+    for item in data["items"]:
+        if item["id"] == item_id:
+            item.update({k: v for k, v in payload.items() if k not in protected})
+            _save(kind, data)
+            if audit:
+                _audit(audit, str(item.get("name") or item_id))
+            return item
+    raise HTTPException(status_code=404, detail=f"{label or kind} not found")
+
+
+def _register_list_delete(resource: str, kind: str, *,
+                          audit: str | None = None,
+                          include_list: bool = True) -> None:
+    """Register the uniform GET-list / DELETE-by-id pair for a JSON-backed
+    admin resource, replacing the hand-copied endpoint bodies. Set
+    include_list=False when the resource has a bespoke list endpoint."""
+
+    async def _endpoint_list():
+        return _list(kind)
+
+    async def _endpoint_delete(item_id: str):
+        data = _load(kind)
+        before = len(data["items"])
+        data["items"] = [i for i in data["items"] if i["id"] != item_id]
+        if len(data["items"]) == before:
+            raise HTTPException(status_code=404, detail=f"{resource} not found")
+        _save(kind, data)
+        if audit:
+            _audit(audit, item_id)
+        return {"ok": True}
+
+    if include_list:
+        router.add_api_route(f"/admin/{resource}", _endpoint_list, methods=["GET"])
+    router.add_api_route(f"/admin/{resource}/{{item_id}}", _endpoint_delete,
+                         methods=["DELETE"])
+
+
 # ---------------------------------------------------------------------------
 # Prompts — 提示词管理 (M3.21)
+# list/delete 由下方统一注册；create/update 含版本快照等专属逻辑，保留手写
 # ---------------------------------------------------------------------------
-@router.get("/admin/prompts")
-async def list_prompts():
-    return _list("prompts")
+_register_list_delete("prompts", "prompts", audit="prompt.delete")
 
 
 @router.post("/admin/prompts")
@@ -247,18 +288,6 @@ async def set_prompt_ab(prompt_id: str, payload: dict):
     raise HTTPException(status_code=404, detail="prompt not found")
 
 
-@router.delete("/admin/prompts/{prompt_id}")
-async def delete_prompt(prompt_id: str):
-    data = _load("prompts")
-    before = len(data["items"])
-    data["items"] = [i for i in data["items"] if i["id"] != prompt_id]
-    if len(data["items"]) == before:
-        raise HTTPException(status_code=404, detail="prompt not found")
-    _save("prompts", data)
-    _audit("prompt.delete", prompt_id)
-    return {"ok": True}
-
-
 @router.post("/admin/prompts/generate")
 async def generate_prompt(payload: dict):
     """AI 生成/优化/改写/翻译/审查提示词 (M3.21)。
@@ -337,9 +366,11 @@ async def import_prompt(payload: dict):
 # ---------------------------------------------------------------------------
 # Tools — 工具管理 (M5.21)
 # ---------------------------------------------------------------------------
-@router.get("/admin/tools")
-async def list_tools():
-    return _list("tools")
+# ---------------------------------------------------------------------------
+# Tools — 工具管理 (M3.23)
+# list/delete 统一注册；create/mcp-connect 有专属逻辑，保留手写
+# ---------------------------------------------------------------------------
+_register_list_delete("tools", "tools", audit="tool.delete")
 
 
 @router.post("/admin/tools")
@@ -364,26 +395,8 @@ async def register_tool(payload: dict):
 @router.put("/admin/tools/{tool_id}")
 async def update_tool(tool_id: str, payload: dict):
     """启停 / 参数配置。"""
-    data = _load("tools")
-    for t in data["items"]:
-        if t["id"] == tool_id:
-            t.update({k: v for k, v in payload.items() if k != "id"})
-            _save("tools", data)
-            _audit("tool.update", t["name"])
-            return t
-    raise HTTPException(status_code=404, detail="tool not found")
-
-
-@router.delete("/admin/tools/{tool_id}")
-async def delete_tool(tool_id: str):
-    data = _load("tools")
-    before = len(data["items"])
-    data["items"] = [t for t in data["items"] if t["id"] != tool_id]
-    if len(data["items"]) == before:
-        raise HTTPException(status_code=404, detail="tool not found")
-    _save("tools", data)
-    _audit("tool.delete", tool_id)
-    return {"ok": True}
+    return _apply_update("tools", tool_id, payload, label="tool",
+                         audit="tool.update")
 
 
 @router.post("/admin/tools/mcp/connect")
@@ -490,10 +503,9 @@ async def clear_memory(payload: dict = None):
 
 # ---------------------------------------------------------------------------
 # Agents — Agent 模板管理 (M0.22)
+# list/delete 统一注册；create/graph/generate/import/publish 有专属逻辑
 # ---------------------------------------------------------------------------
-@router.get("/admin/agents")
-async def list_agent_templates():
-    return _list("agents")
+_register_list_delete("agents", "agents")
 
 
 @router.post("/admin/agents")
@@ -532,20 +544,13 @@ async def save_agent_graph(payload: dict):
     raise HTTPException(status_code=404, detail="agent not found")
 
 
-@router.delete("/admin/agents/{agent_id}")
-async def delete_agent_template(agent_id: str):
-    data = _load("agents")
-    before = len(data["items"])
-    data["items"] = [a for a in data["items"] if a["id"] != agent_id]
-    if len(data["items"]) == before:
-        raise HTTPException(status_code=404, detail="agent not found")
-    _save("agents", data)
-    return {"ok": True}
-
-
 # ---------------------------------------------------------------------------
 # Models — 模型供应商管理 (M1.22)
+# list(密钥脱敏)/delete/update(api_key 掩码) 有专属逻辑；delete 统一注册
 # ---------------------------------------------------------------------------
+_register_list_delete("models", "models", audit="model.delete", include_list=False)
+
+
 @router.get("/admin/models")
 async def list_models():
     """模型供应商列表 (密钥脱敏)。"""
@@ -590,18 +595,6 @@ async def update_model(model_id: str, payload: dict):
     raise HTTPException(status_code=404, detail="model not found")
 
 
-@router.delete("/admin/models/{model_id}")
-async def delete_model(model_id: str):
-    data = _load("models")
-    before = len(data["items"])
-    data["items"] = [m for m in data["items"] if m["id"] != model_id]
-    if len(data["items"]) == before:
-        raise HTTPException(status_code=404, detail="model not found")
-    _save("models", data)
-    _audit("model.delete", model_id)
-    return {"ok": True}
-
-
 @router.post("/admin/models/test")
 async def test_model(payload: dict):
     """连通性测试 (M1.23): 实时 ping 模型端点。
@@ -638,9 +631,8 @@ async def test_model(payload: dict):
 # ---------------------------------------------------------------------------
 # Workflows — 编排工作流管理 (M7.25)
 # ---------------------------------------------------------------------------
-@router.get("/admin/workflows")
-async def list_workflows():
-    return _list("workflows")
+# list/delete 统一注册；create 有专属逻辑
+_register_list_delete("workflows", "workflows", audit="workflow.delete")
 
 
 @router.post("/admin/workflows")
@@ -660,25 +652,12 @@ async def save_workflow(payload: dict):
     return _upsert("workflows", item)
 
 
-@router.delete("/admin/workflows/{workflow_id}")
-async def delete_workflow(workflow_id: str):
-    data = _load("workflows")
-    before = len(data["items"])
-    data["items"] = [w for w in data["items"] if w["id"] != workflow_id]
-    if len(data["items"]) == before:
-        raise HTTPException(status_code=404, detail="workflow not found")
-    _save("workflows", data)
-    _audit("workflow.delete", workflow_id)
-    return {"ok": True}
-
-
 # ---------------------------------------------------------------------------
 # Evaluations — 评估管理 (M10.22)
 # ---------------------------------------------------------------------------
 @router.get("/admin/evaluations")
 async def list_evaluations():
-    data = _load("evaluations")
-    return {"items": data.get("items", []), "total": len(data.get("items", []))}
+    return _list("evaluations")
 
 
 @router.post("/admin/evaluations")
@@ -740,9 +719,7 @@ async def get_metrics():
         }
 
 
-@router.get("/admin/alerts")
-async def list_alerts():
-    return _list("alerts")
+_register_list_delete("alerts", "alerts", audit="alert.delete")
 
 
 @router.post("/admin/alerts")
@@ -761,18 +738,6 @@ async def save_alert(payload: dict):
         "created_at": int(time.time()),
     }
     return _upsert("alerts", item)
-
-
-@router.delete("/admin/alerts/{alert_id}")
-async def delete_alert(alert_id: str):
-    data = _load("alerts")
-    before = len(data["items"])
-    data["items"] = [a for a in data["items"] if a["id"] != alert_id]
-    if len(data["items"]) == before:
-        raise HTTPException(status_code=404, detail="alert not found")
-    _save("alerts", data)
-    _audit("alert.delete", alert_id)
-    return {"ok": True}
 
 
 # ---------------------------------------------------------------------------
