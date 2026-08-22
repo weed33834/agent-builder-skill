@@ -14,6 +14,37 @@ import type { SSEEvent, AgentConfig, MCPToolDescriptor, A2ATaskInfo } from '../t
 
 const API_BASE = '/api'
 
+/** Unified error carrying the HTTP status for JSON endpoints. */
+export class ApiError extends Error {
+  constructor(public status: number, message: string) {
+    super(message)
+    this.name = 'ApiError'
+  }
+}
+
+interface JsonRequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  /** Auto-JSON-stringified; omit for body-less requests */
+  body?: unknown
+  signal?: AbortSignal
+}
+
+/** Single entry point for plain JSON endpoints: serialization + error handling. */
+async function apiRequest<T>(path: string, options?: JsonRequestOptions): Promise<T> {
+  const init: RequestInit = {
+    method: options?.method ?? (options?.body !== undefined ? 'POST' : 'GET'),
+    headers: { 'Content-Type': 'application/json' },
+    signal: options?.signal,
+  }
+  if (options?.body !== undefined) init.body = JSON.stringify(options.body)
+  const response = await fetch(`${API_BASE}${path}`, init)
+  if (!response.ok) {
+    const text = await response.text().catch(() => response.statusText)
+    throw new ApiError(response.status, `${options?.method ?? 'GET'} ${path} failed: ${response.status} ${text}`)
+  }
+  return response.json() as Promise<T>
+}
+
 /** Chat request options */
 export interface ChatOptions {
   message: string
@@ -110,44 +141,26 @@ export async function chat(
   tool_calls?: { tool: string; input: string; output: string }[]
   a2a_tasks?: A2ATaskInfo[]
 }> {
-  const response = await fetch(`${API_BASE}/chat`, {
+  return apiRequest<{
+    content: string
+    thread_id: string
+    tool_calls?: { tool: string; input: string; output: string }[]
+    a2a_tasks?: A2ATaskInfo[]
+  }>('/chat', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      message,
-      thread_id: threadId,
-      stream: false,
-    }),
+    body: { message, thread_id: threadId, stream: false },
     signal: options?.signal,
   })
-
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => 'Unknown error')
-    throw new Error(`Chat request failed: ${response.status} ${errorText}`)
-  }
-
-  return response.json()
 }
 
 /**
  * Reset the session
  */
 export async function resetChat(threadId?: string): Promise<string> {
-  const response = await fetch(`${API_BASE}/chat/reset`, {
+  const data = await apiRequest<{ thread_id: string }>('/chat/reset', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ thread_id: threadId }),
+    body: { thread_id: threadId },
   })
-
-  if (!response.ok) {
-    throw new Error('Failed to reset chat')
-  }
-
-  const data = await response.json()
   return data.thread_id
 }
 
@@ -155,96 +168,50 @@ export async function resetChat(threadId?: string): Promise<string> {
  * A2A task polling
  * Queries the execution status and result of a delegated remote Agent task
  */
-export async function pollA2ATask(
-  taskId: string
-): Promise<A2ATaskInfo> {
-  const response = await fetch(`${API_BASE}/a2a/tasks/${taskId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`A2A task poll failed: ${response.status}`)
-  }
-
-  return response.json()
+export async function pollA2ATask(taskId: string): Promise<A2ATaskInfo> {
+  return apiRequest<A2ATaskInfo>(`/a2a/tasks/${taskId}`)
 }
 
 /**
  * Batch-poll multiple A2A tasks
  */
-export async function pollA2ATasks(
-  taskIds: string[]
-): Promise<A2ATaskInfo[]> {
-  const response = await fetch(`${API_BASE}/a2a/tasks`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ task_ids: taskIds }),
-  })
-
-  if (!response.ok) {
-    throw new Error(`A2A tasks poll failed: ${response.status}`)
-  }
-
-  return response.json()
+export async function pollA2ATasks(taskIds: string[]): Promise<A2ATaskInfo[]> {
+  return apiRequest<A2ATaskInfo[]>('/a2a/tasks', { method: 'POST', body: { task_ids: taskIds } })
 }
 
 /**
  * Cancel an A2A task
  */
-export async function cancelA2ATask(
-  taskId: string
-): Promise<void> {
-  const response = await fetch(`${API_BASE}/a2a/tasks/${taskId}/cancel`, {
-    method: 'POST',
-  })
-
-  if (!response.ok) {
-    throw new Error(`A2A task cancel failed: ${response.status}`)
-  }
+export async function cancelA2ATask(taskId: string): Promise<void> {
+  await fetch(`${API_BASE}/a2a/tasks/${taskId}/cancel`, { method: 'POST' })
+    .then((r) => {
+      if (!r.ok) throw new ApiError(r.status, `A2A task cancel failed: ${r.status}`)
+    })
 }
 
 /**
  * MCP tool discovery
- * Retrieves the list of currently available MCP tools
+ * Retrieves the list of currently available MCP tools (empty on failure)
  */
 export async function discoverMCPTools(): Promise<MCPToolDescriptor[]> {
-  const response = await fetch(`${API_BASE}/mcp/tools`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-
-  if (!response.ok) {
+  try {
+    return await apiRequest<MCPToolDescriptor[]>('/mcp/tools')
+  } catch {
     return []
   }
-
-  return response.json()
 }
 
 /**
- * MCP server connection status
+ * MCP server connection status (empty on failure)
  */
 export async function getMCPStatus(): Promise<{
   servers: { id: string; name: string; status: 'connected' | 'disconnected' | 'error'; tools: number; error?: string }[]
 }> {
-  const response = await fetch(`${API_BASE}/mcp/status`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  })
-
-  if (!response.ok) {
+  try {
+    return await apiRequest<{ servers: { id: string; name: string; status: 'connected' | 'disconnected' | 'error'; tools: number; error?: string }[] }>('/mcp/status')
+  } catch {
     return { servers: [] }
   }
-
-  return response.json()
 }
 
 /**
@@ -272,13 +239,7 @@ export async function getAgentConfig(): Promise<AgentConfig> {
  * Update the Agent runtime configuration (M8 配置面板)
  */
 export async function updateAgentConfig(config: Record<string, unknown>): Promise<{ ok: boolean }> {
-  const response = await fetch(`${API_BASE}/config`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(config),
-  })
-  if (!response.ok) throw new Error(`update config failed: ${response.status}`)
-  return response.json()
+  return apiRequest<{ ok: boolean }>('/config', { method: 'PUT', body: config })
 }
 
 /**
@@ -312,18 +273,9 @@ interface AdminRequestOptions {
   body?: unknown
 }
 
-/** 通用管理接口请求封装：统一 JSON 序列化与错误处理 */
+/** 通用管理接口请求封装（委托统一 apiRequest，保留 Admin API 前缀语义） */
 async function adminRequest<T>(path: string, options?: AdminRequestOptions): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    method: options?.method ?? 'GET',
-    headers: { 'Content-Type': 'application/json' },
-    body: options?.body !== undefined ? JSON.stringify(options.body) : undefined,
-  })
-  if (!response.ok) {
-    const text = await response.text().catch(() => '')
-    throw new Error(`Admin API ${options?.method ?? 'GET'} ${path} failed: ${response.status} ${text}`)
-  }
-  return response.json() as Promise<T>
+  return apiRequest<T>(path, options)
 }
 
 /** 通用资源响应：{ items, total } */
