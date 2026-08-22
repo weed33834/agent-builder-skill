@@ -142,7 +142,9 @@ def build_react_agent_graph() -> StateGraph:
     )
 
     tools = ToolRegistry.get_all()
-    agent = create_react_agent(llm, tools)
+    # create_react_agent needs a real Runnable chat model — our ChatInterface
+    # wrapper is not Runnable and would explode on the first invocation.
+    agent = create_react_agent(llm.get_chat_model(), tools)
 
     return agent
 
@@ -185,7 +187,10 @@ def get_graph() -> StateGraph:
         if agent_type == "supervisor":
             graph = build_supervisor_graph()
         elif agent_type == "react":
-            return build_react_agent_graph()
+            # create_react_agent returns an already-compiled graph; cache it
+            # instead of returning early (which rebuilt it on every call).
+            _graph = build_react_agent_graph()
+            return _graph
         else:
             graph = build_single_agent_graph()
 

@@ -728,6 +728,80 @@ def generate_l5_tools(config: dict, output_dir: str):
     # stdlib-only so the generated project needs no extra dependencies.
     tool_definitions = []
 
+    # Shared security helpers emitted into every generated base_tools.py
+    # (SSRF guard for web_fetch; AST-walk arithmetic for calculate).
+    tool_helpers = r'''
+import ast as _ast
+import ipaddress as _ipaddress
+import socket as _socket
+from urllib.parse import urlparse as _urlparse
+
+_BLOCKED_NETS = [
+    _ipaddress.ip_network("127.0.0.0/8"),
+    _ipaddress.ip_network("10.0.0.0/8"),
+    _ipaddress.ip_network("172.16.0.0/12"),
+    _ipaddress.ip_network("192.168.0.0/16"),
+    _ipaddress.ip_network("169.254.0.0/16"),
+    _ipaddress.ip_network("::1/128"),
+    _ipaddress.ip_network("fc00::/7"),
+    _ipaddress.ip_network("fe80::/10"),
+]
+
+
+def _assert_public_http_url(url):
+    parsed = _urlparse(url or "")
+    if parsed.scheme not in ("http", "https") or not parsed.hostname:
+        raise ValueError(f"only http(s) URLs are allowed: {url!r}")
+    try:
+        infos = _socket.getaddrinfo(parsed.hostname, None)
+    except _socket.gaierror as exc:
+        raise ValueError(f"cannot resolve host {parsed.hostname!r}: {exc}") from exc
+    for info in infos:
+        ip = _ipaddress.ip_address(info[4][0])
+        if any(ip in net for net in _BLOCKED_NETS):
+            raise ValueError(f"access to private/reserved address is blocked: {parsed.hostname}")
+
+
+def _safe_eval_math(expression):
+    """Arithmetic-only AST evaluation: no eval(), no names/calls, bounded **."""
+    if len(expression) > 200:
+        raise ValueError("expression too long")
+    allowed_bins = {_ast.Add, _ast.Sub, _ast.Mult, _ast.Div, _ast.FloorDiv, _ast.Mod}
+
+    def _ev(node):
+        if isinstance(node, _ast.Expression):
+            return _ev(node.body)
+        if isinstance(node, _ast.Constant) and isinstance(node.value, (int, float)):
+            return node.value
+        if isinstance(node, _ast.BinOp):
+            left, right = _ev(node.left), _ev(node.right)
+            if isinstance(node.op, _ast.Pow):
+                if abs(right) > 64 or abs(left) > 1e9:
+                    raise ValueError("exponent too large")
+                result = left ** right
+                if abs(result) > 1e300:
+                    raise ValueError("result too large")
+                return result
+            if type(node.op) not in allowed_bins:
+                raise ValueError("operator not allowed")
+            if right == 0 and isinstance(node.op, (_ast.Div, _ast.FloorDiv, _ast.Mod)):
+                raise ZeroDivisionError
+            return {
+                _ast.Add: lambda: left + right,
+                _ast.Sub: lambda: left - right,
+                _ast.Mult: lambda: left * right,
+                _ast.Div: lambda: left / right,
+                _ast.FloorDiv: lambda: left // right,
+                _ast.Mod: lambda: left % right,
+            }[type(node.op)]()
+        if isinstance(node, _ast.UnaryOp) and isinstance(node.op, (_ast.UAdd, _ast.USub)):
+            value = _ev(node.operand)
+            return value if isinstance(node.op, _ast.UAdd) else -value
+        raise ValueError(f"unsupported syntax: {type(node).__name__}")
+
+    return _ev(_ast.parse(expression, mode="eval"))
+'''
+
     base_impls = {
         "web_search": r'''
 @tool
@@ -753,11 +827,23 @@ async def web_search(query: str) -> str:
         "web_fetch": r'''
 @tool
 async def web_fetch(url: str) -> str:
-    """Fetch web page content"""
+    """Fetch public http(s) page content (SSRF-guarded)."""
     import httpx, re
+    try:
+        _assert_public_http_url(url)
+    except ValueError as e:
+        return f"Blocked: {e}"
     async with httpx.AsyncClient() as client:
         try:
-            resp = await client.get(url, timeout=15.0, follow_redirects=True)
+            resp = await client.get(url, timeout=15.0, follow_redirects=False)
+            hops = 0
+            while resp.is_redirect and hops < 3:
+                nxt = resp.headers.get("location", "")
+                if not nxt:
+                    break
+                _assert_public_http_url(nxt)
+                resp = await client.get(nxt, timeout=15.0, follow_redirects=False)
+                hops += 1
             resp.encoding = resp.charset or "utf-8"
             text = resp.text
             text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.DOTALL)
@@ -778,13 +864,9 @@ async def current_time() -> str:
         "calculate": r'''
 @tool
 async def calculate(expression: str) -> str:
-    """Perform mathematical calculations"""
-    allowed = set("0123456789.+-*/()% ")
-    if not all(c in allowed for c in expression):
-        return "错误: 表达式包含非法字符"
+    """Perform arithmetic (+ - * / % // and bounded **) via AST evaluation."""
     try:
-        result = eval(expression, {"__builtins__": {}}, {})
-        return str(result)
+        return str(_safe_eval_math(expression))
     except Exception as e:
         return f"计算错误: {str(e)}"
 ''',
@@ -1053,6 +1135,8 @@ Enabled at runtime: {', '.join(enabled_names) if enabled_names else 'none'}
 """
 
 from langchain_core.tools import tool
+
+{tool_helpers}
 
 {''.join(tool_definitions)}
 

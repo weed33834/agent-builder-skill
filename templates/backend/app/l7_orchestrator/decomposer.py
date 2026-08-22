@@ -24,6 +24,11 @@ class TaskDecomposer:
         Automatically generates a subtask list based on the task description.
         Supports chained dependencies (the result of one task serves as input to the next).
 
+        Subtask ids are DETERMINISTIC within a decomposition ("research_1",
+        "analysis_2", ...) so that `dependencies` can reference earlier steps;
+        random uuids would make every dependency unsatisfiable and silently
+        drop all but the first subtask from execution.
+
         Args:
             task: Task description
             context: Context information
@@ -44,7 +49,7 @@ class TaskDecomposer:
             # Default: single task
             subtasks = [
                 SubTask(
-                    id=str(uuid.uuid4())[:8],
+                    id=f"general_{uuid.uuid4().hex[:6]}",
                     description=task,
                     agent_type="general",
                     input_data={"task": task},
@@ -57,17 +62,17 @@ class TaskDecomposer:
         """Create research-type subtasks"""
         return [
             SubTask(
-                id=str(uuid.uuid4())[:8],
+                id="research_search",
                 description=f"搜索相关信息: {task}",
                 agent_type="search",
                 input_data={"query": task, "action": "search"},
             ),
             SubTask(
-                id=str(uuid.uuid4())[:8],
+                id="research_analyze",
                 description=f"分析和总结: {task}",
                 agent_type="analyze",
                 input_data={"task": task, "action": "analyze"},
-                dependencies=["search"],
+                dependencies=["research_search"],
             ),
         ]
 
@@ -75,24 +80,24 @@ class TaskDecomposer:
         """Create analysis-type subtasks"""
         return [
             SubTask(
-                id=str(uuid.uuid4())[:8],
+                id="analysis_collect",
                 description=f"收集数据: {task}",
                 agent_type="search",
                 input_data={"query": task, "action": "collect"},
             ),
             SubTask(
-                id=str(uuid.uuid4())[:8],
+                id="analysis_deep_analyze",
                 description=f"深度分析: {task}",
                 agent_type="analyze",
                 input_data={"task": task, "action": "deep_analyze"},
-                dependencies=["collect"],
+                dependencies=["analysis_collect"],
             ),
             SubTask(
-                id=str(uuid.uuid4())[:8],
+                id="analysis_report",
                 description=f"生成报告: {task}",
                 agent_type="generate",
                 input_data={"task": task, "action": "report"},
-                dependencies=["analyze"],
+                dependencies=["analysis_deep_analyze"],
             ),
         ]
 
@@ -100,22 +105,22 @@ class TaskDecomposer:
         """Create comparison-type subtasks"""
         return [
             SubTask(
-                id=str(uuid.uuid4())[:8],
+                id="compare_collect_a",
                 description=f"收集对比项 A: {task}",
                 agent_type="search",
                 input_data={"query": task, "action": "collect_a"},
             ),
             SubTask(
-                id=str(uuid.uuid4())[:8],
+                id="compare_collect_b",
                 description=f"收集对比项 B: {task}",
                 agent_type="search",
                 input_data={"query": task, "action": "collect_b"},
             ),
             SubTask(
-                id=str(uuid.uuid4())[:8],
+                id="compare_analyze",
                 description=f"对比分析: {task}",
                 agent_type="analyze",
                 input_data={"task": task, "action": "compare"},
-                dependencies=["collect_a", "collect_b"],
+                dependencies=["compare_collect_a", "compare_collect_b"],
             ),
         ]

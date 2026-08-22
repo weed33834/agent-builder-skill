@@ -21,6 +21,9 @@ def parse_cron(expr: str) -> tuple[set, set, set, set, set]:
     """Parse a 5-field cron expression (min hour dom month dow).
 
     Supports: * , - / numbers (subset of standard cron).
+    Values outside each field's range and zero steps ("*/0") are REJECTED at
+    parse time — previously "*/0" crashed range() inside the scheduler loop
+    and silently killed every scheduled job.
     Returns (minutes, hours, days, months, weekdays) as sets.
     """
     fields = expr.split()
@@ -37,14 +40,25 @@ def parse_cron(expr: str) -> tuple[set, set, set, set, set]:
                 continue
             if "/" in part:
                 base, step = part.split("/")
+                step_i = int(step)
+                if step_i <= 0:
+                    raise ValueError(f"Invalid cron step in {field!r}: step must be >= 1")
                 start = lo if base in ("*", "") else int(base)
-                result.update(range(start, hi + 1, int(step)))
+                result.update(range(start, hi + 1, step_i))
                 continue
             if "-" in part:
                 a, b = part.split("-")
-                result.update(range(int(a), int(b) + 1))
+                ai, bi = int(a), int(b)
+                if ai > bi:
+                    raise ValueError(f"Invalid cron range in {field!r}: {a}-{b}")
+                result.update(range(ai, bi + 1))
                 continue
-            result.add(int(part))
+            value = int(part)
+            if not lo <= value <= hi:
+                raise ValueError(f"Cron value out of range in {field!r}: {value} (allowed {lo}-{hi})")
+            result.add(value)
+        if not result:
+            raise ValueError(f"Cron field {field!r} expanded to nothing")
         return result
 
     return tuple(_expand(f, lo, hi) for f, (lo, hi) in zip(fields, ranges))  # type: ignore
@@ -135,12 +149,27 @@ class Scheduler:
             self._task = None
 
     async def _loop(self) -> None:
+        # Per-minute de-dup: with tick_seconds=30 a "* * * * *" job would
+        # otherwise fire twice within the same minute.
+        last_fired_minute: dict[str, tuple] = {}
         while self._running:
             now = time.time()
             lt = time.localtime()
             for job in list(self.jobs.values()):
-                if job.is_due(now, lt):
+                minute_key = (lt.tm_year, lt.tm_mon, lt.tm_mday, lt.tm_hour, lt.tm_min)
+                try:
+                    due = job.is_due(now, lt)
+                except Exception as exc:  # noqa: BLE001
+                    # A bad cron must never kill the whole scheduler loop.
+                    job.last_status = f"error: cron eval failed: {exc}"
+                    logger.warning("Job %s cron evaluation failed: %s", job.name, exc)
+                    continue
+                if job.cron is not None and last_fired_minute.get(job.name) == minute_key:
+                    continue
+                if due:
                     await self._run_job(job)
+                    if job.cron is not None:
+                        last_fired_minute[job.name] = minute_key
             await asyncio.sleep(self.tick_seconds)
 
     async def _run_job(self, job: ScheduledJob) -> None:

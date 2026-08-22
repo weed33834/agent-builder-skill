@@ -60,6 +60,10 @@ class OllamaAdapter(LLMAdapter):
     def bind_tools(self, tools: list) -> Runnable:
         return self._client.bind_tools(tools)
 
+    def get_chat_model(self):
+        """Expose the underlying LangChain chat model."""
+        return self._client
+
     def get_model_info(self) -> dict:
         return {
             "provider": "ollama",

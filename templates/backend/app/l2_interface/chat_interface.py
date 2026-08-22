@@ -4,7 +4,7 @@ Encapsulates the differences between L1 adapters and provides a unified chat inv
 """
 
 from typing import AsyncIterator, Optional
-from langchain_core.messages import AIMessage, BaseMessage, SystemMessage, HumanMessage
+from langchain_core.messages import AIMessage, BaseMessage, SystemMessage, HumanMessage, ToolMessage
 
 from ..l1_llm.factory import create_llm
 from ..l1_llm.base import LLMAdapter
@@ -124,13 +124,24 @@ class ChatInterface:
         """Bind tools to the current LLM"""
         return self._llm.bind_tools(tools)
 
+    def get_chat_model(self):
+        """Expose the underlying LangChain chat model (Runnable) — required by
+        LangGraph's create_react_agent, which cannot accept this wrapper."""
+        return self._llm.get_chat_model()
+
     def get_model_info(self) -> dict:
         """Get current model information"""
         return self._llm.get_model_info()
 
     def _convert_messages(self, messages: list[dict]) -> list[BaseMessage]:
-        """Convert API message format to LangChain message format"""
-        converted = []
+        """Convert API message format to LangChain message format.
+
+        Supports the full ReAct round-trip: assistant messages may carry
+        structured `tool_calls`, and `role="tool"` results must keep their
+        `tool_call_id` — otherwise the model cannot see tool outputs and will
+        re-issue the same call until recursion_limit kills the run.
+        """
+        converted: list[BaseMessage] = []
         for msg in messages:
             role = msg.get("role", "user")
             content = msg.get("content", "")
@@ -139,5 +150,18 @@ class ChatInterface:
             elif role == "user":
                 converted.append(HumanMessage(content=content))
             elif role == "assistant":
-                converted.append(AIMessage(content=content))
+                tool_calls = msg.get("tool_calls") or None
+                if tool_calls:
+                    converted.append(
+                        AIMessage(content=content or "", tool_calls=tool_calls)
+                    )
+                else:
+                    converted.append(AIMessage(content=content))
+            elif role == "tool":
+                converted.append(
+                    ToolMessage(
+                        content=str(content),
+                        tool_call_id=msg.get("tool_call_id", ""),
+                    )
+                )
         return converted

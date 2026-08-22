@@ -28,7 +28,8 @@ async def _build_context(request: ChatRequest) -> str:
     if mode.get("web_search"):
         try:
             from ...l5_tools.base_tools import web_search
-            res = await web_search(request.message)
+            # StructuredTool is not callable — must go through ainvoke().
+            res = await web_search.ainvoke({"query": request.message})
             parts.append(f"[联网搜索结果]\n{res}")
         except Exception as e:  # noqa: BLE001
             parts.append(f"[联网搜索失败: {e}]")
@@ -93,55 +94,66 @@ async def chat(request: ChatRequest):
         """SSE event stream"""
         tool_call_count = 0
         full_response = ""
-        
-        async for event in graph.astream_events(
-            {"messages": [("human", message)]},
-            config,
-            version="v1",
-        ):
-            kind = event["event"]
-            
-            try:
-                # L1/L2: LLM streaming token output
-                if kind == "on_chat_model_stream":
-                    chunk = event["data"].get("chunk", "")
-                    content = chunk.content if hasattr(chunk, "content") else str(chunk)
-                    if content:
-                        full_response += content
-                        yield f"data: {json.dumps({'type': 'token', 'content': content})}\n\n"
-                
-                # L5: Tool call start
-                elif kind == "on_tool_start":
-                    tool_call_count += 1
-                    tool_name = event["name"]
-                    tool_input = event["data"].get("input", "")
-                    yield f"data: {json.dumps({'type': 'tool_start', 'tool': tool_name, 'input': str(tool_input)[:200]})}\n\n"
-                
-                # L5: Tool call end
-                elif kind == "on_tool_end":
-                    tool_name = event["name"]
-                    tool_output = event["data"].get("output", "")
-                    yield f"data: {json.dumps({'type': 'tool_end', 'tool': tool_name, 'output': str(tool_output)[:500]})}\n\n"
-                
-                # L3: Prompt building complete, LLM starts reasoning
-                elif kind == "on_chat_model_start":
-                    yield f"data: {json.dumps({'type': 'thinking'})}\n\n"
-                
-                # L4: Node status
-                elif kind == "on_chain_start":
-                    name = event.get("name", "")
-                    if name in ["agent_node", "tool_node"]:
-                        yield f"data: {json.dumps({'type': 'node_start', 'node': name})}\n\n"
-                
-                elif kind == "on_chain_end":
-                    name = event.get("name", "")
-                    if name in ["agent_node", "tool_node"]:
-                        yield f"data: {json.dumps({'type': 'node_end', 'node': name})}\n\n"
-            
-            except Exception:
-                # Ignore single event errors, continue streaming
-                pass
-        
+
+        try:
+            async for event in graph.astream_events(
+                {"messages": [("human", message)]},
+                config,
+                version="v1",
+            ):
+                kind = event["event"]
+
+                try:
+                    # L1/L2: LLM streaming token output
+                    if kind == "on_chat_model_stream":
+                        chunk = event["data"].get("chunk", "")
+                        content = chunk.content if hasattr(chunk, "content") else str(chunk)
+                        if content:
+                            full_response += content
+                            yield f"data: {json.dumps({'type': 'token', 'content': content})}\n\n"
+
+                    # L5: Tool call start
+                    elif kind == "on_tool_start":
+                        tool_call_count += 1
+                        tool_name = event["name"]
+                        tool_input = event["data"].get("input", "")
+                        yield f"data: {json.dumps({'type': 'tool_start', 'tool': tool_name, 'input': str(tool_input)[:200]})}\n\n"
+
+                    # L5: Tool call end
+                    elif kind == "on_tool_end":
+                        tool_name = event["name"]
+                        tool_output = event["data"].get("output", "")
+                        yield f"data: {json.dumps({'type': 'tool_end', 'tool': tool_name, 'output': str(tool_output)[:500]})}\n\n"
+
+                    # L3: Prompt building complete, LLM starts reasoning
+                    elif kind == "on_chat_model_start":
+                        yield f"data: {json.dumps({'type': 'thinking'})}\n\n"
+
+                    # L4: Node status
+                    elif kind == "on_chain_start":
+                        name = event.get("name", "")
+                        if name in ["agent_node", "tool_node"]:
+                            yield f"data: {json.dumps({'type': 'node_start', 'node': name})}\n\n"
+
+                    elif kind == "on_chain_end":
+                        name = event.get("name", "")
+                        if name in ["agent_node", "tool_node"]:
+                            yield f"data: {json.dumps({'type': 'node_end', 'node': name})}\n\n"
+
+                except Exception as single_event_error:
+                    # Log single-event errors instead of silently swallowing
+                    # them — the frontend needs to know why a token never came.
+                    import logging
+                    logging.getLogger(__name__).warning(
+                        "chat stream event error: %s", single_event_error)
+
+        except Exception as stream_error:
+            # The graph itself blew up mid-stream: tell the client, don't let
+            # the SSE connection die with no terminal event.
+            import logging
+            logging.getLogger(__name__).error("chat stream failed: %s", stream_error)
+            yield f"data: {json.dumps({'type': 'error', 'message': str(stream_error)[:300]})}\n\n"
+
         # Save the assistant response
         if full_response:
             await session_mgr.add_message(thread_id, "assistant", full_response)
@@ -154,7 +166,7 @@ async def chat(request: ChatRequest):
             record_usage(thread_id, settings.LLM_PROVIDER, settings.LLM_MODEL, est_in, est_out)
         except Exception:  # noqa: BLE001
             pass
-        
+
         # Stream end
         yield f"data: {json.dumps({'type': 'done', 'thread_id': thread_id, 'tool_calls': tool_call_count})}\n\n"
     

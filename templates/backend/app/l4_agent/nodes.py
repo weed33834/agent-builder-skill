@@ -30,17 +30,40 @@ def _get_llm():
 
 
 def _assemble_messages(state: AgentState):
-    """Build the L3 prompt-builder message list from the graph state"""
+    """Build the L3 prompt-builder message list from the graph state.
+
+    Keeps the ReAct round-trip intact: assistant messages preserve their
+    structured `tool_calls` and tool results keep `tool_call_id`, so the
+    model can correlate outputs with its own calls (dropping either causes
+    the model to re-issue the same call until recursion_limit).
+    """
     builder = PromptBuilder()
     messages = builder.build()
     for msg in state.get("messages", []):
-        if msg.type == "human":
-            role = "user"
-        elif msg.type == "tool":
-            role = "tool"
+        msg_type = getattr(msg, "type", "")
+        if msg_type == "human":
+            messages.append({"role": "user", "content": msg.content})
+        elif msg_type == "tool":
+            messages.append({
+                "role": "tool",
+                "content": str(msg.content),
+                "tool_call_id": getattr(msg, "tool_call_id", ""),
+            })
+        elif msg_type == "ai":
+            entry = {"role": "assistant", "content": msg.content}
+            if getattr(msg, "tool_calls", None):
+                entry["tool_calls"] = [
+                    {
+                        "name": tc.get("name", ""),
+                        "args": tc.get("args", {}),
+                        "id": tc.get("id", ""),
+                        "type": "tool_call",
+                    }
+                    for tc in msg.tool_calls
+                ]
+            messages.append(entry)
         else:
-            role = "assistant"
-        messages.append({"role": role, "content": msg.content})
+            messages.append({"role": "assistant", "content": str(msg.content)})
     return messages
 
 
@@ -163,27 +186,26 @@ async def tool_node(state: AgentState) -> dict:
 async def supervisor_node(state: AgentState) -> dict:
     """Supervisor dispatch node
 
-    Analyzes the request intent and returns an annotation; the graph's
-    conditional edge `_route_to_specialist` dispatches to the correct
-    sub-agent (whose names come from the agent configuration).
+    Produces a lightweight intent annotation consumed by the graph's
+    conditional edge `_route_to_specialist`. Routing itself is keyword-based,
+    so this node intentionally does NOT spend an LLM call — the analysis is
+    derived from the conversation locally (zero token cost).
     """
-    llm = _get_llm()
-    messages = state.get("messages", [])
-
-    analysis_prompt = {
-        "role": "system",
-        "content": "你是任务分发 Supervisor。分析用户请求的意图类型，用于后续路由到对应的 Specialist。",
+    keywords = {
+        "search": ("搜索", "查", "research", "search", "find"),
+        "analysis": ("分析", "统计", "对比", "analyz", "compare", "report"),
+        "write": ("写", "生成", "起草", "write", "draft", "compose"),
     }
-
-    try:
-        supervisor_messages = [analysis_prompt]
-        for msg in messages:
-            if msg.type == "human":
-                supervisor_messages.append({"role": "user", "content": msg.content})
-        response = await llm.chat(supervisor_messages)
-        return {"supervisor_analysis": response.content}
-    except Exception as e:
-        return {"supervisor_analysis": "", "error": str(e)}
+    user_text = " ".join(
+        str(m.content)
+        for m in state.get("messages", [])
+        if getattr(m, "type", "") == "human"
+    ).lower()
+    intent = next(
+        (name for name, kws in keywords.items() if any(k in user_text for k in kws)),
+        "general",
+    )
+    return {"supervisor_analysis": f"intent={intent}"}
 
 
 # ── Planning & reflection (deep-spec 01 / universal-agent thinking layer) ──

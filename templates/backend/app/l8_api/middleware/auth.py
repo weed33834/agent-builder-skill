@@ -97,7 +97,11 @@ class AuthMiddleware:
             candidate = header[7:]
         elif x_key:
             candidate = x_key
-        return bool(candidate) and hmac.compare_digest(candidate, self.api_key)
+        # compare_digest raises TypeError on non-ASCII str input — an attacker
+        # can trigger a stable 500 with such headers. Compare bytes instead.
+        return bool(candidate) and hmac.compare_digest(
+            candidate.encode("utf-8", "ignore"), self.api_key.encode("utf-8")
+        )
 
     def _verify_jwt(self, request: Request) -> Optional[dict]:
         """Verify JWT Bearer token; returns payload on success."""
@@ -112,6 +116,11 @@ class AuthMiddleware:
         """Middleware processing"""
         path = request.url.path
         if self.allow_health and path == "/api/health":
+            return await call_next(request)
+        # CORS preflight never carries custom auth headers — letting it through
+        # here keeps it in the outer CORSMiddleware's hands (browser requests
+        # would otherwise die on OPTIONS with 401 and no CORS headers).
+        if request.method == "OPTIONS":
             return await call_next(request)
 
         # JWT mode (production) — role-aware RBAC for admin surface

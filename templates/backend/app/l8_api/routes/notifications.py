@@ -40,7 +40,15 @@ def _now():
 def _bump():
     """Best-effort push to WS subscribers."""
     for ws in list(_WS_CLIENTS):
-        asyncio.get_event_loop().call_soon_threadsafe(ws.send_json, {"event": "updated"})
+        # send_json is a coroutine: schedule it as a task (call_soon_threadsafe
+        # with a coroutine function never awaits anything and leaks a warning).
+        async def _push(_ws=ws):
+            try:
+                await _ws.send_json({"event": "updated"})
+            except Exception:  # noqa: BLE001
+                _WS_CLIENTS.discard(_ws)
+
+        asyncio.get_event_loop().create_task(_push())
 
 
 @router.get("/notifications")

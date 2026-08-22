@@ -13,6 +13,7 @@ Sessions (metadata + messages) are persisted to data/sessions.json.
 """
 
 import json
+import os
 import uuid
 from pathlib import Path
 from typing import Optional
@@ -20,8 +21,7 @@ from datetime import datetime
 
 from .buffer import ConversationBuffer
 
-# Consistent with admin.py: parents[4] from admin (l8_api/routes) = project root
-# session_manager sits one level shallower (app/l6_memory), so use parents[3].
+# app/l6_memory/session_manager.py -> parents[3] = project root (same as usage.py)
 _DATA_DIR = Path(__file__).resolve().parents[3] / "data"
 _SESSIONS_FILE = _DATA_DIR / "sessions.json"
 
@@ -39,19 +39,35 @@ class SessionManager:
 
     # ---- persistence -------------------------------------------------------
     def _load(self):
-        """Load sessions + messages from disk (if present)."""
-        if _SESSIONS_FILE.exists():
+        """Load sessions + messages from disk (if present).
+
+        A corrupt file is preserved as sessions.json.corrupt-<ts> instead of
+        being silently overwritten on the next persist — silent data loss is
+        worse than a visible error.
+        """
+        if not _SESSIONS_FILE.exists():
+            return
+        try:
+            data = json.loads(_SESSIONS_FILE.read_text(encoding="utf-8"))
+            self._sessions = data.get("sessions", {})
+            self._buffer._buffers = data.get("buffers", {})
+        except (json.JSONDecodeError, OSError):
             try:
-                data = json.loads(_SESSIONS_FILE.read_text(encoding="utf-8"))
-                self._sessions = data.get("sessions", {})
-                self._buffer._buffers = data.get("buffers", {})
-            except (json.JSONDecodeError, OSError):
-                self._sessions = {}
-                self._buffer._buffers = {}
+                backup = _SESSIONS_FILE.with_name(
+                    f"sessions.json.corrupt-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+                )
+                backup.write_bytes(_SESSIONS_FILE.read_bytes())
+            except OSError:
+                pass
+            self._sessions = {}
+            self._buffer._buffers = {}
 
     def _persist(self):
+        """Atomic persist: write to a temp file then os.replace, so a crash
+        mid-write can never truncate the existing store."""
         _DATA_DIR.mkdir(parents=True, exist_ok=True)
-        _SESSIONS_FILE.write_text(
+        tmp_path = _SESSIONS_FILE.with_suffix(".json.tmp")
+        tmp_path.write_text(
             json.dumps(
                 {"sessions": self._sessions, "buffers": self._buffer._buffers},
                 ensure_ascii=False,
@@ -59,6 +75,7 @@ class SessionManager:
             ),
             encoding="utf-8",
         )
+        os.replace(tmp_path, _SESSIONS_FILE)
 
     # ---- session CRUD ------------------------------------------------------
     def create_session(self, title: str = "新会话", group_id: str = "") -> str:
@@ -184,9 +201,25 @@ class SessionManager:
 
     # ---- messages ----------------------------------------------------------
     async def add_message(self, session_id: str, role: str, content: str):
-        """Add a message to the session"""
+        """Add a message to the session.
+
+        An unknown session_id is CREATED AS-IS (not swapped for a fresh uuid):
+        LangGraph checkpoints key on the caller's thread_id, so silently
+        re-keying here would split chat history from graph memory.
+        """
         if session_id not in self._sessions:
-            session_id = self.create_session()
+            now = datetime.now().isoformat()
+            self._sessions[session_id] = {
+                "id": session_id,
+                "title": "新会话",
+                "group_id": "",
+                "favorite": False,
+                "attachments": [],
+                "share_token": "",
+                "created_at": now,
+                "updated_at": now,
+                "message_count": 0,
+            }
         await self._buffer.add(role, content, session_id)
         self._sessions[session_id]["updated_at"] = datetime.now().isoformat()
         self._sessions[session_id]["message_count"] += 1

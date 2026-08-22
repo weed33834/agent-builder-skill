@@ -80,7 +80,7 @@ async def get_env(env_id: str):
     try:
         return sandbox_manager.get_env(env_id)
     except SandboxError as e:
-        _err(e)
+        raise _err(e)
 
 
 @router.put("/sandbox/envs/{env_id}")
@@ -88,7 +88,7 @@ async def update_env(env_id: str, req: EnvUpdate):
     try:
         return sandbox_manager.update_env(env_id, req.model_dump(exclude_none=True))
     except SandboxError as e:
-        _err(e)
+        raise _err(e)
 
 
 @router.delete("/sandbox/envs/{env_id}")
@@ -97,7 +97,7 @@ async def delete_env(env_id: str):
         sandbox_manager.delete_env(env_id)
         return {"deleted": True, "id": env_id}
     except SandboxError as e:
-        _err(e)
+        raise _err(e)
 
 
 @router.post("/sandbox/envs/{env_id}/enable")
@@ -105,7 +105,7 @@ async def enable_env(env_id: str, req: EnvEnable):
     try:
         return sandbox_manager.set_enabled(env_id, req.enabled)
     except SandboxError as e:
-        _err(e)
+        raise _err(e)
 
 
 @router.post("/sandbox/default")
@@ -113,7 +113,7 @@ async def set_default(req: EnvDefault):
     try:
         return sandbox_manager.set_default(req.id)
     except SandboxError as e:
-        _err(e)
+        raise _err(e)
 
 
 @router.post("/sandbox/run")

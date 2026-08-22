@@ -13,6 +13,7 @@ A2A protocol features:
 import json
 import uuid
 import asyncio
+import logging
 from typing import Optional
 from dataclasses import asdict
 
@@ -30,6 +31,8 @@ from .base import (
 )
 from .decomposer import TaskDecomposer
 from .aggregator import ResultAggregator
+
+logger = logging.getLogger(__name__)
 
 
 class AgentOrchestrator(OrchestratorBase, A2AOrchestratorBase):

@@ -15,7 +15,22 @@ in the chat pipeline.
 from __future__ import annotations
 
 import re
+import unicodedata
 from typing import Dict, List
+
+# Zero-width / invisible characters used to split injection keywords.
+_INVISIBLE_RE = re.compile(r"[\u200b\u200c\u200d\u2060\ufeff\u00ad]")
+
+
+def _normalize(text: str) -> str:
+    """NFKC-fold fullwidth/homoglyph variants and strip zero-width chars.
+
+    Without this, "i\u200bgnore previous instructions" and
+    "\uff49\uff47\uff4e\uff4f\uff52\uff45" (fullwidth ignore) both evade the
+    keyword engine entirely.
+    """
+    cleaned = _INVISIBLE_RE.sub("", text or "")
+    return unicodedata.normalize("NFKC", cleaned)
 
 # ── PII 正则模式（含大陆手机号/身份证） ──────────────────────────
 _PII_PATTERNS: List[tuple] = [
@@ -46,19 +61,21 @@ _PROFANITY = ["fuck", "shit", "bitch", "妈的", "操", "傻逼", "去死", "滚
 
 # ── 提示词注入检测 ─────────────────────────────────────────────
 def detect_injection(text: str) -> Dict[str, any]:
-    """双引擎注入检测：模式匹配 + 危险词加权。
+    """双引擎注入检测：模式匹配 + 危险词加权（先做 NFKC/零宽归一化防绕过）。
     返回 {flagged, severity, confidence, hits:[{pattern, weight}]}
     severity: low / medium / high
     """
+    normalized = _normalize(text)
     hits: List[dict] = []
     weight = 0.0
     for name, pattern in _INJECTION_PATTERNS:
-        if pattern.search(text or ""):
+        if pattern.search(normalized):
             hits.append({"pattern": name, "weight": 2.0})
             weight += 2.0
-    lower = (text or "").lower()
+    lower = normalized.lower()
     for kw in _DANGER_KEYWORDS:
-        if kw.lower() in lower:
+        # \b word boundary so "dandelion" does not trip the DAN keyword.
+        if re.search(rf"\b{re.escape(kw.lower())}\b", lower) if kw.isascii() else kw.lower() in lower:
             hits.append({"pattern": "danger_keyword", "keyword": kw, "weight": 1.5})
             weight += 1.5
     flagged = weight >= 1.5
@@ -93,7 +110,7 @@ def redact_pii(text: str, replace_with: str = "***") -> Dict[str, any]:
 # ── 内容过滤 ──────────────────────────────────────────────────
 def content_filter(text: str) -> Dict[str, any]:
     """基础内容过滤（污言秽语）。返回 {flagged, hits}"""
-    lower = (text or "").lower()
+    lower = _normalize(text).lower()
     hits = [w for w in _PROFANITY if w in lower]
     return {"flagged": len(hits) > 0, "hits": hits}
 

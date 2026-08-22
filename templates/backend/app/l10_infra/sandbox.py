@@ -1,22 +1,33 @@
 """L10 - Sandbox management (deep-spec sandbox / M3.5)
 
-A manageable, isolated, default-env code-execution sandbox for the generated
-agent. Environment templates (base image + preinstalled packages + quota) are
-managed at runtime; code runs in a restricted subprocess with timeout and a
-minimal environment. Local vs cloud types are tracked; "default" is used by
-chat-mode code execution.
+A manageable code-execution sandbox for the generated agent. Environment
+templates (base image + preinstalled packages + quota) are managed at runtime;
+code runs in a restricted subprocess with a clamped timeout, an isolated
+working directory and a minimal environment.
 
-In-memory store (template); swap for docker/remote sandbox in production.
+SECURITY NOTE — read before exposing this to any network:
+The local runner is NOT a security boundary. It executes code with the same
+OS user as the backend; the env allowlist cannot stop filesystem or network
+access from the spawned process. Set SANDBOX_ENABLED=false (the default) for
+anything beyond trusted local development, and use container-level isolation
+(docker/gVisor) plus authentication in production.
 """
 
 import asyncio
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 from dataclasses import dataclass, field
 from typing import Optional
+
+from .config import settings
+
+# Hard clamp regardless of what the request asks for.
+MAX_TIMEOUT_S = 60
 
 # ── 预置基础环境模板（base environments）────────────────────────
 ENV_TEMPLATES: list[dict] = [
@@ -51,7 +62,9 @@ class SandboxManager:
     def __init__(self):
         self._envs: dict[str, dict] = {}
         self._default_id: Optional[str] = None
-        self._enabled = True
+        # Default OFF: local code execution is not a security boundary (see
+        # module docstring). Operators must opt in explicitly.
+        self._enabled = bool(getattr(settings, "SANDBOX_ENABLED", False))
         for t in ENV_TEMPLATES:
             env = dict(t)
             env["created_at"] = time.time()
@@ -124,7 +137,7 @@ class SandboxManager:
     # ── execution ──────────────────────────────────────────────
     async def run(self, env_id: Optional[str], language: str, code: str, timeout: Optional[int] = None) -> dict:
         if not self._enabled:
-            return {"ok": False, "error": "sandbox globally disabled"}
+            return {"ok": False, "error": "sandbox disabled (SANDBOX_ENABLED=false); local execution is not a security boundary"}
         env = self.get_env(env_id or self._default_id)
         if not env.get("enabled", True):
             return {"ok": False, "error": f"environment {env['name']} is disabled"}
@@ -135,7 +148,13 @@ class SandboxManager:
                 if pat in code:
                     return {"ok": False, "error": f"高危命令被拦截: {pat}（如需执行请在界面确认）"}
 
-        t = timeout or env.get("quota", {}).get("timeout", 30)
+        # Clamp the caller-supplied timeout — never trust request bodies.
+        try:
+            t = int(timeout or env.get("quota", {}).get("timeout", 30))
+        except (TypeError, ValueError):
+            t = 30
+        t = max(1, min(t, MAX_TIMEOUT_S))
+
         start = time.perf_counter()
         try:
             result = await asyncio.wait_for(
@@ -158,10 +177,21 @@ class SandboxManager:
         cmd = cmds.get((language or "").lower())
         if cmd is None:
             return {"ok": False, "error": f"不支持的语言 '{language}'"}
+
+        # Isolated scratch cwd so the child cannot trivially read the
+        # backend's .env / data files by relative path. (Absolute-path and
+        # network access remain possible — see the module SECURITY NOTE.)
+        workdir = tempfile.mkdtemp(prefix="agent_sandbox_")
+        env = {
+            "PATH": os.environ.get("PATH", "") if os.name == "nt" else "/usr/bin:/bin",
+            "HOME": workdir,
+            "LANG": "C.UTF-8",
+            "TMPDIR": workdir,
+        }
         try:
             proc = subprocess.run(
                 cmd, capture_output=True, text=True, timeout=timeout,
-                env={"PATH": "/usr/bin:/bin", "HOME": "/tmp", "LANG": "C.UTF-8"},
+                cwd=workdir, env=env,
             )
             out = (proc.stdout or "")[-20000:]
             err = (proc.stderr or "")[-20000:]
@@ -176,6 +206,8 @@ class SandboxManager:
             return {"ok": False, "error": f"执行超时（>{timeout}s）"}
         except Exception as e:  # noqa: BLE001
             return {"ok": False, "error": str(e)}
+        finally:
+            shutil.rmtree(workdir, ignore_errors=True)
 
 
 sandbox_manager = SandboxManager()

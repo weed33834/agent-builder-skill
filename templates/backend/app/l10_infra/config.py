@@ -58,6 +58,10 @@ class Settings(BaseSettings):
 
     # L10: AI security enforcement (deep-spec 27) — applied in the chat pipeline
     SECURITY_ENABLED: bool = True        # inject prompt-injection defense + PII redaction
+    # Local code execution is NOT a security boundary (same OS user as the
+    # backend). Opt in explicitly for trusted local development only; use
+    # container-level isolation in production.
+    SANDBOX_ENABLED: bool = False
     SECURITY_BLOCK_ACTION: str = "block" # action taken on high-severity injection
 
     # L8: Rate limiting middleware (M7.9)

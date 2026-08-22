@@ -51,10 +51,25 @@ async def _web_search(query: str) -> str:
 
 
 async def _web_fetch(url: str) -> str:
-    """Fetch web page content"""
+    """Fetch public http(s) page content (SSRF-guarded, same rules as base_tools)."""
+    from .base_tools import _assert_public_http_url
+
+    try:
+        _assert_public_http_url(url)
+    except ValueError as e:
+        return f"Blocked: {e}"
+
     async with httpx.AsyncClient() as client:
         try:
-            resp = await client.get(url, timeout=15.0, follow_redirects=True)
+            resp = await client.get(url, timeout=15.0, follow_redirects=False)
+            hops = 0
+            while resp.is_redirect and hops < 3:
+                nxt = resp.headers.get("location", "")
+                if not nxt:
+                    break
+                _assert_public_http_url(nxt)
+                resp = await client.get(nxt, timeout=15.0, follow_redirects=False)
+                hops += 1
             resp.encoding = resp.charset or "utf-8"
             text = resp.text
 
@@ -69,16 +84,13 @@ async def _web_fetch(url: str) -> str:
 
 
 async def _calculate(expression: str) -> str:
-    """Perform mathematical calculations"""
-    allowed = set("0123456789.+-*/()% ")
-    if not all(c in allowed for c in expression):
-        return "Error: expression contains illegal characters"
+    """Perform arithmetic via AST evaluation (no eval, bounded power)."""
+    from .base_tools import _safe_eval_math
 
     try:
-        result = eval(expression, {"__builtins__": {}}, {})
-        return str(result)
-    except Exception as e:
-        return f"Calculation error: {str(e)}"
+        return str(_safe_eval_math(expression))
+    except Exception as e:  # noqa: BLE001
+        return f"Calculation error: {e}"
 
 
 async def _current_time() -> str:

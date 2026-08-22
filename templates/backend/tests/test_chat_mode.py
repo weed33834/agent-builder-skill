@@ -30,10 +30,13 @@ async def test_sandbox_off_notes_no_code():
 async def test_web_search_injects_results(monkeypatch):
     import app.l5_tools.base_tools as bt
 
-    async def fake_web_search(query: str) -> str:
-        return "FAKE_WEB_RESULT for " + query
+    class _FakeStructuredTool:
+        """Mimic the StructuredTool protocol: invoked via .ainvoke(args_dict)."""
 
-    monkeypatch.setattr(bt, "web_search", fake_web_search)
+        async def ainvoke(self, args):
+            return "FAKE_WEB_RESULT for " + (args.get("query") if isinstance(args, dict) else str(args))
+
+    monkeypatch.setattr(bt, "web_search", _FakeStructuredTool())
 
     from app.l8_api.routes.chat import _build_context
     ctx = await _build_context(_req(web_search=True))

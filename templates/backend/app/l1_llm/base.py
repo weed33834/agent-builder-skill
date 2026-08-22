@@ -59,3 +59,13 @@ class LLMAdapter(ABC):
             dict: Contains provider, model, context_window, etc.
         """
         ...
+
+    def get_chat_model(self):
+        """Return the underlying LangChain chat model (BaseChatModel/Runnable).
+
+        Needed by consumers that require a real Runnable model object — e.g.
+        LangGraph's create_react_agent — which cannot accept our adapter
+        wrapper. Adapters that wrap a native client return it; the default
+        raises NotImplementedError for adapters without one.
+        """
+        raise NotImplementedError(f"{type(self).__name__} does not expose a chat model")

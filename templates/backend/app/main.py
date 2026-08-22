@@ -3,8 +3,9 @@
 FastAPI application instantiation, registers all routes and middleware.
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from .l8_api.routes.chat import router as chat_router
@@ -101,6 +102,18 @@ def create_app() -> FastAPI:
     )
 
     # ===== L10: Infrastructure =====
+    # Domain errors -> HTTP mapping. Without this, routine "session not
+    # found" raises bubble out as 500 INTERNAL_ERROR instead of 404.
+    from .l10_infra.errors import AgentError, SessionNotFoundError
+
+    @app.exception_handler(SessionNotFoundError)
+    async def _session_not_found_handler(_req: Request, exc: SessionNotFoundError):
+        return JSONResponse(status_code=404, content={"error": "Not Found", "detail": str(exc)})
+
+    @app.exception_handler(AgentError)
+    async def _agent_error_handler(_req: Request, exc: AgentError):
+        return JSONResponse(status_code=400, content={"error": "AgentError", "detail": str(exc)})
+
     # CORS configuration
     app.add_middleware(
         CORSMiddleware,
