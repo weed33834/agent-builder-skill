@@ -33,4 +33,4 @@
 2. `framework` ∈ {langgraph, bare, openai-agents, claude-sdk, adk, autogen}；
    后四者生成器暂输出适配器骨架，生产可用为前两者
 3. `tools.enabled` ⊆ 通用工具集 ∪ `tools.custom[].name`
-4. `orchestration.mode: "supervisor"` 时 `agents[]` 至少 2 个且 name 不重复
+4. `orchestration.mode: "supervisor"` 且显式给出 `agents[]` 时：至少 2 个且 name 不重复；未给出则回退单智能体图（合法）

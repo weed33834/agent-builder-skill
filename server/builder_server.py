@@ -146,10 +146,12 @@ def validate_config(config: str) -> dict:
                 f"use one of {BASE_TOOL_NAMES} or define it in tools.custom"
             )
 
-    # Supervisor sanity
+    # Supervisor sanity: an explicit agents[] list must be sane. A supervisor
+    # config WITHOUT agents[] is legal - generate_l4_agent falls back to the
+    # single-agent graph in that case (e.g. the planner template).
     orch = cfg.get("orchestration") or {}
     agents = orch.get("agents") or []
-    if orch.get("mode") == "supervisor":
+    if orch.get("mode") == "supervisor" and agents:
         if len(agents) < 2:
             errors.append('orchestration.mode="supervisor" needs at least 2 agents[]')
         names = [str((a or {}).get("name") or "") for a in agents]
@@ -344,6 +346,12 @@ def main() -> int:
         except json.JSONDecodeError:
             sys.stdout.write(json.dumps({"jsonrpc": "2.0", "id": None, "error": {
                 "code": -32700, "message": "parse error"}}) + "\n")
+            sys.stdout.flush()
+            continue
+        if not isinstance(req, dict):
+            # Valid JSON but not a request object (e.g. a bare string/number).
+            sys.stdout.write(json.dumps({"jsonrpc": "2.0", "id": None, "error": {
+                "code": -32600, "message": "invalid request: expected an object"}}) + "\n")
             sys.stdout.flush()
             continue
         resp = handle_request(req)
