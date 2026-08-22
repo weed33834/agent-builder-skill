@@ -62,6 +62,10 @@ class Settings(BaseSettings):
     # backend). Opt in explicitly for trusted local development only; use
     # container-level isolation in production.
     SANDBOX_ENABLED: bool = False
+    # sandbox runtime: "auto" uses Docker when the daemon is reachable
+    # (container-level isolation) and falls back to a restricted subprocess
+    # otherwise; "docker" requires Docker; "subprocess" never uses Docker.
+    SANDBOX_RUNTIME: str = "auto"
     SECURITY_BLOCK_ACTION: str = "block" # action taken on high-severity injection
 
     # L8: Rate limiting middleware (M7.9)

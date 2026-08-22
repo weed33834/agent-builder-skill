@@ -37,7 +37,8 @@ npx tsc --noEmit
 npm run build
 
 # 生成器冒烟测试
-python scripts/generate.py --output /tmp/smoke --name smoke --type chat
+python scripts/generate.py templates/agent-types/chat.yaml /tmp/smoke --framework=bare
+cd /tmp/smoke && python -m pytest tests -q
 ```
 
 CI 会自动执行以上全部测试（见 `.github/workflows/ci.yml`）。
@@ -46,9 +47,9 @@ CI 会自动执行以上全部测试（见 `.github/workflows/ci.yml`）。
 
 本项目所有能力由文档体系驱动。**新增或修改任何功能，必须三线同步**：
 
-1. **功能清单**：在 `docs/feature-checklist.md` 对应 M 模块（或新增模块）登记功能项
-2. **深度规格**：在 `docs/deep-spec/` 对应模块按 7 章模板（定位/资产模型/配置清单/管理界面/运行时链路/安全权限/验证方法）写清「怎么做」
-3. **验收测试**：在 `docs/acceptance-test.md` 追加对应验收条目（步骤 + 预期结果）
+1. **功能清单**：在 `docs/roadmap/feature-checklist.md` 对应 M 模块（或新增模块）登记功能项
+2. **深度规格**：在 `docs/roadmap/deep-spec/` 对应模块按 7 章模板（定位/资产模型/配置清单/管理界面/运行时链路/安全权限/验证方法）写清「怎么做」
+3. **验收测试**：在 `docs/roadmap/acceptance-test.md` 追加对应验收条目（步骤 + 预期结果）
 4. **代码实现**：让功能真正嵌入运行时链路（前端组件 + 后端接口 + 核心逻辑）
 5. **文档索引**：如涉及新模块，同步 `docs/README.md` 索引与 README.md
 

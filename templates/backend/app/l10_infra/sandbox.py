@@ -62,6 +62,8 @@ class SandboxManager:
     def __init__(self):
         self._envs: dict[str, dict] = {}
         self._default_id: Optional[str] = None
+        self._workdir: Optional[str] = None
+        self._default_id: Optional[str] = None
         # Default OFF: local code execution is not a security boundary (see
         # module docstring). Operators must opt in explicitly.
         self._enabled = bool(getattr(settings, "SANDBOX_ENABLED", False))
@@ -158,7 +160,7 @@ class SandboxManager:
         start = time.perf_counter()
         try:
             result = await asyncio.wait_for(
-                asyncio.to_thread(self._run_sync, language, code, t),
+                asyncio.to_thread(self._run_sync, language, code, t, env_id),
                 timeout=t + 5,
             )
         except asyncio.TimeoutError:
@@ -167,31 +169,84 @@ class SandboxManager:
         result["environment"] = env["name"]
         return result
 
-    def _run_sync(self, language: str, code: str, timeout: int) -> dict:
+    def _resolve_runtime(self, env: dict) -> tuple[str, list[str], dict]:
+        """Pick the execution runtime. Returns (runtime_name, cmd_prefix, extra).
+
+        "docker" gives real container isolation (no network, tmpfs workdir,
+        cpu/mem caps from the env quota). Falls back to "subprocess" when
+        SANDBOX_RUNTIME=auto and the Docker daemon is unreachable.
+        """
+        runtime = (getattr(settings, "SANDBOX_RUNTIME", "auto") or "auto").lower()
+        docker_ok = False
+        if runtime in ("auto", "docker"):
+            try:
+                probe = subprocess.run(
+                    ["docker", "info"], capture_output=True, timeout=10,
+                )
+                docker_ok = probe.returncode == 0
+            except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+                docker_ok = False
+        if runtime == "docker" and not docker_ok:
+            raise SandboxError("SANDBOX_RUNTIME=docker but the Docker daemon is unreachable")
+        if docker_ok and runtime != "subprocess":
+            quota = env.get("quota", {}) or {}
+            image = env.get("image") or ("python:3.11-slim" if env.get("language", "python").startswith("py") else "alpine")
+            # A missing image would surface as an opaque daemon error; in
+            # "auto" mode fall back to the subprocess runner instead.
+            try:
+                inspect = subprocess.run(
+                    ["docker", "image", "inspect", image],
+                    capture_output=True, timeout=15,
+                )
+                if inspect.returncode != 0 and runtime == "auto":
+                    return "subprocess", [], {"fallback_reason": f"docker image {image!r} not pulled"}
+            except (subprocess.TimeoutExpired, OSError):
+                if runtime == "auto":
+                    return "subprocess", [], {"fallback_reason": "docker probe failed"}
+            prefix = [
+                "docker", "run", "--rm",
+                "--network=none",                      # no egress from sandbox
+                "-v", f"{self._workdir}:/sandbox:rw",
+                "-w", "/sandbox",
+                "--memory", f"{int(quota.get('mem_mb', 512))}m",
+                "--cpus", str(quota.get("cpu", 1)),
+                "-e", "LANG=C.UTF-8",
+            ]
+            return "docker", prefix, {"image": image}
+        return "subprocess", [], {}
+
+    def _run_sync(self, language: str, code: str, timeout: int, env_id: Optional[str] = None) -> dict:
         cmds = {
             "python": [sys.executable, "-c", code],
             "python3": [sys.executable, "-c", code],
             "sh": ["/bin/sh", "-c", code],
             "bash": ["/bin/bash", "-c", code],
         }
-        cmd = cmds.get((language or "").lower())
-        if cmd is None:
+        inner_cmd = cmds.get((language or "").lower())
+        if inner_cmd is None:
             return {"ok": False, "error": f"不支持的语言 '{language}'"}
 
         # Isolated scratch cwd so the child cannot trivially read the
-        # backend's .env / data files by relative path. (Absolute-path and
-        # network access remain possible — see the module SECURITY NOTE.)
-        workdir = tempfile.mkdtemp(prefix="agent_sandbox_")
+        # backend's .env / data files by relative path. Under Docker the
+        # workdir is bind-mounted read-write into the container instead.
+        self._workdir = tempfile.mkdtemp(prefix="agent_sandbox_")
         env = {
             "PATH": os.environ.get("PATH", "") if os.name == "nt" else "/usr/bin:/bin",
-            "HOME": workdir,
+            "HOME": self._workdir,
             "LANG": "C.UTF-8",
-            "TMPDIR": workdir,
+            "TMPDIR": self._workdir,
         }
         try:
+            runtime, prefix, extra = self._resolve_runtime(env or {})
+            if runtime == "docker":
+                cmd = prefix + [extra["image"]] + inner_cmd
+                runtime_label = "docker"
+            else:
+                cmd = inner_cmd
+                runtime_label = "subprocess"
             proc = subprocess.run(
                 cmd, capture_output=True, text=True, timeout=timeout,
-                cwd=workdir, env=env,
+                cwd=self._workdir, env=env,
             )
             out = (proc.stdout or "")[-20000:]
             err = (proc.stderr or "")[-20000:]
@@ -201,13 +256,17 @@ class SandboxManager:
                 "stdout": out,
                 "stderr": err,
                 "output": out if proc.returncode == 0 else err,
+                "runtime": runtime_label,
             }
         except subprocess.TimeoutExpired:
             return {"ok": False, "error": f"执行超时（>{timeout}s）"}
+        except SandboxError as e:
+            return {"ok": False, "error": str(e)}
         except Exception as e:  # noqa: BLE001
             return {"ok": False, "error": str(e)}
         finally:
-            shutil.rmtree(workdir, ignore_errors=True)
+            shutil.rmtree(self._workdir, ignore_errors=True)
+            self._workdir = None
 
 
 sandbox_manager = SandboxManager()

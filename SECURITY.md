@@ -12,7 +12,7 @@
 
 ## 安全边界声明 / Security Boundary
 
-本项目涉及 AI 安全（见 `docs/deep-spec/27-ai-security.md`）、权限体系（`13-iam.md`）、沙箱（`02-sandbox.md`）等安全敏感模块。以下问题均在安全范围内：
+本项目涉及 AI 安全（见 `docs/roadmap/deep-spec/27-ai-security.md`）、权限体系（`13-iam.md`）、沙箱（`02-sandbox.md`）等安全敏感模块。以下问题均在安全范围内：
 
 - 提示注入（直接/间接/多模态隐形注入）
 - 越狱与红队绕过
