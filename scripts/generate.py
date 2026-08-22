@@ -2531,7 +2531,7 @@ async def _build_context(request: ChatRequest) -> str:
     if mode.get("web_search"):
         try:
             from ...l5_tools.base_tools import web_search
-            parts.append(f"[联网搜索结果]\\n{await web_search(request.message)}")
+            parts.append(f"[联网搜索结果]\\n{await web_search.ainvoke({'query': request.message})}")
         except Exception as e:
             parts.append(f"[联网搜索失败: {e}]")
     kb_id = mode.get("kb_id")
