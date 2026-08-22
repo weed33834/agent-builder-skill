@@ -12,12 +12,6 @@ import json
 import re
 from typing import Any, Callable, Optional
 
-try:
-    from pydantic import create_model, BaseModel, ValidationError
-    PYDANTIC_AVAILABLE = True
-except ImportError:  # pragma: no cover
-    PYDANTIC_AVAILABLE = False
-
 
 _TYPE_MAP = {
     "str": "string",
@@ -97,46 +91,27 @@ def json_schema_from_function(
 def validate_arguments(schema: dict, arguments: dict) -> tuple[bool, Optional[str]]:
     """Validate tool arguments against a JSON Schema.
 
+    Delegates to the `jsonschema` library (already a project dependency and
+    the industry standard). The previous hand-rolled pydantic dynamic-model
+    approach only understood type/required — enum, pattern, min/max etc.
+    were silently ignored.
+
     Returns:
         (True, None) if valid, (False, error_message) otherwise.
     """
-    if not PYDANTIC_AVAILABLE:  # pragma: no cover
-        return True, None
-
     try:
-        properties = schema.get("parameters", {}).get("properties", {})
-        required = schema.get("parameters", {}).get("required", [])
-
-        fields: dict[str, Any] = {}
-        for prop_name, prop_def in properties.items():
-            ptype = _json_type_to_python(prop_def.get("type", "string"))
-            from pydantic import Field
-            if prop_name in required:
-                fields[prop_name] = (ptype, Field(description=prop_def.get("description", "")))
-            else:
-                fields[prop_name] = (
-                    Optional[ptype],  # type: ignore[valid-type]
-                    Field(default=None, description=prop_def.get("description", "")),
-                )
-
-        model = create_model("ToolArgs", **fields)  # type: ignore[call-overload]
-        model.model_validate(arguments)
+        import jsonschema
+    except ImportError:  # pragma: no cover
         return True, None
-    except ValidationError as e:
-        return False, str(e)
-    except Exception as e:
-        return False, f"Validation error: {e}"
 
-
-def _json_type_to_python(json_type: str) -> type:
-    return {
-        "string": str,
-        "integer": int,
-        "number": float,
-        "boolean": bool,
-        "array": list,
-        "object": dict,
-    }.get(json_type, str)
+    full_schema = schema.get("parameters", schema)
+    try:
+        jsonschema.validate(instance=arguments, schema=full_schema)
+        return True, None
+    except jsonschema.ValidationError as e:
+        return False, e.message
+    except jsonschema.SchemaError as e:
+        return False, f"invalid schema: {e.message}"
 
 
 def truncate_result(result: Any, max_chars: int = 2000) -> str:
