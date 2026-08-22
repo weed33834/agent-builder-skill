@@ -128,14 +128,14 @@ export function ModelConfig() {
       if (res.ok) {
         setProviders(prev => prev.map(x => (x.id === p.id ? { ...x, status: 'healthy', latency: res.latency_ms } : x)))
       }
-    } catch {
-      /* mock 兜底 */
-      const latency = Math.round(150 + Math.random() * 700)
-      const ok = p.id !== 'ollama' || Math.random() > 0.5
-      const res = { ok, latency_ms: latency, message: ok ? `连接成功，延迟 ${latency}ms` : '连接超时：请检查 base_url 与网络' }
-      setTestDetail(res)
-      setTesting(prev => ({ ...prev, [p.id]: ok ? 'ok' : 'fail' }))
-      setTestLog(prev => [{ provider: p.name, time: new Date().toTimeString().slice(0, 8), latency, ok }, ...prev])
+    } catch (e) {
+      // Honest failure: no fabricated latency/success — show the real error.
+      setTestDetail({ ok: false, latency_ms: 0, message: `测试请求失败: ${String(e)}` })
+      setTesting(prev => ({ ...prev, [p.id]: 'fail' }))
+      setTestLog(prev => [
+        { provider: p.name, time: new Date().toTimeString().slice(0, 8), latency: 0, ok: false },
+        ...prev,
+      ])
       setProviders(prev => prev.map(x => (x.id === p.id ? { ...x, status: ok ? 'healthy' : 'degraded', latency } : x)))
     } finally {
       setTimeout(() => setTesting(prev => ({ ...prev, [p.id]: 'idle' })), 2500)

@@ -34,7 +34,9 @@ class IntentRouter:
     ):
         self.agents = agents or {}
         self.classifier = classifier  # async (input, candidates) -> agent_name
-        self.default_agent = default_agent or (list(self.agents.keys())[0] if self.agents else None)
+        if not self.agents and not default_agent:
+            raise ValueError("AgentRouter needs at least one registered agent")
+        self.default_agent = default_agent or next(iter(self.agents))
         self.keyword_rules = keyword_rules or {}
 
     # ── routing (M6.5) ─────────────────────────────────────────

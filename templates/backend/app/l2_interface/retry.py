@@ -125,12 +125,13 @@ class FallbackChain:
 
         for i, model_config in enumerate(self.models):
             try:
-                # Update the model configuration in kwargs
-                kwargs.update({
-                    "provider": model_config["provider"],
-                    "model": model_config["model"],
-                })
-                return await func(*args, **kwargs)
+                # Copy before injecting model config: mutating the caller's
+                # dict would leak provider/model overrides into subsequent
+                # attempts and back into the caller's scope.
+                attempt_kwargs = {**kwargs,
+                                  "provider": model_config["provider"],
+                                  "model": model_config["model"]}
+                return await func(*args, **attempt_kwargs)
             except Exception as e:
                 last_exception = e
                 logger.warning(

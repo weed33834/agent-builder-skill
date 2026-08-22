@@ -181,22 +181,6 @@ async def delete_task(task_id: str):
     return {"deleted": True, "id": task_id}
 
 
-# ---- demo data (foundation smoke / UI preview) ----
-def _seed():
-    _TASKS.clear()
-    base = _now()
-    _TASKS["demo_rag"] = {
-        "id": "demo_rag", "title": "知识库索引",
-        "description": "对产品文档库进行分块、嵌入与入库",
-        "status": "running", "progress": 62,
-        "steps": [
-            {"name": "解析文档", "status": "done", "detail": "126 篇已解析", "ts": base - 120},
-            {"name": "分块", "status": "done", "detail": "3420 chunks", "ts": base - 80},
-            {"name": "向量嵌入", "status": "running", "detail": "batch 4/8", "ts": base - 20},
-        ],
-        "result": "", "error": "", "created_at": base - 200,
-        "updated_at": base - 20, "started_at": base - 180, "finished_at": None,
-    }
-
-
-_seed()
+# NOTE: no demo seeding — an empty task list is the honest initial state.
+# (A previously auto-injected fake "demo_rag" task violated the project's
+# own no-mock-data acceptance rule and never progressed.)

@@ -46,7 +46,7 @@ class ResultAggregator:
             else:
                 parts.append(f"### 步骤 {r.task_id} (失败)\n错误: {r.error}\n")
 
-        return "\n".join(parts)
+        return "\n".join(str(p_) for p_ in parts)
 
     def _format_analysis(self, results: list[TaskResult]) -> str:
         """Format analysis-type results"""
@@ -56,7 +56,7 @@ class ResultAggregator:
             if r.success:
                 parts.append(r.output)
 
-        return "\n".join(parts)
+        return "\n".join(str(p_) for p_ in parts)
 
     def _format_comparison(self, results: list[TaskResult]) -> str:
         """Format comparison-type results"""
@@ -68,7 +68,7 @@ class ResultAggregator:
             for r in successful:
                 parts.append(r.output)
 
-        return "\n".join(parts)
+        return "\n".join(str(p_) for p_ in parts)
 
     def _format_general(self, results: list[TaskResult]) -> str:
         """Format general results"""
@@ -80,4 +80,4 @@ class ResultAggregator:
             else:
                 parts.append(f"[任务 {r.task_id} 执行失败: {r.error}]")
 
-        return "\n\n".join(parts)
+        return "\n\n".join(str(p_) for p_ in parts)

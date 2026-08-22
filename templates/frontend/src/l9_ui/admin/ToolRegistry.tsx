@@ -183,6 +183,7 @@ export function ToolRegistry() {
     setConnecting(true)
     setConnError(null)
     setDiscovered([])
+    let discovered: { name: string; desc: string; selected: boolean }[] = []
     try {
       const res = await adminTestMCP({
         transport,
@@ -190,17 +191,23 @@ export function ToolRegistry() {
         command: transport === 'stdio' ? endpoint : undefined,
         config: { headers: { Authorization: 'Bearer sk-...' }, timeout_ms: 10000 },
       })
-      if (!res.ok) setConnError(res.message ?? '连接失败')
-    } catch {
-      /* mock 兜底 */
+      if (res.ok) {
+        // Only real discovery results from the server response.
+        const detail = (res as { detail?: { tools?: { name?: string; description?: string }[] } }).detail
+        discovered = (detail?.tools ?? []).map(t => ({
+          name: t.name ?? '(unnamed)',
+          desc: t.description ?? '',
+          selected: true,
+        }))
+        if (discovered.length === 0) setConnError('连接成功，但服务器未暴露任何工具')
+      } else {
+        setConnError(res.message ?? '连接失败')
+      }
+    } catch (e) {
+      setConnError(`连接失败: ${String(e)}`)
     } finally {
       setConnecting(false)
-      setDiscovered([
-        { name: 'search_repo', desc: '搜索代码仓库', selected: true },
-        { name: 'create_issue', desc: '创建 Issue', selected: true },
-        { name: 'list_releases', desc: '列出 Release', selected: true },
-        { name: 'get_commit', desc: '获取提交信息', selected: false },
-      ])
+      setDiscovered(discovered)
     }
   }
 

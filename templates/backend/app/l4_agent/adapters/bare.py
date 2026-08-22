@@ -140,9 +140,10 @@ def build_single_agent_graph() -> BareRuntime:
     from app.l1_llm.factory import create_llm
     from app.l5_tools.registry import get_registry
 
-    llm = create_llm()
+    from app.l10_infra.config import settings as _settings
+    llm = create_llm(provider=_settings.LLM_PROVIDER, model=_settings.LLM_MODEL)
     registry = get_registry()
     return BareRuntime(
         llm=llm,
-        tools={t.name: t.func for t in registry.list_tools()},
+        tools=registry.get_callables(),
     )
