@@ -4,6 +4,7 @@ Provides advanced tool execution features: timeout control, error recovery, resu
 """
 
 import asyncio
+from collections import deque
 from typing import Any, Optional
 
 from .registry import ToolRegistry
@@ -21,7 +22,7 @@ class ToolExecutor:
 
     def __init__(self, timeout: int = 30):
         self.timeout = timeout
-        self._history: list[dict] = []
+        self._history: deque = deque(maxlen=200)
 
     async def execute(
         self,

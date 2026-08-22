@@ -176,6 +176,9 @@ async def upload_file(session_id: str, file: UploadFile = File(...)):
     safe_name = (file.filename or "file").replace("/", "_").replace("\\", "_")
     dest = uploads_dir / f"{session_id[:8]}_{safe_name}"
     content = await file.read()
+    MAX_UPLOAD_BYTES = 10 * 1024 * 1024
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="file too large (max 10 MB)")
     dest.write_bytes(content)
     att = mgr.add_attachment(session_id, safe_name, str(dest), len(content), kind=file.content_type or "file")
     return {"ok": True, "attachment": att}

@@ -10,6 +10,7 @@ import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
+from collections import deque
 from typing import Any, Awaitable, Callable, Optional
 
 logger = logging.getLogger(__name__)
@@ -50,7 +51,7 @@ class AlertManager:
     def __init__(self, notifiers: Optional[list[Notifier]] = None):
         self.rules: list[AlertRule] = []
         self.notifiers: list[Notifier] = list(notifiers or [])
-        self.fired: list[dict] = []
+        self.fired: deque = deque(maxlen=200)
 
     def add_rule(self, rule: AlertRule) -> AlertRule:
         self.rules.append(rule)
@@ -88,7 +89,7 @@ class AlertManager:
         return triggered
 
     def history(self, limit: int = 50) -> list[dict]:
-        return self.fired[-limit:]
+        return list(self.fired)[-limit:]
 
 
 async def webhook_notifier(url: str) -> Notifier:

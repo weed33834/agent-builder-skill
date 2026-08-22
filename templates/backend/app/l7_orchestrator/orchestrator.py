@@ -251,6 +251,9 @@ class AgentOrchestrator(OrchestratorBase, A2AOrchestratorBase):
             task.status = TaskStatus.FAILED
             task.metadata["error"] = str(e)
             return task
+        finally:
+            # Terminal state: stop tracking, otherwise the dict grows forever.
+            self._active_tasks.pop(task.id, None)
 
     async def send_task(self, agent_url: str, task: A2ATask) -> A2ATask:
         """Send a task to an Agent via JSON-RPC 2.0

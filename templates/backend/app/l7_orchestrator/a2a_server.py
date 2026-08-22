@@ -39,10 +39,14 @@ class A2AServer:
         *,
         task_store: Optional[dict[str, A2ATask]] = None,
         polling: bool = True,
+        max_tracked_tasks: int = 500,
     ):
         self.card = card
         self.handler = handler
         self._tasks: dict[str, A2ATask] = task_store if task_store is not None else {}
+        # Completed tasks are kept for polling but capped — without a cap a
+        # long-running server grows this dict forever.
+        self.max_tracked_tasks = max_tracked_tasks
         self.polling = polling  # when True, handler runs async (task/send returns immediately)
 
     # ── Agent Card (discovery, M6.15) ─────────────────────────
@@ -91,7 +95,9 @@ class A2AServer:
     # ── method implementations ────────────────────────────────
 
     async def _handle_send(self, params: dict) -> dict:
-        task_id = params.get("id") or f"task-{uuid.uuid4().hex[:12]}"
+        # Server-side task ids: a client-chosen id would let any caller
+        # overwrite (hijack/reset) someone else's tracked task.
+        task_id = f"task-{uuid.uuid4().hex[:12]}"
         message = params.get("message", {})
         metadata = params.get("metadata", {})
 
@@ -102,6 +108,7 @@ class A2AServer:
             metadata=metadata,
         )
         self._tasks[task_id] = task
+        self._evict_old_tasks()
 
         if self.polling:
             # Return immediately; run handler in background (M12.8 long tasks)
@@ -110,6 +117,28 @@ class A2AServer:
 
         # Synchronous mode: run handler before responding
         return await self._run_handler(task_id, message, metadata)
+
+    def _evict_old_tasks(self) -> None:
+        """Keep the task store bounded: drop the oldest COMPLETED tasks first."""
+        if len(self._tasks) <= self.max_tracked_tasks:
+            return
+        terminal = {
+            TaskStatus.COMPLETED,
+            getattr(TaskStatus, "FAILED", "failed"),
+            getattr(TaskStatus, "CANCELED", "canceled"),
+            getattr(TaskStatus, "CANCELLED", "canceled"),
+        }
+        done_ids = [
+            tid for tid, t in self._tasks.items()
+            if str(getattr(t, "status", "")) in {str(s) for s in terminal}
+        ]
+        overflow = len(self._tasks) - self.max_tracked_tasks
+        for tid in done_ids[:overflow]:
+            self._tasks.pop(tid, None)
+        # Still over the cap (all running)? drop oldest by insertion order.
+        while len(self._tasks) > self.max_tracked_tasks:
+            oldest = next(iter(self._tasks))
+            self._tasks.pop(oldest, None)
 
     async def _run_handler(self, task_id: str, message: dict, metadata: dict) -> dict:
         task = self._tasks.get(task_id)

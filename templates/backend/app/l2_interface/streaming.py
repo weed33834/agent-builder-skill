@@ -1,11 +1,9 @@
 """L2 - Streaming Processing Wrapper
 
-Provides unified streaming processing capabilities, including event callbacks, buffering, etc.
+Provides unified streaming processing capabilities, including event callbacks.
 """
 
 from typing import AsyncIterator, Callable, Awaitable, Optional
-import asyncio
-import json
 
 
 class StreamManager:
@@ -14,8 +12,7 @@ class StreamManager:
     Wraps the LLM streaming output and supports event callbacks.
     """
 
-    def __init__(self, buffer_size: int = 10):
-        self._buffer_size = buffer_size
+    def __init__(self):
         self._callbacks: list[Callable[[str], None]] = []
 
     def add_callback(self, callback: Callable[[str], None]):
@@ -36,18 +33,11 @@ class StreamManager:
         Yields:
             str: Processed text chunks
         """
-        buffer = []
-
         async for chunk in stream_func(*args, **kwargs):
             if chunk:
-                buffer.append(chunk)
                 for cb in self._callbacks:
                     cb(chunk)
                 yield chunk
-
-                # Buffer control
-                if len(buffer) >= self._buffer_size:
-                    buffer.pop(0)
 
     async def collect_stream(
         self,

@@ -27,6 +27,19 @@ class RateLimiter:
         self.burst = burst
         self._tokens: dict[str, float] = defaultdict(float)
         self._last: dict[str, float] = defaultdict(float)
+        # Idle entries are meaningless once the refill window has passed; sweep
+        # them periodically so public traffic cannot grow the dicts forever.
+        self._sweep_every = 1000
+        self._calls = 0
+
+    def _sweep(self, now: float):
+        if len(self._last) < 512:
+            return
+        stale_after = self.burst / max(self.rps, 0.1) * 10 + 3600.0
+        dead = [k for k, ts in self._last.items() if now - ts > stale_after]
+        for k in dead:
+            self._last.pop(k, None)
+            self._tokens.pop(k, None)
 
     def allow(self, key: str) -> tuple[bool, float]:
         """Check whether a request is allowed.
@@ -35,6 +48,9 @@ class RateLimiter:
             (allowed, retry_after_seconds)
         """
         now = time.monotonic()
+        self._calls += 1
+        if self._calls % self._sweep_every == 0:
+            self._sweep(now)
         last = self._last.get(key, now)
         elapsed = max(0.0, now - last)
         self._last[key] = now

@@ -43,11 +43,16 @@ class MCPServerConnection:
         self.timeout = timeout
         self._tools_cache: Optional[list[dict]] = None
         self._process: Optional[asyncio.subprocess.Process] = None
+        # Serializes requests over one persistent stdio session; JSON-RPC over
+        # a single pipe is strictly request/response interleaved.
+        self._stdio_lock = asyncio.Lock()
+        self._next_id = 0
+        self._stderr_drain_task: Optional[asyncio.Task] = None
 
     # ── lifecycle ──────────────────────────────────────────────
 
     async def connect(self):
-        """Establish the connection (for stdio: spawn the subprocess)"""
+        """Establish the connection (for stdio: spawn the subprocess)."""
         if self.command:
             self._process = await asyncio.create_subprocess_exec(
                 self.command,
@@ -56,12 +61,25 @@ class MCPServerConnection:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
             )
+            # Drain stderr in the background so a chatty child can never fill
+            # the pipe and deadlock itself.
+            async def _drain_stderr():
+                assert self._process is not None and self._process.stderr
+                async for _ in self._process.stderr:
+                    pass
+
+            self._stderr_drain_task = asyncio.create_task(_drain_stderr())
         self._tools_cache = None
 
     async def disconnect(self):
         """Close the connection"""
+        if self._stderr_drain_task:
+            self._stderr_drain_task.cancel()
+            self._stderr_drain_task = None
         if self._process:
             try:
+                if self._process.stdin:
+                    self._process.stdin.close()
                 self._process.terminate()
                 await asyncio.wait_for(self._process.wait(), timeout=5.0)
             except Exception:
@@ -73,13 +91,15 @@ class MCPServerConnection:
 
     # ── protocol calls ─────────────────────────────────────────
 
-    async def _request(self, method: str, params: dict, request_id: str) -> dict:
-        """Send a JSON-RPC 2.0 request and await the response"""
+    async def _request(self, method: str, params: dict, request_id: Any = None) -> dict:
+        """Send a JSON-RPC 2.0 request and await the matching response."""
+        self._next_id += 1
+        rid = request_id if request_id is not None else self._next_id
         payload = {
             "jsonrpc": "2.0",
             "method": method,
             "params": params,
-            "id": request_id,
+            "id": rid,
         }
 
         if self.url:
@@ -98,20 +118,7 @@ class MCPServerConnection:
                 raise MCPServerError(f"MCP HTTP call '{method}' failed on {self.name}: {e}")
 
         elif self._process:
-            try:
-                raw = json.dumps(payload).encode()
-                stdout, stderr = await asyncio.wait_for(
-                    self._process.communicate(input=raw), timeout=self.timeout
-                )
-                if self._process.returncode != 0:
-                    raise MCPServerError(
-                        f"MCP stdio process {self.name} exited {self._process.returncode}: {stderr.decode(errors='replace')[:500]}"
-                    )
-                data = json.loads(stdout.decode(errors="replace"))
-            except asyncio.TimeoutError:
-                raise MCPServerError(f"MCP stdio call '{method}' timed out on {self.name}")
-            except json.JSONDecodeError as e:
-                raise MCPServerError(f"MCP stdio invalid response from {self.name}: {e}")
+            data = await self._request_stdio(payload, rid)
         else:
             raise MCPServerError(f"MCP connection {self.name} is not connected")
 
@@ -120,6 +127,47 @@ class MCPServerConnection:
                 f"MCP server {self.name} error: {data['error']}"
             )
         return data.get("result", {})
+
+    async def _request_stdio(self, payload: dict, rid) -> dict:
+        """Persistent-session stdio exchange: write one line, then read lines
+        until the response with our id arrives (skipping server-initiated
+        notifications). The previous communicate()-based implementation closed
+        stdin after the first call, so EVERY second call failed.
+        """
+        assert self._process is not None
+        async with self._stdio_lock:
+            if self._process.returncode is not None:
+                raise MCPServerError(
+                    f"MCP stdio process {self.name} has exited (code={self._process.returncode})"
+                )
+            try:
+                assert self._process.stdin is not None
+                self._process.stdin.write((json.dumps(payload) + "\n").encode())
+                await self._process.stdin.drain()
+            except Exception as e:
+                raise MCPServerError(f"MCP stdio write failed on {self.name}: {e}")
+
+            assert self._process.stdout is not None
+            while True:
+                try:
+                    line = await asyncio.wait_for(
+                        self._process.stdout.readline(), timeout=self.timeout
+                    )
+                except asyncio.TimeoutError:
+                    raise MCPServerError(
+                        f"MCP stdio call timed out on {self.name} after {self.timeout}s"
+                    )
+                if not line:
+                    raise MCPServerError(
+                        f"MCP stdio server {self.name} closed its output stream"
+                    )
+                try:
+                    data = json.loads(line.decode(errors="replace"))
+                except json.JSONDecodeError:
+                    continue  # tolerate non-JSON noise lines
+                if isinstance(data, dict) and data.get("id") == rid:
+                    return data
+                # notifications / other requests: skip and keep waiting
 
     # ── tool operations ────────────────────────────────────────
 

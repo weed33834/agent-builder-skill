@@ -80,6 +80,8 @@ async def create_notification(req: NotificationCreate):
         "created_at": _now(),
     }
     _NOTIFICATIONS.append(note)
+    # Bound the in-memory store; oldest entries drop first.
+    del _NOTIFICATIONS[:-500]
     _bump()
     return note
 

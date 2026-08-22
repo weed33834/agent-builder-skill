@@ -85,6 +85,10 @@ async def create_task(req: TaskCreate):
         "finished_at": None,
     }
     _TASKS[task["id"]] = task
+    # Bound the in-memory task store; evict oldest when over cap.
+    if len(_TASKS) > 300:
+        for old_id in sorted(_TASKS, key=lambda k: _TASKS[k].get("created_at", ""))[: len(_TASKS) - 300]:
+            _TASKS.pop(old_id, None)
     return task
 
 
@@ -117,6 +121,7 @@ async def progress_task(task_id: str, req: TaskProgress):
         t["progress"] = req.progress
     if req.step:
         t["steps"].append(req.step.model_dump())
+        del t["steps"][:-500]
     if req.note:
         t["steps"].append(TaskStep(name=req.note, status="running").model_dump())
     t["updated_at"] = _now()

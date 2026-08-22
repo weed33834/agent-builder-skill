@@ -113,12 +113,26 @@ class ChatInterface:
             yield f"[已拦截] 输入命中高风险提示词注入（severity={block}）。请调整表述后重试。"
             return
         langchain_messages = self._convert_messages(sanitized)
+        # Cross-chunk PII guard: redacting each chunk independently misses
+        # patterns split across two chunks (e.g. half a phone number). Keep an
+        # un-redacted tail window and only emit text that can no longer be
+        # part of a match; flush whatever remains at stream end.
+        TAIL_WINDOW = 24
+        pending = ""
         async for chunk in self._stream_manager.stream(
             self._llm.stream,
             langchain_messages,
             tools,
         ):
-            yield self._redact_output(chunk)
+            pending += chunk
+            redacted = self._redact_output(pending)
+            raw_keep = min(len(pending), TAIL_WINDOW)
+            out_len = len(redacted) - raw_keep
+            if out_len > 0:
+                yield redacted[:out_len]
+                pending = pending[-raw_keep:]
+        if pending:
+            yield self._redact_output(pending)
 
     def bind_tools(self, tools: list):
         """Bind tools to the current LLM"""

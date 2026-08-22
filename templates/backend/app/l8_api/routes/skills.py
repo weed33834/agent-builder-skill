@@ -81,6 +81,8 @@ async def create_skill(req: SkillCreate):
         "created_at": _now(),
     }
     _LIB.append(item)
+    # Bound the in-memory capability library; oldest entries drop first.
+    del _LIB[:-500]
     return item
 
 

@@ -44,5 +44,10 @@ async def list_breakers():
 
 @router.post("/security/breakers/{name}/reset")
 async def reset_breaker(name: str):
-    get_circuit_breakers().get(name).reset()
+    breakers = get_circuit_breakers()
+    if name not in breakers:
+        # get() would auto-create a fresh breaker and report ok — masking
+        # configuration mistakes. Fail loudly instead.
+        raise HTTPException(status_code=404, detail=f"circuit breaker '{name}' not found")
+    breakers[name].reset()
     return {"ok": True, "name": name}

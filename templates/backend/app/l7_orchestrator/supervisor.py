@@ -64,6 +64,10 @@ class Supervisor:
             "input": user_input,
             "status": "in_progress",
         })
+        # Ledgers are diagnostic-only; cap them so long sessions don't grow
+        # memory without bound.
+        del self.task_ledger[:-100]
+        del self.progress_ledger[:-200]
 
         current_input = user_input
         current_agent: Optional[str] = None

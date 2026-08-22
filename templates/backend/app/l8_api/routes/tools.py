@@ -44,7 +44,12 @@ async def list_tools():
 @router.get("/tools/{name}", response_model=ToolInfo)
 async def get_tool(name: str):
     """Get tool detail"""
-    tool = ToolRegistry.get(name)
+    from fastapi import HTTPException
+
+    try:
+        tool = ToolRegistry.get(name)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"tool '{name}' not found")
     category = next(
         (c for c, names in ToolRegistry._categories.items() if name in names),
         "general",

@@ -83,6 +83,10 @@ async def create_canvas(req: CanvasCreate):
         "updated_at": _now(),
     }
     _CANVASES[canvas["id"]] = canvas
+    # Bound the in-memory store; evict oldest when over cap.
+    if len(_CANVASES) > 200:
+        for old_id in sorted(_CANVASES, key=lambda k: _CANVASES[k].get("created_at", ""))[: len(_CANVASES) - 200]:
+            _CANVASES.pop(old_id, None)
     return canvas
 
 

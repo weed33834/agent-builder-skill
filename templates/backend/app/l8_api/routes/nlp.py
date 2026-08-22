@@ -58,7 +58,8 @@ async def summary(payload: dict):
     if not text:
         raise HTTPException(status_code=400, detail="text is required")
     n = int(payload.get("sentences", 3))
-    return {"sentences": extractive_summary(text, n), "summary": "".join(extractive_summary(text, n))}
+    sentences = extractive_summary(text, n)  # compute once, use twice
+    return {"sentences": sentences, "summary": "".join(sentences)}
 
 
 @router.post("/nlp/validate")

@@ -48,14 +48,20 @@ class CircuitBreaker:
                 if now - self._opened_at >= self.cooldown_seconds:
                     self._state = "HALF_OPEN"
                     self._successes = 0
-                    return True  # 探针请求
+                    self._probe_in_flight = True
+                    return True  # 探针请求（单探针语义）
                 return False
-            # HALF_OPEN：只允许探针
-            return self._successes < self.success_threshold
+            # HALF_OPEN：同一时刻只放行一个探针请求，其余快速失败。
+            # 之前的实现允许 success_threshold 个并发请求同时探活。
+            if getattr(self, "_probe_in_flight", False):
+                return False
+            self._probe_in_flight = True
+            return True
 
     def record_success(self) -> None:
         with self._lock:
             if self._state == "HALF_OPEN":
+                self._probe_in_flight = False
                 self._successes += 1
                 if self._successes >= self.success_threshold:
                     self._state = "CLOSED"
@@ -68,6 +74,8 @@ class CircuitBreaker:
     def record_failure(self) -> None:
         with self._lock:
             now = time.monotonic()
+            if self._state == "HALF_OPEN":
+                self._probe_in_flight = False
             if self._state in ("HALF_OPEN", "CLOSED"):
                 self._failures += 1
                 self._window_start = now

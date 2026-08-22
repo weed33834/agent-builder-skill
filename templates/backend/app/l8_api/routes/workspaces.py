@@ -82,6 +82,10 @@ async def create_workspace(req: WorkspaceCreate):
         "updated_at": _now(),
     }
     _WORKSPACES[ws["id"]] = ws
+    # Bound the in-memory store; evict oldest when over cap.
+    if len(_WORKSPACES) > 200:
+        for old_id in sorted(_WORKSPACES, key=lambda k: _WORKSPACES[k].get("created_at", ""))[: len(_WORKSPACES) - 200]:
+            _WORKSPACES.pop(old_id, None)
     return ws
 
 
